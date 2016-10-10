@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simple site</title>
+
+    <!-- Bootstrap -->
+    <link href="web/css/bootstrap.min.css" rel="stylesheet">
+    <link href="web/css/custom.css" rel="stylesheet">
+    <link href="web/css/lightbox.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <link rel="icon"  type="web/images/png" href="favicon.png">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>
+
+$(document).ready(function(){
+    $( ".imageLight" ).hover(
+        function() {
+            $( this ).fadeTo( "fast", 1 );},
+        function() {
+          $( this ).fadeTo( "fast", 0.5 );
+        }
+    );
+});
+$(document).scroll(function () {
+    var documentHeight = document.documentElement.clientHeight;
+    var y = $(this).scrollTop();
+    $('.well').each(function () {
+        var t = $(this).parent().offset().top - innerHeight *1.1 ;
+        if (y > t) {
+            $(this).fadeIn("slow");
+        }
+    });
+});
+
+</script>
+  </head>
+  <body>
+    <div class="{% if config.menuPosition is defined %}{{ config.menuPosition }}{% else%}menu{% endif %}{% if config.menuShadow is defined %} menu-shadow {% endif %} {{ config.menuWidth }}" id="menu">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  <a href="#"><img style="height:50px;" src="web/images/logo.jpg"/></a>
+                </div>
+
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    {% if menu is not defined %}
+                        {% set menu = 'start' %}
+                    {% endif %}
+                    <div >
+                        <ul class="nav navbar-nav">
+                            <li{% if menu == 'start' %} class="active"{% endif %}><a href="index.php?szkId={{ szkId }}">Start</a></li> 
+                            <li{% if menu == 'dokumenty' %} class="active"{% endif %}><a href="index.php?site=dokumenty&szkId={{ szkId }}">Dokumentacja</a></li>
+                            <li{% if menu == 'creator' %} class="active"{% endif %}><a href="index.php?site=creator&szkId={{ szkId }}">Kreator celów</a></li>
+                            <li{% if menu == 'kontakt' %} class="active"{% endif %}><a href="index.php?site=kontakt&szkId={{ szkId }}">Kontakt</a></li>
+                        </ul>
+                        </div>
+                        <ul class="nav navbar-nav navbar-right">
+                            <a href='' class="navbar-brand">{{ config.companyName }}<br/><span style="companySlogan">{{ config.companySlogan }}</span></a>
+                        </ul>
+                    
+                </div>
+            </div>
+        </nav>
+    </div>
+    <p style="height:50px;"></p>
+    {% if config.carousel == true %}
+        {% include 'carousel.html.twig' %}
+    {% endif %}
+    
+      <div class="parralex">
+          <section class="bgnd bgnd-1 js-parallax-bg"></section>
+          <section class="bgnd bgnd-2 js-parallax-bg">asdasfg asas fas fas fas fa sasfas f asasdasfg asas fas fas fas fa sasfas f as</section>
+          <section class="bgnd bgnd-3 js-parallax-bg"></section>
+          <section class="bgnd bgnd-4 js-parallax-bg"></section>
+      </div>
+    <div class="site {{ config.containerWidth }} {% if config.articleShadow is defined %} article-shadow {% endif %}">
+      <div class="container-fluid co ">
+        <div class="row">
+          <div  class="cont center-block">
+              {% block body %}
+                    {% if config.breadcrumbs == true %}
+                        {% include 'breadcrumbs.html.twig' %}
+                    {% endif %}
+                  
+                  <div class="well ">
+                  <div class="row">
+                    <div class="col-md-8">
+                        <h2>Article</h2>
+                    </div>
+                    <div class="col=md-4">
+                        <span class="articleDate">22.09.2019 r.</span>
+                    </div>
+                  </div>
+Phasellus efficitur aliquam ligula, sed euismod nulla interdum in. In in nunc posuere, mattis lacus non, mattis sapien. Curabitur vestibulum diam sit amet orci vulputate molestie. Pellentesque dapibus vitae leo sit amet efficitur. Quisque id commodo erat. Nunc rhoncus libero in lobortis finibus. Cras a diam scelerisque, dapibus mauris nec, convallis mauris. Morbi euismod lacinia nisl, at venenatis neque convallis nec. Ut finibus diam sit amet purus scelerisque, scelerisque commodo lectus vulputate. Etiam eu ante sapien. Aenean quis est eget lorem feugiat molestie. Vestibulum id suscipit orci.
+
+Proin volutpat nulla in turpis molestie hendrerit. Nam vitae diam semper, aliquet orci ac, consectetur lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Integer tincidunt vehicula pulvinar. Cras lorem purus, iaculis eu odio sit amet, dapibus accumsan lorem. Aliquam viverra dolor in ante porttitor, eget luctus elit aliquam. Maecenas viverra tellus nec posuere condimentum. Curabitur tincidunt velit sit amet finibus pharetra.</div>
+                  <div><div class="well displayNone">
+                  <div class="row">
+                    <div class="col-md-8">
+                        <h2>Gallery</h2>
+                    </div>
+                    <div class="col=md-4">
+                        <span class="articleDate">22.09.2019 r.</span>
+                    </div>
+                  </div>
+                    <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-3.jpg" data-lightbox="example-set" data-title="Click the right half of the image to move forward."><img class="example-image" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-3.jpg" alt=""/></a>
+                      <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-4.jpg" data-lightbox="example-set" data-title="Or press the right arrow on your keyboard.">
+                      <img class="img-rounded" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-4.jpg" alt="" /></a>
+                      <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-5.jpg" data-lightbox="example-set" data-title="The next image in the set is preloaded as you're viewing.">
+                      <img class="img-circle" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-5.jpg" alt="" /></a>
+                      <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-6.jpg" data-lightbox="example-set" data-title="Click anywhere outside the image or the X to the right to close.">
+                      <img class="img-thumbnail" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-6.jpg" alt="" /></a>
+                  
+                  </div></div>
+                  <div><div class="well displayNone">
+                    <div class="well displayNone">            <div class="main"> 
+                    
+                    <div class="row">
+                    <div class="col-md-8">
+                        <h2>Gallery</h2>
+                    </div>
+                    <div class="col=md-4">
+                        <span class="articleDate">22.09.2019 r.</span>
+                    </div>
+                    </div>
+                    <div class="row">
+                    <div class="col-md-12">
+                    <div class="main"> 
+                        <div class="view view-tenth">
+                            <img src="web/images/16.jpg" />
+                            <div class="mask">
+                                <h2>Hover Style #10</h2>
+                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
+                                <a href="#" class="info">Read More</a>
+                            </div>
+                        </div>
+                        <div class="view view-tenth">
+                            <img src="web/images/2.jpg" />
+                            <div class="mask">
+                                <h2>Hover Style #10</h2>
+                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
+                                <a href="#" class="info">Read More</a>
+                            </div>
+                        </div>
+                        <div class="view view-tenth">
+                            <img src="web/images/1.jpg" />
+                            <div class="mask">
+                                <h2>Hover Style #10</h2>
+                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
+                                <a href="#" class="info">Read More</a>
+                            </div>
+                        </div>
+                        <div class="view view-tenth">
+                            <img src="web/images/7.jpg" />
+                            <div class="mask">
+                                <h2>Hover Style #10</h2>
+                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
+                                <a href="#" class="info">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                    </div></div>
+                  </div></div></div></div>
+                  <div><div class="well displayNone"><br/></div></div>
+                  <div><div class="well displayNone"><br/></div></div>
+                  <div><div class="well displayNone"><br/></div></div>
+
+
+              {% endblock %}
+           </div>
+        </div>
+       </div>
+       </div>
+       <div class="footer">
+            {% if config.footer == true %}
+                {{ config.footerText }}
+            {% endif %}
+            <br/>
+            <a href="http://grupaformat.pl">www.grupaformat.pl</a>
+       </div>
+           <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="web/js/bootstrap.min.js"></script>
+    <script src="web/js/lightbox.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+{% extends 'admin/base.html.twig' %}
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'article-show'%}
+            <div class="alert alert-success text-center" role="alert">Artykuł został opublikowany</div>
+        {% elseif info == 'article-show-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Artykuł nie został opublikowany</div>
+        {% elseif info == 'article-hide'%}
+            <div class="alert alert-success text-center" role="alert">Artykuł został ukryty</div>
+        {% elseif info == 'article-hide-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Artykuł nie został ukryty</div>
+        {% elseif info == 'article-delete'%}
+            <div class="alert alert-success text-center" role="alert">Artykuł został usunięty</div>
+        {% elseif info == 'article-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Artykuł nie został usunięty</div>
+        {% elseif info == 'article-add'%}
+            <div class="alert alert-success text-center" role="alert">Artykuł został dodany</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+        {% block body %}
+        <div class="row">
+            <div class="pull-right">
+                <a href="index.php?site=admin&action=articles&act=add" class="btn btn-success">Dodaj</a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                  <thead>
+                    <tr>
+                        <td>
+                            <strong>Lp.</strong>
+                        </td>
+                        <td>
+                            <strong>Nazwa</strong>
+                        </td>
+                        <td>
+                            <strong>Opublikowane</strong>
+                        </td>
+                        <td>
+                            <strong>Kategoria</strong>
+                        </td>
+                        <td>
+                            <strong>Data utworzenia</strong>
+                        </td>
+                        <td>
+                            <strong>Usuń</strong>
+                        </td>
+                    </tr>
+                  <thead>
+                  {% set lp = 1 %}
+            {% for article in pagin.articles%}
+                    <tr>
+                        <td>
+                            {{ lp }}
+                        </td>
+                        <td>
+                            <a href="index.php?site=admin&action=articles&act=edit&id={{ article.articleId|e }}">{{ article.articleName|e }}</a>
+                        </td>
+                        <td>
+                            {% if article.articlePublished == 0%}
+                                <a href="index.php?site=admin&action=articles&act=show&id={{ article.articleId|e }}">{{ article.articlePublished|e }}
+                            {% else %}
+                                <a href="index.php?site=admin&action=articles&act=hide&id={{ article.articleId|e }}">{{ article.articlePublished|e }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ article.articleCategory|e }}
+                        </td>
+                        <td>
+                            {{ article.articleDate|e }}
+                        </td>
+                        <td>
+                            <a href="index.php?site=admin&action=articles&act=delete&id={{ article.articleId|e }}" class="btn btn-danger">Usuń</a>
+                        </td>
+                    </tr>
+                {% set lp = lp+1 %}
+            {% endfor %}
+            </table>
+            <nav aria-label="...">
+              <ul class="pagination">
+                 {% if activePage < 2%}
+                        <li class="disabled">
+                          <span>
+                            <span aria-hidden="true">&laquo;</span>
+                          </span>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="index.php?site=admin&action=articles&page={{ activePage-1 }}"><span aria-hidden="true">&laquo;</span></a>
+                        </li>
+                {% endif %}
+                {% for a in 1..pagin.pages  %}
+                    {% if activePage == a%}
+                        <li class="active">
+                          <span>{{ a }} <span class="sr-only">(current)</span></span>
+                        </li>
+                    {% else %}
+                        <li>
+                          <a href="index.php?site=admin&action=articles&page={{ a }}"><span>{{ a }}</span></a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if activePage == pagin.pages %}
+                        <li class="disabled">
+                          <span>
+                            <span aria-hidden="true">&raquo;</span>
+                          </span>
+                        </li>
+                {% else %}
+                        <li>
+                            <a href="index.php?site=admin&action=articles&page={{ activePage+1 }}"><span aria-hidden="true">&raquo;</span></a>
+                        </li>
+                {% endif %}
+              </ul>
+            </nav>
+            
+            
+        </div>
+        {% endblock %}
+  

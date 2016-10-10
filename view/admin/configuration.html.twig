@@ -1,0 +1,51 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'configuration-save'%}
+            <div class="alert alert-success text-center" role="alert">Konfiguracja została zapisana</div>
+        {% elseif info == 'configuration-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Konfiguracja nie została zapisana</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+        {% block body %}
+        <div class="row">
+            <form method="POST" action="index.php?site=admin&action=configuration&act=save">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="pageName">Nazwa Strony (widoczna na pasku):</label>
+                            <input name="pageName" type="text" class="form-control" id="pageName" placeholder="Wpisz nazwę firmy" value="{{ config.pageName }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="companyName">Nazwa firmy:</label>
+                            <input name="companyName" type="text" class="form-control" id="companyName" placeholder="Wpisz nazwę firmy" value="{{ config.companyName }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="companyName">Slogan firmy:</label>
+                            <input name="companySlogan" type="text" class="form-control" id="companySlogan" placeholder="Wpisz slogan firmy" value="{{ config.companySlogan }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="text">Adres strony:</label>
+                            <input name="pageSite" type="author" class="form-control" id="pageSite" placeholder="Adres strony" value="{{ config.pageSite|e }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="text">Obrazek tła:</label>
+                            <input name="siteBackgroundImage" type="date" class="form-control" id="date" value="{{ config.siteBackgroundImage }}"><br/>
+                            <img style="width: 50px; height: 50px;" src="{{ config.siteBackgroundImage }}"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="text">Stopka:</label>
+                            <input name="footerText" type="date" class="form-control" id="date" value="{{ config.footerText }}"><br/>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Zapisz</button> 
+                        
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% endblock %}
+  

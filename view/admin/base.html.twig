@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        {% block pageName %}
+            {{ config.pageName }}
+        {% endblock %}
+    </title>
+
+    <!-- Bootstrap -->
+    <link href="web/css/bootstrap.min.css" rel="stylesheet">
+    <link href="web/css/custom.css" rel="stylesheet">
+    <link href="web/css/admin.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Pavanam" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <link rel="icon"  type="web/images/png" href="favicon.png">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+{% block head %}
+{% endblock %}
+  </head>
+  <body>
+
+    <nav class="navbar navbar-default">
+      <div class="container"><br/>
+        <p class="text-center">Panel administracyjny - 
+            {% block pageSite %}
+                {{ config.pageSite }}
+            {% endblock %}
+        </p>
+      </div>
+    </nav>
+       {% block menu %}
+            
+                <nav class="navbar navbar-default">
+                  <div class="container-fluid">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="navbar-header">
+                      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                      </button>
+                    </div>
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                      <ul class="nav navbar-nav">
+                      {% for menuItem in menu %}
+                        {% if menuItem.parent == 1 %}
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ menuItem.menuName|e }} <span class="caret"></span></a>
+                                <ul class="dropdown-menu">
+                            {% for childItems in menuChild %}
+                                {% if childItems.parentId == menuItem.menuId %}
+                                        <li><a href="{{ childItems.menuHref|e }}">{{ childItems.menuName|e }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% elseif menuItem.parentId == 0 %}
+                            <li><a href="{{ menuItem.menuHref|e }}">{{ menuItem.menuName|e }}</a></li>
+                        {% endif %}
+                      {% endfor %}
+                      </ul>
+                      <div class="navbar-right">
+                        <a class="btn btn-default" href="index.php?site=admin&action=logout">Wyloguj</a>
+                      </div>
+                    </div><!-- /.navbar-collapse -->
+                  </div><!-- /.container-fluid -->
+                </nav>
+                <br/>
+            
+      {% endblock %}
+    <div class="container-fluid ">
+        {% block info %}
+        {% endblock %}
+        <div class="well">
+        {% block body %}
+            
+        {% endblock %}
+        </div>
+    </div>
+    {% block footer %}
+        <div class="footer"><p class="text-center"><a href="http://{% block footerAddress %}
+                     {{config.pageSite }}
+            {% endblock %}">
+            {% block footerText %}
+                {{ config.pageSite }}
+            {% endblock %}
+        </a></p></div>
+    {% endblock %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="web/js/bootstrap.min.js"></script>
+</body>
+</html>

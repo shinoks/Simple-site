@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Kreator celów </h1>
+
+<p class='text-center'><h3>Dodawanie celu do części B</h3></p>
+ {% if info is defined %}
+    {% if info == 'addCel-success' %}
+        <div class="alert alert-success text-center" role="alert"> Cel został poprawnie dodany. Powrót do kreatora <a class="alert-link" href="index.php?site=creator&szkId={{ szkId }}">>></a> </div>
+    {% elseif info == 'addCel-error'%}    
+        <div class="alert alert-danger text-center" role="alert"> Cel nie został poprawnie dodany, spróbuj ponownie. Powrót do kreatora <a class="alert-link" href="index.php?site=creator&szkId={{ szkId }}">>></a> </div>
+    {% endif %}
+  {% endif %}
+  
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+    
+    <form class="form-horizontal" action="index.php?site=creator&action=addCelB&szkId={{ szkId }}" method="POST" id="addCelB">
+      <div class="form-group">
+        <label for="cel" class="col-sm-2 control-label">Cel</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" name="cel" placeholder="Wpisz cel...">
+        </div>
+      </div>
+      <h3>Mierniki określające stopień realizacji celu</h3>
+      <div class="form-group">
+        <label for="nazwaMiernika" class="col-sm-2 control-label">Nazwa</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" name="nazwaMiernika" placeholder="Wpisz nazwę miernika">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="wartoscMiernika" class="col-sm-2 control-label">Planowana wartość do osiągnięcia na koniec roku, którego dotyczy plan.</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" name="wartoscMiernika" placeholder="np. 70%">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="wartoscMiernika" class="col-sm-2 control-label">Podzadania budżetowe służące realizacji celu</label>
+        <div class="col-sm-10">
+          <textarea class="form-control" name="podzadania" placeholder="Wpisz podzadania bużetowe"></textarea>
+        </div>
+      </div>
+
+        <input type="hidden" name="save" value="save"/>
+        <input class="btn btn-primary" type="submit" value="Dodaj"/>
+    </form>
+  </div>
+  <div class="col-md-1"></div>
+    </div>
+  <br/>
+  <br/>
+  <br/>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Kreator celów </h1>
+<a href="index.php?site=creator&action=resetCreator&szkId={{ szkId }}" class="btn btn-danger">Resetuj kreator</a>
+  {% if info is defined %}
+    {% if info == 'addYear-success' %}
+        <div class="alert alert-success text-center" role="alert"> Rok został pomyślnie dodany </div>
+    {% elseif info == 'deleteCel-success' %}
+        <div class="alert alert-success" role="alert"> Cel został usunięty</div>
+    {% elseif info == 'deleteCel-error' %}
+        <div class="alert alert-danger text-center" role="alert"> Cel nie został usunięty. Spróbuj ponownie </div>
+     {% elseif info == 'addCel-success' %}
+        <div class="alert alert-success text-center" role="alert"> Cel został dodany poprawnie </div>
+    {% endif %}
+  {% endif %}
+  {% if config.enabled == 0 %}<div class="alert alert-danger text-center" role="alert"> Plan został już zamknięty do edytowania, możliwe jest jedynie pobieranie gotowego planu. </div>  {% endif %}
+  <h3><p class='text-center'>Plan działalności</p></h3>
+
+  <h4>
+    <p class='text-center'>{{ config.szkola|e }}</p>
+    <p class='text-center'>na rok {{ config.rok|e }}</p>
+  </h4>
+  <br/>
+  <br/><div class="well">
+        <b>CZĘŚĆ A:</b> Najważniejsze cele do realizacji w roku {{ config.rok|e }}<br/><br/>
+        {% if config.enabled == 1 %}
+         {% if czesca < 5 %}
+            Posiadasz już dodanych {{ czesca }} celów. Maksymalnie możesz dodać 5.<br/><br/>
+            <a class="btn btn-primary" href="index.php?site=creator&action=addCel&szkId={{ szkId }}">Dodaj cel</a><br/><br/>
+        {% elseif czesca == 5 %}
+            Posiadasz już dodanych 5 cel(ów), jest to maksymalna ilość dopuszczalna przez rozporządzenie. <br/><br/>
+        {% endif %}
+        {% endif %}
+        
+        <table class="table-condensed table-bordered">
+            <thead>
+                <tr>
+                    <td rowspan="2"><b>Lp.</b></td>
+                    <td rowspan="2"><b>Cel</b></td>
+                    <td colspan="2"><b>Mierniki określające stropień realizacji celu</b></td>
+                    <td rowspan="2"><b>Najważniejsze działania służące realizacji celu</b></td>
+                    <td rowspan="2"><b>Odniesienie do dokumentu o charakterze strategicznym</b></td>
+                    {% if config.enabled == 1 %}<td rowspan="2"><b>Usuń</b></td> {% endif %}
+                </tr>
+                <tr>
+                    <td><b>Nazwa</b></td>
+                    <td><b>Planowana wartość do osiągnięcia na koniec roku, którego dotyczy plan.</b></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% set counter = 1 %}
+                
+                {% for cel in cele %}            
+                    {% if cel.czesc_plan == 1 %}
+                        <tr style="font-size:12px">
+                        <td>{{ counter }}.</td>
+                        <td>{{ cel.nazwa }}</td>
+                        <td>{{ cel.miernik|raw }}</td>
+                        <td>{{ cel.wartosc_miernika|raw }}</td>
+                        <td>{{ cel.dzialania|raw }}</td>
+                        <td>{{ cel.odniesienie|raw }}</td>
+                         {% if config.enabled == 1 %}<td><a href="index.php?site=creator&action=deleteCel&id={{ cel.del }}&szkId={{ szkId }}"><p class="text-danger text-center"><b>X</b></p></a></td>{% endif %}
+                        </tr>
+                        {% set counter = counter + 1 %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        
+</div>
+          
+
+
+<div class="well">
+        <b>CZĘŚĆ B:</b> Cele priorytetowe wynikając z budżetu gminy w układzie zadaniowym do realizacji w roku {{ config.rok|e }}<br/><br/>            
+        {% if config.enabled == 1 %}
+        {% if czescb == 0 %}
+            Nie posiadasz jeszcze dodanych celów. Dodaj cel.<br/><br/>
+          {% endif %}
+        <a class="btn btn-primary" href="index.php?site=creator&action=addCelB&szkId={{ szkId }}">Dodaj cel do części B</a></p>
+        {% endif %}
+            <table class="table-condensed table-bordered">
+            <thead>
+                <tr>
+                    <td rowspan="2"><b>Lp.</b></td>
+                    <td rowspan="2"><b>Cel</b></td>
+                    <td colspan="2"><b>Mierniki określające stropień realizacji celu</b></td>
+                    <td rowspan="2"><b>Podzadania budżetowe służące realizacji celu</b></td>
+                    {% if config.enabled == 1 %}<td rowspan="2"><b>Usuń</b></td>{% endif %}
+                </tr>
+                <tr>
+                    <td><b>Nazwa</b></td>
+                    <td><b>Planowana wartość do osiągnięcia na koniec roku, którego dotyczy plan.</b></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% set counter = 1 %}
+                
+                {% for cel in cele %}            
+                    {% if cel.czesc_plan == 2 %}
+                        <tr style="font-size:12px">
+                        <td>{{ counter }}.</td>
+                        <td>{{ cel.cell_name|raw }}</td>
+                        <td>{{ cel.miernik|raw }}</td>
+                        <td>{{ cel.wartosc_miernika|raw }}</td>
+                        <td>{{ cel.dzialania|raw }}</td>
+                        {% if config.enabled == 1 %}<td><a href="index.php?site=creator&action=deleteCel&id={{ cel.del }}&szkId={{ szkId }}"><p class="text-danger text-center"><b>X</b></p></a></td>{% endif %}
+                        </tr>
+                        {% set counter = counter + 1 %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <br/>
+        
+<div class="well">
+        <b>CZĘŚĆ C:</b> Inne cele przyjęte w roku {{ config.rok|e }}<br/><br/>
+        {% if config.enabled == 1 %}
+        {% if czescc == 0 %}
+            Nie posiadasz jeszcze dodanych celów. Dodaj cel.<br/><br/>
+        {% endif %}
+        <a class="btn btn-primary" href="index.php?site=creator&action=addCelC&szkId={{ szkId }}">Dodaj cel do części C</a></p>
+        {% endif %}
+        <table class="table-condensed table-bordered">
+            <thead>
+                <tr>
+                    <td rowspan="2"><b>Lp.</b></td>
+                    <td rowspan="2"><b>Cel</b></td>
+                    <td colspan="2"><b>Mierniki określające stropień realizacji celu</b></td>
+                    <td rowspan="2"><b>Najażniejsze działania służące realiacji celu</b></td>
+                    {% if config.enabled == 1 %}<td rowspan="2"><b>Usuń</b></td>{% endif %}
+                </tr>
+                <tr>
+                    <td><b>Nazwa</b></td>
+                    <td><b>Planowana wartość do osiągnięcia na koniec roku, którego dotyczy plan.</b></td>
+                </tr>
+            </thead>
+            <tbody>
+                {% set counter = 1 %}
+                
+                {% for cel in cele %}            
+                    {% if cel.czesc == 3 %}
+                        <tr style="font-size:12px">
+                        <td>{{ counter }}.</td>
+                        <td>{{ cel.nazwa }}</td>
+                        <td>{{ cel.miernik|raw }}</td>
+                        <td>{{ cel.wartosc_miernika|raw }}</td>
+                        <td>{{ cel.dzialania|raw }}</td>
+                         {% if config.enabled == 1 %}<td><a href="index.php?site=creator&action=deleteCel&id={{ cel.del }}&szkId={{ szkId }}"><p class="text-danger text-center"><b>X</b></p></a></td>{% endif %}
+                        </tr>
+                        {% set counter = counter + 1 %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <br/>
+        <br/>
+        <br/>
+        {% if config.enabled == 1 %}
+            <div class="alert alert-danger text-center" role="alert">Pamiętaj że plan zostanie zablokowany przed dalszą edycja po wygenerowaniu.</div>
+            <a target="_blank" class="btn btn-danger center-block" href="index.php?site=creator&action=generate&szkId={{ szkId }}">GENERUJ PLAN</a>
+        {% else %}
+            <a target="_blank" class="btn btn-success center-block" href="index.php?site=creator&action=generate&szkId={{ szkId }}">Pobierz PLAN</a>
+        {% endif %}
+        <br/>
+        </p>
+        
+
+  <br/>
+{% endblock %}

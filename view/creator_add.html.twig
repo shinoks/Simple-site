@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Kreator celów </h1>
+
+<p class='text-center'><h3>Dodawanie celu do części A</h3></p>
+
+ {% if info is defined %}
+    {% if info == 'addCel-success' %}
+        <div class="alert alert-success text-center" role="alert"> Cel został dodany poprawnie </div>
+    {% endif %}
+  {% endif %}
+  
+<div class="row">
+    <div class="col-md-11">
+    
+    {% if cel == 0 %}
+    <form action="index.php?site=creator&action=addCel&szkId={{ szkId }}" method="POST" id="addCel">
+        {% for czesc in czesci %}
+            <div class="radio">
+              <label>
+                <input type="radio" name="cel" id="optionsRadios1" value="{{ czesc.cel_id|e }}">
+                {{ czesc.nazwa|e }}
+              </label>
+            </div>
+        {% endfor %}
+        
+    </form>
+    
+    <button type="submit" class="btn btn-primary" form="addCel" value="Wybierz">Wybierz</button>
+    {% else %}
+        {% for czesc in czesci %}
+            
+            {% if czesc.cel_id == cel %}
+                <div class="well">
+                <h4>Wybrany cel</h4>
+                  <label>
+                    {{ czesc.nazwa|e }}
+                  </label>
+                </div>
+                    <form class="form-inline" action="index.php?site=creator&action=addCel2&szkId={{ szkId }}" method="POST" id="addCel">
+                    <div class="well">
+                        <h4>Mierniki określające stopień realizacji celu</h4>
+                        <p class="text-info">Wybierz mierniki by dopisać je do swojego planu. Pamiętaj o uzupełnieniu ich o brakujące informacje.</p><br/>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Nazwa</label><br/><br/>
+                                {% for miernik in mierniki %}
+                                    <input type="checkbox" name='miernik_{{ miernik.id }}'>
+                                    <textarea class="form-control" style="width:90%" name='miernik_name_{{ miernik.id }}' rows="2">{{ miernik.nazwa }}{{ miernik.nazwa_dod }}</textarea>
+                                    <br/><br/>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label>Planowana wartość do osiągnięcia na koniec roku, którego dotyczy plan.</label><br/>
+                                {% for miernik in mierniki %}
+                                    <textarea class="form-control" style="width:90%" name='miernik_wartosc_{{ miernik.id }}' rows="2">{{ miernik.wartosc_dod }}{{ miernik.wartosc }}</textarea>
+                                    <br/><br/>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="well">
+                        <h4>Najważniejsze działania służące realizacji celu</h4>
+                        <div class="row">
+                            <div clas="col-md-1"></div>
+                            <div clas="col-md-10">
+                                <ol>
+                                {% for dzialanie in dzialania %}
+                                    <li>
+                                    <input type="checkbox" name='dzialanie_{{ dzialanie.id }}'> 
+                                    {{ dzialanie.dzialania }}
+                                    </li>
+                                {% endfor %}
+                                </ol>
+                            </div>
+                            <div clas="col-md-1"></div>
+                        </div>
+                    </div>
+                    <div class="well">
+                        <h4>Odniesienia do dokumentu o charakterze strategicznym</h4>
+                        <div class="row">
+                            <div clas="col-md-1"></div>
+                            <div clas="col-md-10">
+                                <ol>
+                                {% for odniesieni in odniesienie %}
+                                    <li>
+                                    <input type="checkbox" name='odniesieni[]' value='{{ odniesieni.id }}'> 
+                                    {% if odniesieni.link is not empty %}
+                                        {{ odniesieni.odniesienie }} <a rel="_blank" href="{{ odniesieni.link|e }}&szkId={{ szkId }}" class="btn btn-default"> 
+                                        {% if odniesieni.info == 1 %}
+                                        Zakup
+                                        {% elseif odniesieni.info == 2 %}
+                                        Pobierz
+                                        {% endif %}
+                                        </a>
+                                    {% else %}
+                                        {{ odniesieni.odniesienie }}
+                                    {% endif %}
+                                    </li>
+                                {% endfor %}
+                                </ol>
+                            </div>
+                            <div clas="col-md-1"></div>
+                        </div>
+                    </div>
+
+                        <input type="hidden" name="cel" value="{{ cel }}">
+                    </form>
+            {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary" form="addCel" value="Dodaj">Dodaj</button>
+        <br/>
+    {% endif %}
+    
+  </div>
+    </div>
+  <br/>
+  <br/>
+  <br/>
+{% endblock %}

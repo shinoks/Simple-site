@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Kreator celów </h1>
+
+<p class='text-center'><h3>Dodawanie celu do części C</h3></p>
+
+ {% if info is defined %}
+    {% if info == 'addCel-success' %}
+        <div class="alert alert-success text-center" role="alert"> Cel został poprawnie dodany. Powrót do kreatora <a  class="alert-link" href="index.php?site=creator&szkId={{ szkId }}">>></a> </div>
+    {% elseif info == 'addCel-error'%}    
+        <div class="alert alert-danger text-center" role="alert"> Cel nie został poprawnie dodany, spróbuj ponownie. Powrót do kreatora <a  class="alert-link" href="index.php?site=creator&szkId={{ szkId }}">>></a> </div>
+    {% endif %}
+  {% endif %}
+  
+<div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+    
+    {% if cel == 0 %}
+    <form action="index.php?site=creator&action=addCelC&szkId={{ szkId }}" method="POST" id="addCelC">
+        {% for czesc in czesci %}
+            <div class="radio">
+              <label>
+                <input type="radio" name="cel" id="optionsRadios1" value="{{ czesc.cel_id|e }}">
+                {{ czesc.nazwa|e }}
+              </label>
+            </div>
+        {% endfor %}
+        
+    </form>
+    
+    <button type="submit" class="btn btn-primary" form="addCelC" value="Wybierz">Wybierz</button>
+    {% else %}
+        {% for czesc in czesci %}
+            {% if czesc.cel_id == cel %}
+                <div class="radio">
+                <h4>Wybrany cel</h4>
+                  <label>
+                    {{ czesc.nazwa|e }}
+                  </label>
+                </div>
+                <br/>
+                <br/>
+                    <form class="form-inline" action="index.php?site=creator&action=addCelC&szkId={{ szkId }}" method="POST" id="addCelC">
+                        <h4>Mierniki określające stopień realizacji celu</h4>
+                        <p class="text-info">Wybierz mierniki by dopisać je do swojego planu. Pamiętaj o uzupełnieniu ich o brakujące informacje.</p><br/>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Nazwa</label><br/><br/>
+                                {% for miernik in mierniki %}
+                                    <input type="checkbox" name='miernik_{{ miernik.id }}'>
+                                    <input style="width:90%" class="form-control" type="text" name='miernik_name_{{ miernik.id }}' value='{{ miernik.nazwa }}{{ miernik.nazwa_dod }}'>
+                                    <br/><br/>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label>Planowana wartość do osiągnięcia na koniec roku, którego dotyczy plan.</label><br/>
+                                {% for miernik in mierniki %}
+                                    <input style="width:90%" class="form-control" type="text" name='miernik_wartosc_{{ miernik.id }}' value='{{ miernik.wartosc_dod }}{{ miernik.wartosc }}'>
+                                    <br/><br/>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <h4>Najważniejsze działania służące realizacji celu</h4>
+                        <div class="row">
+                            <div clas="col-md-1"></div>
+                            <div clas="col-md-10">
+                                <ol>
+                                {% for dzialanie in dzialania %}
+                                    <li>
+                                    <input type="checkbox" name='dzialanie[]' value='{{ dzialanie.id }}'> 
+                                    {{ dzialanie.dzialania }}
+                                    </li>
+                                {% endfor %}
+                                </ol>
+                            </div>
+                            <div clas="col-md-1"></div>
+                        </div>
+                        
+                        
+                        <input type="hidden" name="cel" value="{{ cel }}">
+                        <input type="hidden" name="save" value="save">
+                    </form>
+            {% endif %}
+        {% endfor %}
+        <br/>
+        <br/>
+        <button type="submit" class="btn btn-primary" form="addCelC" value="Dodaj">Dodaj</button>
+        <br/>
+    {% endif %}
+    
+  </div>
+  <div class="col-md-1"></div>
+    </div>
+  <br/>
+  <br/>
+  <br/>
+{% endblock %}

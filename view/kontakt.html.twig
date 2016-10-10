@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Kontakt </h1>
+<div class="well">
+    <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-5">
+            <p class="text-info"><h3 style='margin-bottom:0px;'><b>{{ oddzial.firma }}</b></h3></p>
+            <span style='font-size: 15px;'>
+                NIP: {{ oddzial.nip }}<br/><br/>
+                {{ oddzial.oddzial }}<br/>
+                {{ oddzial.adres }}<br/>
+                tel. {{ oddzial.telefon }}<br/>
+                e-mail: {{ oddzial.email }}
+            </span>
+        </div>
+        <div class="col-md-6">
+            {% if oddzial.id == 1%}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2574.6377913138685!2d19.012535!3d49.811676899999995!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4716a03520be9361%3A0x3ffe0e224c493743!2sSzarotki+10%2C+43-300+Bielsko-Bia%C5%82a!5e0!3m2!1spl!2spl!4v1427370434436" width="490" height="450" frameborder="0" style="border:0"></iframe>
+            {% elseif oddzial.id ==2 %}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10190.406433170308!2d18.65252133257758!3d50.31802634345022!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711306ef8422f47%3A0x69c24c868f9b2765!2sPortowa+16%2C+Gliwice!5e0!3m2!1spl!2spl!4v1424335638262" width="490" height="450" frameborder="0" style="border:0"></iframe>
+            {% elseif oddzial.id ==3 %}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2567.2069650329086!2d18.608152!3d49.95122!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4711533c72239ded%3A0xe224e109c20f71c2!2sHarcerska+2A%2C+44-335+Jastrz%C4%99bie-Zdr%C3%B3j!5e0!3m2!1spl!2spl!4v1424335689463" width="490" height="450" frameborder="0" style="border:0"></iframe>
+            {% elseif oddzial.id ==4 %}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d5114.953795445988!2d18.538582005749756!3d50.133509781236896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471148ecc9e59af7%3A0xf339a2580ba55d2e!2sBudynek+BH1%2C+Podmiejska+95%2C+44-200+Rybnik!5e0!3m2!1spl!2spl!4v1424335797688" width="490" height="450" frameborder="0" style="border:0"></iframe>
+            {% elseif oddzial.id ==5 %}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2559.0714279778263!2d19.018818999999997!3d50.10367!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4716b80c7c529d2f%3A0x8945baab4bc44313!2sMetalowa+3%2C+Tychy!5e0!3m2!1spl!2spl!4v1424335963053" width="490" height="450" frameborder="0" style="border:0"></iframe>
+            {% elseif oddzial.id ==6 %}
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d2562.1262995991606!2d18.696419!3d50.0464653!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47114cd2a0adbadf%3A0x550ed1a936eb287!2sStanis%C5%82awa+Szeptyckiego+12%2C+%C5%BBory!5e0!3m2!1spl!2spl!4v1424336283891" width="490" height="450" frameborder="0" style="border:0"></iframe>
+            {% else %}
+                maps out
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

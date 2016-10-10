@@ -1,0 +1,61 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'deleteUserMenu-success'%}
+            <div class="alert alert-success text-center" role="alert">Menu zostało usunięte</div>
+        {% elseif info == 'deleteUserMenu-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Menu nie zostało usunięte</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="pull-right"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=add">Dodaj</a></div>
+        <br/>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td class="buton"><b>Lp.</b></td>
+                <td><b>Nazwa</b></td>
+                <td class="buton"><b>Id pozycji.</b></td>
+                <td class="buton"><b>Edytuj</b></td>
+                <td class="buton"><b>Usuń</b></td>
+            </tr>
+        </thead>
+        {% set a = 1 %}
+            {% for menuItem in userMenu %}
+                <tr>
+                   {% if menuItem.parent == 1 %}
+                    <td class="buton">{{ a }}</td>
+                    <td><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ menuItem.menuName|e }} <span class="caret"></span></a></td>
+                    <td class="buton">{{ menuItem.menuId }}</td>
+                    <td class="buton"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=edit&id={{menuItem.menuId}}">Edytuj</a></td>
+                    <td class="buton"><a class="btn btn-danger" href="index.php?site=admin&action=menu&act=delete&id={{menuItem.menuId}}">Usuń</a></td>
+                        {% for childItems in userMenuChild %}
+                            {% if childItems.parentId == menuItem.menuId %}
+                                </tr><tr>
+                                <td class="buton">---</td>
+                                <td class="childItem"><a href="{{ childItems.menuHref|e }}">{{ childItems.menuName|e }}</a></td>
+                            <td class="buton">{{ childItems.menuId }}</td>
+                                <td class="buton"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=edit&id={{menuItem.menuId}}">Edytuj</a></td>
+                                <td class="buton"><a class="btn btn-danger" href="index.php?site=admin&action=menu&act=delete&id={{menuItem.menuId}}">Usuń</a></td>
+                            {% endif %}
+                        {% endfor %}
+                        {% set a=a+1 %}
+                    {% elseif menuItem.parentId == 0 %}
+                        <td class="buton">{{ a }}</td>
+                        <td><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ menuItem.menuName|e }} </a></td>
+                        <td class="buton">{{ menuItem.menuId }}</td>
+                        <td class="buton"><a  class="btn btn-success" href="index.php?site=admin&action=menu&act=edit&id={{menuItem.menuId}}">Edytuj</a></td>
+                        <td class="buton"><a class="btn btn-danger" href="index.php?site=admin&action=menu&act=delete&id={{menuItem.menuId}}">Usuń</a></td>
+                        {% set a=a+1 %}
+                   {% endif %}
+                   
+               </tr>
+            {% endfor %}
+        
+    </table>
+{% endblock %}

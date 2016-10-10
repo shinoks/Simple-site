@@ -1,0 +1,92 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+    {% if info is defined %}
+        {% if info == 'menu-update-success'%}
+            <div class="alert alert-success text-center" role="alert">Menu zostało zmienione</div>
+        {% elseif info == 'menu-update-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Menu nie zostało zmienione</div>
+        {% endif %}
+    {% endif %}
+<form method="POST" action="index.php?site=admin&action=menu&act=edit&id={{ selectedMenu.menuId }}">
+    <div class="row">
+        <div class="pull-right">
+            <button type="submit" class="btn btn-primary">Zapisz</button> 
+            <a href="index.php?site=admin&action=menu" class="btn btn-danger">Anuluj</a><br/>
+        </div>
+        <br/>
+    </div>
+        
+        <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="menuName">Nazwa pozycji:</label>
+                        <input name="menuName" type="text" class="form-control" id="menuName" placeholder="Wpisz tytuł artykułu" value="{{ selectedMenu.menuName }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Wybierz artykuł:</label>
+                        <select name="articleId">
+                            {% if article.articleId == 0 or article.articleId == NULL %}
+                                <option value="0" selected>Nie posiada</option>
+                            {% else %}
+                                <option value="0">Nie posiada</option>
+                            {% endif %}
+                            {% for article in articles%}
+                                {% if article.articleId == selectedMenu.articleId %}
+                                    <option value="{{ article.articleId }}" selected>{{ article.articleName }}</option>
+                                {% else %}
+                                    <option value="{{ article.articleId }}">{{ article.articleName }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            {% if selectedMenu.parent == 1%}
+                                <input type="radio" name="parent" value="1" checked="checked"> Posiada pod kategorie ?<br>
+                                <input type="radio" name="parent" value="0"> Nie posiada pod kategorii ?
+                            {% else %}
+                                <input type="radio" name="parent" value="1" > Posiada pod kategorie ?<br>
+                                <input type="radio" name="parent" value="0" checked="checked"> Nie posiada pod kategorii ?
+                            {% endif %}
+                        </label>
+                      </div>
+                    <div class="form-group">
+                        <label for="text">Wybierz kategorię główną:</label>
+                        <select name="parentId">
+                        {% if selectedMenu.parentId == 0 %}
+                            <option selected value="0">Nie posiada</option>
+                        {% else %}
+                            <option value="0">Nie posiada</option>
+                        {% endif %}
+                            {% for men in menuParents %}
+                                {% if men.menuId == selectedMenu.parentId %}
+                                    <option selected value="{{ men.menuId }}">{{ men.menuName }}</option>
+                                {% else %}
+                                    <option value="{{ men.menuId }}">{{ men.menuName }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                      <div class="checkbox">
+                        <label>
+                            {% if selectedMenu.published == 1%}
+                                <input type="radio" name="published" value="1" checked="checked"> Włączony<br>
+                                <input type="radio" name="published" value="0"> Wyłączony
+                            {% else %}
+                                <input type="radio" name="published" value="1"> Włączony<br>
+                                <input type="radio" name="published" value="0" checked="checked"> Wyłączony
+                            {% endif %}
+                        </label>
+                      </div>
+                </div>
+                
+                <div class="col-md-4">
+                    
+                    
+                </div>
+                <input type="hidden" value="{{ selectedMenu.menuId }}" name="menuId"/>
+                <input type="hidden" value="save" name="operation"/>
+            </div>
+            </form>
+{% endblock %}

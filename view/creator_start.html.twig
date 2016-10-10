@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Kreator celów </h1>
+{% if info is defined %}
+    {% if info == 'creatorReset-success' %}
+        <div class="alert alert-success text-center" role="alert"> Kreator został wyczyszczony </div>
+    {% elseif info == 'creatorReset-error' %}
+        <div class="alert alert-danger text-center" role="alert"> Kreator nie został wyczyszczony. Spróbuj ponownie </div>
+    {% endif %}
+  {% endif %}
+
+
+<span class="text-center">
+<div class="row">
+    <form action="index.php?site=creator&action=addYear&szkId={{ szkId }}" method="POST" id="addYear">
+        <div class="form-group">
+            <label for="exampleInputName2">Podaj rok którego będzie dotyczy dokument:  </label>
+            <input type="text" class="form-control" name="rok" id="rok" placeholder="np. 2016">
+        </div>
+    </form>
+    
+    <button type="submit" class="btn btn-primary" form="addYear" value="Zapisz">Zapisz</button>
+</span>
+  
+  <br/>
+  <br/>
+  <br/>
+{% endblock %}

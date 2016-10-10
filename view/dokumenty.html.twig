@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<h1> Dokumentacja </h1>
+<div class="well">
+<table class="table table-bordered table-hover">
+<thead><tr><td><b>Lp.</b></td><td><b>Nazwa</b></td><td><b>Pobierz .pdf</b></td><td><b>Pobierz .doc</b></td></tr></thead>
+<tr>
+<td>1.</td>
+<td>Oświadczenie o stanie kontroli zarządczej [PRZYKŁAD]</td>
+<td><a target="_blank" class="btn btn-default" href="index.php?site=pliki&plik=oswiadczenie_o_stanie_kontroli_zarzadczej_PRZYKLAD.pdf&szkId={{ szkId }}">Pobierz pdf</a></td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=oswiadczenie_o_stanie_kontroli_zarzadczej_PRZYKLAD.doc&szkId={{ szkId }}">Pobierz doc</a></td>
+</tr>
+<tr>
+<td>2.</td>
+<td>Plan działalności szkoły [PRZYKŁAD]</td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=plan_dzialanosci_szkoly_PRZYKLAD.pdf&szkId={{ szkId }}">Pobierz pdf</a></td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=plan_dzialanosci_szkoly_PRZYKLAD.doc&szkId={{ szkId }}">Pobierz doc</a></td>
+</tr>
+<tr>
+<td>3.</td>
+<td>Regulamin kontroli zarządczej [PRZYKŁAD]</td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=regulamin_kontroli_zarzadczej_PRZYKLAD.pdf&szkId={{ szkId }}">Pobierz pdf</a></td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=regulamin_kontroli_zarzadczej_PRZYKLAD.doc&szkId={{ szkId }}">Pobierz doc</a></td>
+</tr>
+<tr>
+<td>4.</td>
+<td>Sprawozdanie z wykonania planu działalność [PRZYKŁAD]</td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=sprawozdanie_z_wykonania_planu_dzialalnosci_PRZYKLAD.pdf&szkId={{ szkId }}">Pobierz pdf</a></td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=sprawozdanie_z_wykonania_planu_dzialalnosci_PRZYKLAD.doc&szkId={{ szkId }}">Pobierz doc</a></td>
+</tr>
+<tr>
+<td>5.</td>
+<td>Zarządzenie wprowadzające [PRZYKŁAD]</td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=zarzadzenie_wprowadzajace_PRZYKLAD.pdf&szkId={{ szkId }}">Pobierz pdf</a></td>
+<td><a target="_blank"  class="btn btn-default" href="index.php?site=pliki&plik=zarzadzenie_wprowadzajace_PRZYKLAD.doc&szkId={{ szkId }}">Pobierz doc</a></td>
+</tr>
+</table>
+</div>
+{% endblock %}

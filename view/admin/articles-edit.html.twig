@@ -1,0 +1,62 @@
+{% extends 'admin/base.html.twig' %}
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'article-update'%}
+            <div class="alert alert-success text-center" role="alert">Artykuł został zapisany</div>
+        {% elseif info == 'article-update-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Artykuł nie został zapisany</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+{% block head%}
+    <script src="//cdn.ckeditor.com/4.5.11/standard/ckeditor.js"></script>
+{% endblock %}
+        {% block body %}
+        {% if article.articleId is defined %}
+            <form method="POST" action="index.php?site=admin&action=articles&act=edit&id={{ article.articleId }}">
+        {% else %}
+            <form method="POST" action="index.php?site=admin&action=articles&act=add">
+        {% endif %}
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label for="Title">Tytuł:</label>
+                        <input name="articleName" type="text" class="form-control" id="Title" placeholder="Wpisz tytuł artykułu" value="{{ article.articleName|e }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Treść:</label>
+                        <textarea style="height:600px" name="articleText" class="form-control" id="articleText1">{{ article.articleText }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">Zapisz</button> 
+                    <a href="index.php?site=admin&action=articles" class="btn btn-danger">Anuluj</a><br/>
+                    <div class="form-group">
+                        <label for="text">Autor:</label>
+                        <input name="articleAuthor" type="author" class="form-control" id="Author" placeholder="Autor artykułu" value="{{ article.articleAuthor|e }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Data utworzenia:</label>
+                        <input name="articleDate" type="date" class="form-control" id="date" value="{{ article.articleDate }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Kategoria:</label>
+                        <input name="articleCategory" type="text" class="form-control" id="text" value="{{ article.articleCategory }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Włączony:</label>
+                        <input name="articlePulished" type="text" class="form-control" id="text" value="{{ article.articlePublished }}">
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" value="{{ article.articleId }}" name="articleId"/>
+            <input type="hidden" value="save" name="operation"/>
+            </form>
+             <script>
+                CKEDITOR.replace( 'articleText', {
+					height: 500
+				} );
+            </script>
+        {% endblock %}
+  

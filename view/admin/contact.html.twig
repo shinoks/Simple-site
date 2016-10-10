@@ -1,0 +1,21 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'configuration-save'%}
+            <div class="alert alert-success text-center" role="alert">Konfiguracja została zapisana</div>
+        {% elseif info == 'configuration-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Konfiguracja nie została zapisana</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+        {% block body %}
+        <div class="row">
+            <p class="text-center">Strona stworzona przez Paweł Suchodolski<br/>
+            tel. 784 00 26 24<br/>
+            shinoks@o2.pl<br/>
+            </p>
+            
+        </div>
+        {% endblock %}
+  
