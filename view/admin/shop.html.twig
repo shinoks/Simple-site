@@ -1,0 +1,29 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'deleteUserMenu-success'%}
+            <div class="alert alert-success text-center" role="alert">Menu zostało usunięte</div>
+        {% elseif info == 'deleteUserMenu-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Menu nie zostało usunięte</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <h1>Sklep</h1>
+    <div class="row">
+        <div class="pull-right"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=add">Dodaj</a></div>
+        <br/>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-2">
+            
+        </div>
+        <div class="col-md-8">
+            
+        </div>
+    </div>
+    
+{% endblock %}

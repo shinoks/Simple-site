@@ -46,6 +46,10 @@ class adminController
                     echo $this->getAdminArticles();
                 break;
                 
+                case 'shop':
+                    echo $this->getAdminShop();
+                break;
+                
                 case 'contact':
                     echo $this->getAdminContact();
                 break;
@@ -436,6 +440,19 @@ class adminController
                 )
             );
         }
+   }
+   
+   public function getAdminShop()
+   {
+       
+       return $this->twig->render("admin/shop.html.twig", 
+                    array(
+                        'menu'=>$this->adminMenu,
+                        'menuChild'=>$this->adminMenuChild,
+                        'config'=>$this->config,
+                    )
+                );
+       
    }
    
    
