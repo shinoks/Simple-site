@@ -6,6 +6,7 @@ require_once("../config/DbConn.php");
     use Login\Login;
     use Menu\Menu;
     use Articles\Articles;
+    use Shop\Shop;
 
 
     
@@ -47,6 +48,8 @@ class adminController
                 break;
                 
                 case 'shop':
+                    require_once("../config/DbConnGf.php");
+                    $this->dbGf = dbConnGf::getConnection();
                     echo $this->getAdminShop();
                 break;
                 
@@ -443,16 +446,40 @@ class adminController
    }
    
    public function getAdminShop()
-   {
-       
-       return $this->twig->render("admin/shop.html.twig", 
-                    array(
-                        'menu'=>$this->adminMenu,
-                        'menuChild'=>$this->adminMenuChild,
-                        'config'=>$this->config,
-                    )
-                );
-       
+   {        
+        switch($_GET['act']){
+            case 'orderDetail':
+                $order = shop::getOrderById($_GET['orderId']);
+                
+                return $this->twig->render("admin/shop-orderDetail.html.twig", 
+                            array(
+                                'menu'=>$this->adminMenu,
+                                'menuChild'=>$this->adminMenuChild,
+                                'config'=>$this->config,
+                                'order'=>$order,
+                            )
+                        );
+            break;
+            
+            default:
+                $start = (int) 0;
+                $end = (int) 100;
+                if(!isset($_GET['page'])){
+                    $activePage = 1;
+                }else{
+                    $activePage = $_GET['page'];
+                }
+                $pagin = shop::getPagination($activePage);
+
+                return $this->twig->render("admin/shop.html.twig", 
+                            array(
+                                'menu'=>$this->adminMenu,
+                                'menuChild'=>$this->adminMenuChild,
+                                'config'=>$this->config,
+                                'pagin'=>$pagin,
+                            )
+                        );
+        }
    }
    
    

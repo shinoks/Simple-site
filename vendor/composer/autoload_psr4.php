@@ -4,12 +4,14 @@
 
 $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
+$controllerClass = "controller/class";
 
 return array(
-    'Cart\\' => array($vendorDir . '/cart'),
-    'Login\\' => array($vendorDir . '/login'),
-    'Menu\\' => array($vendorDir . '/menu'),
-    'Articles\\' => array($vendorDir . '/articles'),
     'Config\\' => array('config'),
     'DbConn\\' => array('config'),
+    'Shop\\' => array($controllerClass.'/shop'),
+    'Cart\\' => array($controllerClass.'/cart'),
+    'Login\\' => array($controllerClass.'/login'),
+    'Menu\\' => array($controllerClass.'/menu'),
+    'Articles\\' => array($controllerClass.'/articles'),
 );

@@ -19,11 +19,76 @@
     
     <div class="row">
         <div class="col-md-2">
-            
+            {% include 'admin/shop-menu.html.twig' %}
         </div>
         <div class="col-md-8">
-            
+            <table class="table table-bordered">
+            <tr>
+                <td><strong>Lp.</strong></td>
+                <td><strong>Id zam.</strong></td>
+                <td><strong>Data zam.</strong></td>
+                <td><strong>Nazwa - Firma</strong></td>
+                <td><strong>NIP</strong></td>
+                <td><strong>Konsultant</strong></td>
+                <td><strong>Kwota Netto/Brutto</strong></td>
+                <td><strong>Status</strong></td>
+                <td><strong>Usuń</strong></td>
+            </tr>
+            {% set a = 1 %}
+            {% for order in pagin.orders %}
+                <tr>
+                    <td>{{ a }}</td>
+                    <td><a href="index.php?site=admin&action=shop&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
+                    <td>{{ order.cdate|date("d-m-Y",false) }}</a></td>
+                    <td><span class="font11">{{ order.name }} {{ order.company[0:100] }} </span></td>
+                    <td>{{ order.extra_field_1 }}</td>
+                    <td><span class="font11">{{ order.extra_field_2 }}</span></td>
+                    <td>{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
+                    <td>{{ order.order_status_name }}</td>
+                    <td>Usuń</td>
+                </tr>
+                {% set a = a+1 %}
+            {% endfor %}
+            </table>
         </div>
     </div>
+    <nav aria-label="...">
+        <ul class="pagination">
+            {% if activePage < 2%}
+                <li class="disabled">
+                    <span>
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
+                </li>
+            {% else %}
+            <li>
+                <a href="index.php?site=admin&action=shop&page={{ activePage-1 }}"><span aria-hidden="true">&laquo;</span></a>
+            </li>
+            {% endif %}
+            {% for a in 1..pagin.pages  %}
+                {% if activePage == a%}
+                    <li class="active">
+                        <span>{{ a }} <span class="sr-only">(current)</span></span>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="index.php?site=admin&action=shop&page={{ a }}"><span>{{ a }}</span></a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+                
+            {% if activePage == pagin.pages %}
+                <li class="disabled">
+                    <span>
+                        <span aria-hidden="true">&raquo;</span>
+                        </span>
+                    </li>
+            {% else %}
+                <li>
+                    <a href="index.php?site=admin&action=shop&page={{ activePage+1 }}"><span aria-hidden="true">&raquo;</span></a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
     
 {% endblock %}
