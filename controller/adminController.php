@@ -447,9 +447,48 @@ class adminController
    
    public function getAdminShop()
    {        
+        $info = '';
+        
         switch($_GET['act']){
             case 'orderDetail':
                 $order = shop::getOrderById($_GET['orderId']);
+                $orderProducts = shop::getOrderProducts($_GET['orderId']);
+                $products = shop::getAllProducts();
+                $users = shop::getAllUsers();
+                $userAddress = shop::getUserAddress($order['user_id']);
+                
+                if(isset($_GET['perf'])){
+                    
+                    switch($_GET['perf']){
+                        case 'delete':
+                            if(shop::deleteProductFromOrder($_GET['orderId'],$_GET['orderItemId'])){
+                                $info = 'product-delete-success';
+                            } else {
+                                $info = 'product-delete-fail';
+                            }
+                        break;
+                        case 'add':
+                            if(shop::addProductToOrder($_GET['orderId'],$_POST['itemId'],$order['user_info_id'])){
+                                $info = 'product-add-success';
+                            } else {
+                                $info = 'product-add-fail';
+                                
+                            }
+                        break;
+                        case 'updateItem':
+                            if(shop::updateOrderItem($_GET['orderId'], $_POST['itemId'], $_POST['productQuantity'], $_POST['productPrice'], $_POST['productFinalPrice'], time(), $_POST['productAttribute'])){
+                                $info = 'product-updateItem-success';
+                            } else {
+                                $info = 'product-updateItem-fail';
+                            }
+                            
+                        break;
+                        
+                    }
+                    $orderProducts = shop::getOrderProducts($_GET['orderId']);
+                    $order = shop::getOrderById($_GET['orderId']);
+                }
+                echo $info;
                 
                 return $this->twig->render("admin/shop-orderDetail.html.twig", 
                             array(
@@ -457,6 +496,11 @@ class adminController
                                 'menuChild'=>$this->adminMenuChild,
                                 'config'=>$this->config,
                                 'order'=>$order,
+                                'info'=>$info,
+                                'orderProducts'=>$orderProducts,
+                                'products'=>$products,
+                                'users'=>$users,
+                                'userAddress'=>$userAddress,
                             )
                         );
             break;

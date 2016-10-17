@@ -38,7 +38,7 @@
             {% for order in pagin.orders %}
                 <tr>
                     <td>{{ a }}</td>
-                    <td><a href="index.php?site=admin&action=shop&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
+                    <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
                     <td>{{ order.cdate|date("d-m-Y",false) }}</a></td>
                     <td><span class="font11">{{ order.name }} {{ order.company[0:100] }} </span></td>
                     <td>{{ order.extra_field_1 }}</td>

@@ -2,27 +2,255 @@
 
 {% block info %}
     {% if info is defined %}
-        {% if info == 'deleteUserMenu-success'%}
-            <div class="alert alert-success text-center" role="alert">Menu zostało usunięte</div>
-        {% elseif info == 'deleteUserMenu-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Menu nie zostało usunięte</div>
+        {% if info == 'product-delete-success'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
+        {% elseif info == 'product-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Produkt nie został usunięty</div>
+        {% elseif info == 'product-add-success'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został dodany</div>
+        {% elseif info == 'product-add-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Produkt nie został doddany</div>
+        {% elseif info == 'product-updateItem-success'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
+        {% elseif info == 'product-updateItem-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Produkt nie został zaktualizowany</div>
         {% endif %}
     {% endif %}
 {% endblock %}
 
 {% block body %}
-    <h1>Sklep</h1>
-    <div class="row">
-        <div class="pull-right"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=add">Dodaj</a></div>
-        <br/>
-    </div>
     
     <div class="row">
         <div class="col-md-2">
             {% include 'admin/shop-menu.html.twig' %}
         </div>
         <div class="col-md-8">
-           
+            <div class="well">
+                Zamówienie nr. {{ order.order_id }}<br/>
+                Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
+                Stan zamówienia: {{ order.status_name }}<br/>
+                <br/>
+                <br/>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Rachunek</strong><br/>  
+                        <table class="table table-bordered ">
+                        <tr>
+                            <td>E-mail:</td>
+                            <td>{{ order.email }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nazwa firmy:</td>
+                            <td>{{ order.company }}</td>
+                        </tr>
+                        <tr>
+                            <td>Imię i Nazwisko:</td>
+                            <td>{{ order.first_name }} {{ order.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Ulica:</td>
+                            <td>{{ order.address_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Miasto:</td>
+                            <td>{{ order.city }}</td>
+                        </tr>
+                        <tr>
+                            <td>Kod pocztowy:</td>
+                            <td>{{ order.zip }}</td>
+                        </tr>
+                        <tr>
+                            <td>Telefon:</td>
+                            <td>{{ order.phone_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Telefon kom.:</td>
+                            <td>{{ order.phone_2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Numer NIP:</td>
+                            <td>{{ order.extra_field_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Konsultant:</td>
+                            <td>{{ order.extra_field_2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Zmień użytkownika:</td>
+                            <td>
+                                <form class="form-horizontal">
+                                    <select class="form-control">
+                                        <option>Wybierz użytkownika</option>
+                                        {% for user in users %}
+                                            {% if user.id == order.user_id %}
+                                                <option selected value="{{ user.id }}">{{ user.username }} - {{ user.name }}</option>
+                                            {% else %}
+                                                <option value="{{ user.id }}">{{ user.username }} - {{ user.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <input type="submit" class="btn btn-default" value="Zmień">
+                                </form>
+                            </td>
+                        </tr>
+                         </table>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Wysyłka do</strong>
+                        <table class="table table-bordered">
+                        <tr>
+                            <td>Alias:</td>
+                            <td>{{ order.address_type_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Nazwa firmy:</td>
+                            <td>{{ order.company }}</td>
+                        </tr>
+                        <tr>
+                            <td>Imię i Nazwisko:</td>
+                            <td>{{ order.first_name }} {{ order.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Ulica:</td>
+                            <td>{{ order.address_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Miasto:</td>
+                            <td>{{ order.city }}</td>
+                        </tr>
+                        <tr>
+                            <td>Kod pocztowy:</td>
+                            <td>{{ order.zip }}</td>
+                        </tr>
+                        <tr>
+                            <td>Telefon:</td>
+                            <td>{{ order.phone_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Telefon kom.:</td>
+                            <td>{{ order.phone_2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Numer NIP:</td>
+                            <td>{{ order.extra_field_1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Konsultant:</td>
+                            <td>{{ order.extra_field_2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Zmień adres wysyłki: </td>
+                            <td>
+                                <form class="form-horizontal">
+                                    <select class="form-control">
+                                        {% for userAddres in userAddress %}
+                                            {% if userAddres.user_info_id == order.user_info_id %}
+                                                <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
+                                            {% else %}
+                                                <option value="{{ userAddres.user_info_id }}"> {{ userAddres.address_type_name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <input type="submit" class="btn btn-default" value="Zmień">
+                                </form>
+                            </td>
+                        </tr>
+                         </table>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="well">
+                    
+                    
+                    <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <td><strong>Usuń</strong></td>
+                            <td><strong>Ilość</strong></td>
+                            <td><strong>Nazwa</strong></td>
+                            <td><strong>Cena netto</strong></td>
+                            <td><strong>Cena brutto</strong></td>
+                            <td><strong>Suma</strong></td>
+                            <td><strong>Zapisz</strong></td>
+                        </tr>
+                    </thead>
+                    {% for item in orderProducts %}
+                        <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateItem" method="POST">
+                        <input type="hidden" name="productAttribute" value="" />
+                        <tr>
+                            <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=delete&orderItemId={{ item.order_item_id }}" class="btn btn-danger">Usuń</a></td>
+                            <td><input type="hidden" name="itemId" value="{{ item.order_item_id }}"/>
+                            <input class="form-control" name="productQuantity" value="{{ item.product_quantity }}"/></td>
+                            <td>{{ item.product_name }}</td>
+                            <td><input class="form-control" name="productPrice" value="{{ item.product_item_price|round(2,"common") }}"/></td>
+                            <td><input class="form-control" name="productFinalPrice" value="{{ item.product_final_price|round(2,"common") }}"/></td>
+                            <td>{{ item.product_quantity * item.product_final_price|round(2,"common") }}</td>
+                            <td><input type="submit" value="Zapisz" class="btn btn-success"/></td>
+                        </tr>
+                        </form>
+                    {% endfor %}
+                        <tr>
+                            <td colspan="4">
+                            </td>
+                            <td>
+                                Suma netto:
+                            </td>
+                            <td>
+                                {{ order.order_subtotal|round(2,"common") }}zł
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4">
+                            </td>
+                        
+                            <td>
+                                Suma:
+                            </td>
+                            <td>
+                                {{ order.order_total|round(2,"common") }}zł
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </div>
+                <div class="well">
+                    <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=add" method="POST">
+                    <div class="col-md-2">
+                        <strong>Dodaj produkt</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <select name="itemId" class="form-control">
+                            <option>Wybierz produkt</option>
+                            {% for product in products %}
+                                <option value="{{ product.product_id }}">{{ product.product_name }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                    </div>
+                    <div class="col-md-2">
+                        <input type="submit" class="btn btn-primary" value="Dodaj">
+                    </div>
+                    </form>
+                    <br/>
+                </div>
+                <div class="well">
+                    <strong>Informacje o wysyłce</strong><br/>
+                    <div class="col-md-6">
+                        Metoda płatności: 
+                    </div>
+                    <div class="col-md-6">
+                        Rodzaj wysyłki:
+                        
+                    </div>
+                    <br/>
+                </div>
+            </div>
+            <strong>Notatka klienta</strong><br/>
+            <textarea class="form-control" rows="5">{{ order.customer_note }}</textarea>
+            <input type="submit" class="btn btn-default" value="Zapisz"/>
         </div>
     </div>
     

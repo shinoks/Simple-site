@@ -58,10 +58,209 @@ class Shop {
             
             ");
             
-        $stmt->bindParam('orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
         $stmt->execute();
         
         return $stmt->fetch();
+    }
+    
+    public function getOrderProducts($orderId)
+    {
+        $orderId = (int) $orderId;
+        
+        $stmt = $this->dbGf->prepare("SELECT *
+            FROM `jos_vm_order_item`
+            LEFT JOIN jos_vm_product
+            USING ( product_id )
+            LEFT JOIN jos_vm_tax_rate ON jos_vm_tax_rate.tax_rate_id = jos_vm_product.product_tax_id 
+            WHERE order_id = :orderId
+            ");
+        $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getOrderProduct($orderId, $orderItemId)
+    {
+        $orderId = (int) $orderId;
+        $orderItemId = (int) $orderItemId;
+        
+        $stmt = $this->dbGf->prepare("SELECT *
+            FROM `jos_vm_order_item`
+            LEFT JOIN jos_vm_product
+            USING ( product_id )
+            LEFT JOIN jos_vm_tax_rate ON jos_vm_tax_rate.tax_rate_id = jos_vm_product.product_tax_id 
+            WHERE order_id = :orderId and order_item_id = :orderItemId
+            ");
+        $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->bindParam(':orderItemId',$orderItemId,$this->dbGf->PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
+    public function getOrderPrice($orderId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT product_item_price AS price, product_final_price AS final, product_quantity as quantity
+        FROM `jos_vm_order_item`
+        LEFT JOIN jos_vm_product
+        USING ( product_id )
+        WHERE order_id =:orderId");
+        $stmt->bindParam(':orderId', $orderId);
+        $stmt->execute();
+        //array(price,final)
+        $prices = $stmt->fetchAll();
+        $sumaNetto = 0;
+        $sumaBrutto = 0;
+        
+        foreach($prices as $price){
+            $sumaNetto = $sumaNetto+$price['price']*$price['quantity'];
+            $sumaBrutto = $sumaBrutto+$price['final']*$price['quantity'];
+            
+        }
+        $sum = array('price'=>$sumaNetto,'final'=>$sumaBrutto);
+        
+        return $sum;
+    }
+    
+    public function getAllProducts()
+    {
+        $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_product");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getProductById($productId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_product LEFT JOIN jos_vm_product_price USING(product_id) LEFT JOIN jos_vm_tax_rate ON jos_vm_product.product_tax_id = jos_vm_tax_rate.tax_rate_id WHERE product_id = :productId");
+        $stmt->bindParam(':productId', $productId);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
+    public function getAllUsers()
+    {
+        $stmt = $this->dbGf->prepare("SELECT * FROM jos_users");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getUserAddress($userId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT *
+        FROM jos_vm_user_info
+        WHERE user_id =:userId");
+        $stmt->bindParam(':userId', $userId);
+        $stmt->execute();
+    
+        return $stmt->fetchAll();
+    }
+    
+    public function deleteProductFromOrder($orderId, $orderItemId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM `jos_vm_order_item` WHERE order_item_id = :orderItemId and order_id = :orderId ");
+        $stmt->bindParam('orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->bindParam('orderItemId',$orderItemId,$this->dbGf->PARAM_INT);
+        $stmt->execute();
+        
+        if($stmt->rowCount() > 0){
+            (shop::updateOrderPrice($orderId))?$in=true:$in=false;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function addProductToOrder($orderId, $orderItemId, $userInfoId, $quantity = 1, $productAttribute = '')
+    {
+        $time = time();
+        $product = shop::getProductById($orderItemId);
+
+        $finalPrice = $product['product_price']+$product['product_price']*$product['tax_rate'];
+        $orderStatus = 'P';
+        $currency = 'PLN';
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_order_item`
+        (`order_id`, `user_info_id`, `vendor_id`, `product_id`, `order_item_sku`, `order_item_name`, `product_quantity`, `product_item_price`, `product_final_price`, `order_item_currency`, `order_status`, `cdate`, `mdate`, `product_attribute`) 
+        VALUES (
+        :orderId,:userInfoId,1,:orderItemId,:orderItemSku,:orderItemName,:productQuantity,:productItemPrice,:productFinalPrice,:orderItemCurrency,:orderStatus,:cdate,:mdate, :productAttribute)
+        ");
+        $stmt->bindParam(':orderId',$orderId);
+        $stmt->bindParam(':orderItemId',$orderItemId);
+        $stmt->bindParam(':userInfoId',$userInfoId);
+        $stmt->bindParam(':orderItemSku',$product['product_sku']);
+        $stmt->bindParam(':orderItemName',$product['product_name']);
+        $stmt->bindParam(':productQuantity',$quantity);
+        $stmt->bindParam(':productItemPrice',$product['product_price']);
+        $stmt->bindParam(':productFinalPrice',$finalPrice);
+        $stmt->bindParam(':orderItemCurrency',$currency);
+        $stmt->bindParam(':orderStatus',$orderStatus);
+        $stmt->bindParam(':cdate',$time);
+        $stmt->bindParam(':mdate',$time);
+        $stmt->bindParam(':productAttribute',$productAttribute);
+
+        if($stmt->execute()){
+            (shop::updateOrderPrice($orderId))?$in=true:$in=false;
+        }
+        
+        return $in;
+        
+    }
+    
+    private function updateOrderPrice($orderId)
+    {
+        $prices = shop::getOrderPrice($orderId);
+        
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `order_total`=:final,`order_subtotal`=:price WHERE order_id = :orderId");
+        $stmt->bindParam(':orderId',$orderId);
+        $stmt->bindParam(':price',$prices['price']);
+        $stmt->bindParam(':final',$prices['final']);
+         
+        return $stmt->execute();
+    }
+    
+    public function updateOrderItem($orderId, $orderItemId, $quantity, $price, $finalPrice, $time, $productAttribute)
+    {
+        
+        $product = shop::getOrderProduct($orderId, $orderItemId);
+        ($quantity==$product['product_quantity'])?$quantity=$product['product_quantity']:'';
+        
+        if(round($price,2)!=round($product['product_item_price'],2)){
+            $finalPrice = $price*(1+$product['tax_rate']);
+        }else {
+            $price=$product['product_item_price'];
+            if(round($finalPrice,2)!=round($product['product_final_price'],2)){
+                 $price = $finalPrice/(1+$product['tax_rate']);
+            }else {
+                $finalPrice = $product['product_final_price'];
+            }
+        }
+
+        ($productAttribute==$product['product_attribute'])?$productAttribute=$product['product_attribute']:'';
+        
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_order_item` SET `product_quantity`=:quantity,`product_item_price`=:price,`product_final_price`=:finalPrice,`mdate`=:time,`product_attribute`=:productAttribute 
+        WHERE order_id = :orderId and order_item_id = :orderItemId");
+        $stmt->bindParam(':orderId',$orderId, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':orderItemId',$orderItemId, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':quantity',$quantity, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':price',$price);
+        $stmt->bindParam(':finalPrice',$finalPrice);
+        $stmt->bindParam(':time',$time);
+        $stmt->bindParam(':productAttribute',$productAttribute);
+        
+        ($stmt->execute())?$inf=true:$inf=false;
+        
+        if(shop::updateOrderPrice($orderId)==true && $inf == true){
+            $inf == true;
+        } else {
+            $inf == false;
+        }
+        
+        return $inf;
     }
     
     public function getPagination($activePage)
