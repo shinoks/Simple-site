@@ -56,3 +56,9 @@ body {
 .font11{
     font-size: 11px;
 }
+.bg-white{
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    opacity: 1 !important;
+}

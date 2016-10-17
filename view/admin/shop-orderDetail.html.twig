@@ -14,6 +14,18 @@
             <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
         {% elseif info == 'product-updateItem-fail'%}
             <div class="alert alert-danger text-center" role="alert">Produkt nie został zaktualizowany</div>
+        {% elseif info == 'product-updateOrderSendTo-success'%}
+            <div class="alert alert-success text-center" role="alert">Wysyłka została zaktualizowana</div>
+        {% elseif info == 'product-updateOrderSendTo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Wysyłka nie została zaktualizowana</div>
+        {% elseif info == 'product-updateOrderUser-success '%}
+            <div class="alert alert-success text-center" role="alert">Użytkownik został zmieniony</div>
+        {% elseif info == 'product-updateOrderUser-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Użytkownik nie został zmieniony</div>
+        {% elseif info == 'product-updateOrderSendTo-success '%}
+            <div class="alert alert-success text-center" role="alert">Notatka została zmieniona</div>
+        {% elseif info == 'product-updateOrderSendTo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Notatka nie została zmieniona</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -24,11 +36,19 @@
         <div class="col-md-2">
             {% include 'admin/shop-menu.html.twig' %}
         </div>
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="well">
+                <div class="row">
+                    <div class="pull-right">
+                        <a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id+1 }}">Następne zamówienie >></a>
+                    </div>
+                    <div class="pull-left">
+                        <a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id-1 }}"><< Poprzednie zamówienie</a>
+                    </div>
+                </div>
                 Zamówienie nr. {{ order.order_id }}<br/>
                 Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
-                Stan zamówienia: {{ order.status_name }}<br/>
+                Stan zamówienia: {{ order.order_status_name }}<br/>
                 <br/>
                 <br/>
                 <div class="row">
@@ -78,8 +98,8 @@
                         <tr>
                             <td>Zmień użytkownika:</td>
                             <td>
-                                <form class="form-horizontal">
-                                    <select class="form-control">
+                                <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateOrderUser" method="POST">
+                                    <select name="userId" class="form-control">
                                         <option>Wybierz użytkownika</option>
                                         {% for user in users %}
                                             {% if user.id == order.user_id %}
@@ -97,66 +117,69 @@
                     </div>
                     <div class="col-md-6">
                         <strong>Wysyłka do</strong>
-                        <table class="table table-bordered">
-                        <tr>
-                            <td>Alias:</td>
-                            <td>{{ order.address_type_name }}</td>
-                        </tr>
-                        <tr>
-                            <td>Nazwa firmy:</td>
-                            <td>{{ order.company }}</td>
-                        </tr>
-                        <tr>
-                            <td>Imię i Nazwisko:</td>
-                            <td>{{ order.first_name }} {{ order.last_name }}</td>
-                        </tr>
-                        <tr>
-                            <td>Ulica:</td>
-                            <td>{{ order.address_1 }}</td>
-                        </tr>
-                        <tr>
-                            <td>Miasto:</td>
-                            <td>{{ order.city }}</td>
-                        </tr>
-                        <tr>
-                            <td>Kod pocztowy:</td>
-                            <td>{{ order.zip }}</td>
-                        </tr>
-                        <tr>
-                            <td>Telefon:</td>
-                            <td>{{ order.phone_1 }}</td>
-                        </tr>
-                        <tr>
-                            <td>Telefon kom.:</td>
-                            <td>{{ order.phone_2 }}</td>
-                        </tr>
-                        <tr>
-                            <td>Numer NIP:</td>
-                            <td>{{ order.extra_field_1 }}</td>
-                        </tr>
-                        <tr>
-                            <td>Konsultant:</td>
-                            <td>{{ order.extra_field_2 }}</td>
-                        </tr>
-                        <tr>
-                            <td>Zmień adres wysyłki: </td>
-                            <td>
-                                <form class="form-horizontal">
-                                    <select class="form-control">
-                                        {% for userAddres in userAddress %}
-                                            {% if userAddres.user_info_id == order.user_info_id %}
-                                                <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
-                                            {% else %}
-                                                <option value="{{ userAddres.user_info_id }}"> {{ userAddres.address_type_name }}</option>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </select>
-                                    <input type="submit" class="btn btn-default" value="Zmień">
-                                </form>
-                            </td>
-                        </tr>
-                         </table>
-                        
+                        {% for userSendTo in userAddress%}
+                            {% if userSendTo.user_info_id == order.4 %}
+                            <table class="table table-bordered">
+                            <tr>
+                                <td>Alias:</td>
+                                <td>{{ userSendTo.address_type_name }}</td>
+                            </tr>
+                            <tr>
+                                <td>Nazwa firmy:</td>
+                                <td>{{ userSendTo.company }}</td>
+                            </tr>
+                            <tr>
+                                <td>Imię i Nazwisko:</td>
+                                <td>{{ userSendTo.first_name }} {{ userSendTo.last_name }}</td>
+                            </tr>
+                            <tr>
+                                <td>Ulica:</td>
+                                <td>{{ userSendTo.address_1 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Miasto:</td>
+                                <td>{{ userSendTo.city }}</td>
+                            </tr>
+                            <tr>
+                                <td>Kod pocztowy:</td>
+                                <td>{{ userSendTo.zip }}</td>
+                            </tr>
+                            <tr>
+                                <td>Telefon:</td>
+                                <td>{{ userSendTo.phone_1 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Telefon kom.:</td>
+                                <td>{{ userSendTo.phone_2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Numer NIP:</td>
+                                <td>{{ userSendTo.extra_field_1 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Konsultant:</td>
+                                <td>{{ userSendTo.extra_field_2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Zmień adres wysyłki: </td>
+                                <td>
+                                    <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateOrderSendTo" method="POST">
+                                        <select name="userInfoId"class="form-control">
+                                            {% for userAddres in userAddress %}
+                                                {% if userAddres.user_info_id == order.4 %}
+                                                    <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
+                                                {% else %}
+                                                    <option value="{{ userAddres.user_info_id }}"> {{ userAddres.address_type_name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        <input type="submit" class="btn btn-default" value="Zmień">
+                                    </form>
+                                </td>
+                            </tr>
+                             </table>
+                             {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -173,6 +196,7 @@
                             <td><strong>Nazwa</strong></td>
                             <td><strong>Cena netto</strong></td>
                             <td><strong>Cena brutto</strong></td>
+                            <td><strong>Podatek</strong></td>
                             <td><strong>Suma</strong></td>
                             <td><strong>Zapisz</strong></td>
                         </tr>
@@ -187,13 +211,14 @@
                             <td>{{ item.product_name }}</td>
                             <td><input class="form-control" name="productPrice" value="{{ item.product_item_price|round(2,"common") }}"/></td>
                             <td><input class="form-control" name="productFinalPrice" value="{{ item.product_final_price|round(2,"common") }}"/></td>
+                            <td>{{ item.tax_rate * 100 }}%</td>
                             <td>{{ item.product_quantity * item.product_final_price|round(2,"common") }}</td>
                             <td><input type="submit" value="Zapisz" class="btn btn-success"/></td>
                         </tr>
                         </form>
                     {% endfor %}
                         <tr>
-                            <td colspan="4">
+                            <td colspan="5">
                             </td>
                             <td>
                                 Suma netto:
@@ -203,7 +228,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td colspan="4">
+                            <td colspan="5">
                             </td>
                         
                             <td>
@@ -248,9 +273,13 @@
                     <br/>
                 </div>
             </div>
-            <strong>Notatka klienta</strong><br/>
-            <textarea class="form-control" rows="5">{{ order.customer_note }}</textarea>
-            <input type="submit" class="btn btn-default" value="Zapisz"/>
+            <div class="well">
+                <strong>Notatka klienta</strong><br/>
+                <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateCustomerNote" method="POST">
+                    <textarea class="form-control" rows="5">{{ order.customer_note }}</textarea>
+                    <input type="submit" class="btn btn-default" value="Zapisz"/>
+                </form>
+            </div>
         </div>
     </div>
     

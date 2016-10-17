@@ -141,10 +141,8 @@ class adminController
                     } else{
                         $info = 'article-show-fail';
                     }
-                    
-                    
                 break;
-                            
+                
                 case 'hide':
                     if(articles::hideArticle($_GET['id'])){
                         $info = 'article-hide';
@@ -170,7 +168,6 @@ class adminController
                         }else{
                             $info = 'article-update-fail';
                         }
-                        
                     }
                     $article = articles::getArticle($_GET['id']);
                     
@@ -448,14 +445,19 @@ class adminController
    public function getAdminShop()
    {        
         $info = '';
+        if(isset($_GET['searchInput'])){
+            $this->searchInput = $_GET['searchInput'];
+        }
+        if(!isset($_GET['page'])){
+            $activePage = 1;
+        }else{
+            $activePage = $_GET['page'];
+        }
+        $orderStatuses = shop::getOrderStatuses();
         
         switch($_GET['act']){
             case 'orderDetail':
                 $order = shop::getOrderById($_GET['orderId']);
-                $orderProducts = shop::getOrderProducts($_GET['orderId']);
-                $products = shop::getAllProducts();
-                $users = shop::getAllUsers();
-                $userAddress = shop::getUserAddress($order['user_id']);
                 
                 if(isset($_GET['perf'])){
                     
@@ -472,7 +474,6 @@ class adminController
                                 $info = 'product-add-success';
                             } else {
                                 $info = 'product-add-fail';
-                                
                             }
                         break;
                         case 'updateItem':
@@ -481,13 +482,37 @@ class adminController
                             } else {
                                 $info = 'product-updateItem-fail';
                             }
-                            
+                        break;
+                        case 'updateOrderUser';
+                            if(shop::updateOrderUser($_GET['orderId'], $_POST['userId'])){
+                                $info = 'product-updateOrderUser-success';
+                            } else {
+                                $info = 'product-updateOrderUser-fail';
+                            }
+                        break;
+                        case 'updateOrderSendTo';
+                            if(shop::updateOrderSendTo($_GET['orderId'], $_POST['userInfoId'])){
+                                $info = 'product-updateOrderSendTo-success';
+                            } else {
+                                $info = 'product-updateOrderSendTo-fail';
+                            }
+                        break;
+                        case 'updateCustomerNote';
+                            if(shop::updateCustomerNote($_GET['orderId'], $_POST['customerNote'])){
+                                $info = 'product-updateOrderSendTo-success';
+                            } else {
+                                $info = 'product-updateOrderSendTo-fail';
+                            }
                         break;
                         
                     }
-                    $orderProducts = shop::getOrderProducts($_GET['orderId']);
                     $order = shop::getOrderById($_GET['orderId']);
                 }
+                $orderProducts = shop::getOrderProducts($_GET['orderId']);
+                $userAddress = shop::getUserAddress($order['user_id']);
+                $products = shop::getAllProducts();
+                $users = shop::getAllUsers();
+                
                 echo $info;
                 
                 return $this->twig->render("admin/shop-orderDetail.html.twig", 
@@ -501,18 +526,13 @@ class adminController
                                 'products'=>$products,
                                 'users'=>$users,
                                 'userAddress'=>$userAddress,
+                                'activePage'=>$activePage,
+                                'orderStatuses'=>$orderStatuses
                             )
                         );
             break;
             
             default:
-                $start = (int) 0;
-                $end = (int) 100;
-                if(!isset($_GET['page'])){
-                    $activePage = 1;
-                }else{
-                    $activePage = $_GET['page'];
-                }
                 $pagin = shop::getPagination($activePage);
 
                 return $this->twig->render("admin/shop.html.twig", 
@@ -521,6 +541,9 @@ class adminController
                                 'menuChild'=>$this->adminMenuChild,
                                 'config'=>$this->config,
                                 'pagin'=>$pagin,
+                                'searchInput'=>$this->searchInput,
+                                'activePage'=>$activePage,
+                                'orderStatuses'=>$orderStatuses
                             )
                         );
         }

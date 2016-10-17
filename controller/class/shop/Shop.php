@@ -30,19 +30,61 @@ class Shop {
     
     public function getOrdersOnPage($start = 0,$end = 50)
     {
-        $stmt = $this->dbGf->prepare("SELECT *
+        $query = "SELECT *,COUNT(*) as `count`
             FROM jos_vm_orders
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
             LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
-            GROUP BY jos_vm_orders.order_id
+            ";
+        if(isset($this->searchInput)){
+            $query .= " WHERE order_id = :order_id OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName OR extra_field_1 LIKE :extraField1";
+        }
+        $query .=" GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc 
-            LIMIT :start, :end");
+            LIMIT :start, :end ";
+
+        $stmt = $this->dbGf->prepare($query);
         $stmt->bindParam(':start', $start, $this->dbGf->PARAM_INT);
         $stmt->bindParam(':end', $end, $this->dbGf->PARAM_INT);
+        
+        if(isset($this->searchInput)){
+            $search = '%'.$this->searchInput.'%';
+            $stmt->bindParam(':order_id', $search);
+            $stmt->bindParam(':company', $search);
+            $stmt->bindParam(':lastName', $search);
+            $stmt->bindParam(':firstName', $search);
+            $stmt->bindParam(':extraField1', $search);
+        }
+        
         $stmt->execute();
         
         return $stmt->fetchAll();
+    }    
+    public function getCountOrdersOnSearch()
+    {
+        $query = "SELECT COUNT(*) as `count`
+            FROM jos_vm_orders
+            LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
+            ";
+        if(isset($this->searchInput)){
+            $query .= " WHERE order_id = :order_id OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName OR extra_field_1 LIKE :extraField1";
+        }
+        $stmt = $this->dbGf->prepare($query);
+
+        
+        if(isset($this->searchInput)){
+            $search = '%'.$this->searchInput.'%';
+            $stmt->bindParam(':order_id', $search);
+            $stmt->bindParam(':company', $search);
+            $stmt->bindParam(':lastName', $search);
+            $stmt->bindParam(':firstName', $search);
+            $stmt->bindParam(':extraField1', $search);
+        }
+        
+        $stmt->execute();
+        $count = $stmt->fetch();
+        
+        return $count['count'];
     }
     
     public function getOrderById($orderId)
@@ -219,8 +261,54 @@ class Shop {
         $stmt->bindParam(':orderId',$orderId);
         $stmt->bindParam(':price',$prices['price']);
         $stmt->bindParam(':final',$prices['final']);
-         
-        return $stmt->execute();
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function updateOrderUser($orderId,$userId)
+    {
+        $address = shop::getUserAddress($userId);
+        foreach($address as $adress){
+            if($adress['address_type'] == 'BT' ){
+                $userInfoId = $adress['user_info_id'];
+            }
+        }
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `user_id`=:userId,`user_info_id`=:userInfoId WHERE `order_id`=:orderId ");
+        $stmt ->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt ->bindParam(':userId',$userId,$this->dbGf->PARAM_INT);
+        $stmt ->bindParam(':userInfoId',$userInfoId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function updateOrderSendTo($orderId,$userInfoId)
+    {
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `user_info_id` = :userInfoId WHERE `order_id`=:orderId");
+        $stmt->bindParam(':orderId',$orderId);
+        $stmt->bindParam(':userInfoId',$userInfoId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
     }
     
     public function updateOrderItem($orderId, $orderItemId, $quantity, $price, $finalPrice, $time, $productAttribute)
@@ -263,6 +351,22 @@ class Shop {
         return $inf;
     }
     
+    public function updateCustomerNote($orderId,$customerNote)
+    {
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `customer_note` = :customerNore WHERE `order_id`=:orderId");
+        $stmt->bindParam(':orderId', $orderId);
+        $stmt->bindParam(':customerNote', $customerNote);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
     public function getPagination($activePage)
     {
         $limit = shop::getItemsOnSite();
@@ -272,8 +376,9 @@ class Shop {
         $end = (int)$end;
         
         $ordersOnPage = shop::getOrdersOnPage($start,$end);
+        
+        $pages = round(shop::getCountOrdersOnSearch()/$limit);
 
-        $pages = shop::countOrders()/$limit;
         $pagin = array('orders'=>$ordersOnPage, 'pages'=>$pages, 'limit'=>$limit);
         
         return $pagin;
@@ -281,7 +386,22 @@ class Shop {
     
     public function countOrders()
     {
-        $stmt = $this->dbGf->prepare("SELECT COUNT(*) as `count` FROM jos_vm_orders");
+        $query = "SELECT COUNT(*) as `count` FROM jos_vm_orders ";
+        if(isset($this->searchInput)){
+            $query .= " WHERE order_id = :order_id OR name LIKE :name OR username LIKE :username OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName";
+        }
+        $stmt = $this->dbGf->prepare($query);
+        
+        if(isset($this->searchInput)){
+            $search = '%'.$this->searchInput.'%';
+            $stmt->bindParam(':order_id', $search);
+            $stmt->bindParam(':name', $search);
+            $stmt->bindParam(':username', $search);
+            $stmt->bindParam(':company', $search);
+            $stmt->bindParam(':lastName', $search);
+            $stmt->bindParam(':firstName', $search);
+        }
+        
         $stmt->execute();
         $count = $stmt->fetch();
         
@@ -293,6 +413,14 @@ class Shop {
         $itemsOnSite = 50;
         
         return $itemsOnSite;
+    }
+    
+    public function getOrderStatuses()
+    {
+        $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_order_status");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
     }
     
     public function deleteOrder()
