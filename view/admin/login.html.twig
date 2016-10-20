@@ -31,6 +31,16 @@
     {% if info is defined %}
         {% if info == 'logout'%}
             <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie wylogowany</div>
+        {% else %}
+            {% for inf in info %}
+                {% if info == 'session-user-lack' %}
+                    <div class="alert alert-danger text-center" role="alert">Błąd autoryzacji użytkownika. Zaloguj się ponownie jeżeli problem występuje ponownie skontaktuj się z administratorem</div>
+                {% elseif info == 'session-auth-lack' %}
+                    <div class="alert alert-danger text-center" role="alert">Błąd uwierzytelniania sesji . Zaloguj się ponownie jeżeli problem występuje ponownie skontaktuj się z administratorem</div>
+                {% elseif info == 'session-timeout' %}
+                    <div class="alert alert-danger text-center" role="alert">Twoja sesja wygasła. Zaloguj się ponownie</div>
+                {% endif %}
+            {% endfor %}
         {% endif %}
     {% endif %}
 {% endblock %}

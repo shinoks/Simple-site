@@ -31,7 +31,7 @@ class adminController
     {
        $login = new Login($this->db);
        $sess = $login->checkSession();
-
+       
         if($sess == true){
             switch($_GET['action']){
                 
@@ -125,6 +125,7 @@ class adminController
                         'menu'=>$this->adminMenu,
                         'menuChild'=>$this->adminMenuChild,
                         'config'=>$this->config,
+                        'info'=>$sess
                     )
                 );
            }
@@ -504,15 +505,23 @@ class adminController
                                 $info = 'product-updateOrderSendTo-fail';
                             }
                         break;
+                        case 'updateOrderStatus':
+                            if(shop::updateOrderStatus($_GET['orderId'], $_POST['inputStatus'], $_POST['comments'])){
+                                $info = 'updateOrderStatus-success';
+                            } else {
+                                $info = 'updateOrderStatus-fail';
+                            }
+                        break;
                         
                     }
                     $order = shop::getOrderById($_GET['orderId']);
                 }
+                
                 $orderProducts = shop::getOrderProducts($_GET['orderId']);
                 $userAddress = shop::getUserAddress($order['user_id']);
                 $products = shop::getAllProducts();
                 $users = shop::getAllUsers();
-                
+                $orderHistory = shop::getOrderHistory($_GET['orderId']);
                 echo $info;
                 
                 return $this->twig->render("admin/shop-orderDetail.html.twig", 
@@ -527,14 +536,169 @@ class adminController
                                 'users'=>$users,
                                 'userAddress'=>$userAddress,
                                 'activePage'=>$activePage,
-                                'orderStatuses'=>$orderStatuses
+                                'orderStatuses'=>$orderStatuses,
+                                'orderHistory'=>$orderHistory
                             )
                         );
             break;
+            case 'users':
+                
+                if(isset($_GET['show'])){
+                        switch($_GET['show']){
+                            case 'userDetail':
+                                if(isset($_GET['perf'])){
+                                    switch($_GET['perf']){
+                                        case 'updateUserInfo':
+                                            if(shop::updateUserInfo($_GET['userId'],$_POST['company'],$_POST['firstName'] ,$_POST['lastName'],$_POST['email'],$_POST['phone'],$_POST['phone2'],$_POST['address'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_POST['extraField2'])){
+                                                $info = 'updateUserInfo-success';
+                                            } else {
+                                                $info = 'updateUserInfo-fail';
+                                            }
+                                        break;
+                                        case 'updateUserData':
+                                            if(shop::updateUserData($_GET['userId'],$_POST['name'],$_POST['username'] ,$_POST['email'],$_POST['password'])){
+                                                $info = 'updateUserData-success';
+                                            } else {
+                                                $info = 'updateUserData-fail';
+                                            }
+                                        break;
+                                    }
+                                }
+                                
+                                $user = shop::getUserById($_GET['userId']);
+                                $userAddresses = shop::getUserAddress($_GET['userId']);
+                                $orders = shop::getUserOrders($_GET['userId']);
+                                echo $info;
+                                
+                                return $this->twig->render("admin/shop-userDetail.html.twig", 
+                                    array(
+                                        'menu'=>$this->adminMenu,
+                                        'menuChild'=>$this->adminMenuChild,
+                                        'config'=>$this->config,
+                                        'searchInput'=>$this->searchInput,
+                                        'activePage'=>$activePage,
+                                        'user'=>$user,
+                                        'userAddresses'=>$userAddresses,
+                                        'info'=>$info,
+                                        'orders'=>$orders
+                                    )
+                                );
+                            break;
+                            default:
+                                $pagin = shop::getPaginationUsers($activePage);
+                                echo $info;
+                                return $this->twig->render("admin/shop-users.html.twig", 
+                                    array(
+                                        'menu'=>$this->adminMenu,
+                                        'menuChild'=>$this->adminMenuChild,
+                                        'config'=>$this->config,
+                                        'pagin'=>$pagin,
+                                        'searchInput'=>$this->searchInput,
+                                        'activePage'=>$activePage,
+                                        'users'=>$users,
+                                        'info'=>$info
+                                    )
+                                );
+                            
+                        }
+                } else {
+                    $pagin = shop::getPaginationUsers($activePage);
+                                echo $info;
+                                return $this->twig->render("admin/shop-users.html.twig", 
+                                    array(
+                                        'menu'=>$this->adminMenu,
+                                        'menuChild'=>$this->adminMenuChild,
+                                        'config'=>$this->config,
+                                        'pagin'=>$pagin,
+                                        'searchInput'=>$this->searchInput,
+                                        'activePage'=>$activePage,
+                                        'users'=>$users,
+                                        'info'=>$info
+                                    )
+                                );
+                }
+                
+                
+            break;
+            case 'products':
+                $products = shop::getAllProducts();
+                if(isset($_GET['perf'])){
+                        switch($_GET['perf']){
+                            case 'deleteProduct':
+                                if(shop::deleteProduct($_GET['productId'])){
+                                    $info = 'deleteProduct-success';
+                                } else {
+                                    $info = 'deleteProduct-fail';
+                                }
+                            break;
+                        }
+                }
+                if(isset($_GET['show'])){
+                    switch($_GET['show']){
+                        case 'productDetail':
+                            $product = shop::getProductById($_GET['productId']);
+                            return $this->twig->render("admin/shop-productsDetails.html.twig", 
+                                array(
+                                    'menu'=>$this->adminMenu,
+                                    'menuChild'=>$this->adminMenuChild,
+                                    'config'=>$this->config,
+                                    'searchInput'=>$this->searchInput,
+                                    'activePage'=>$activePage,
+                                    'info'=>$info,
+                                    'product'=>$product
+                                )
+                             );
+                        break;
+                        default:
+                            return $this->twig->render("admin/shop-products.html.twig", 
+                                array(
+                                    'menu'=>$this->adminMenu,
+                                    'menuChild'=>$this->adminMenuChild,
+                                    'config'=>$this->config,
+                                    'searchInput'=>$this->searchInput,
+                                    'activePage'=>$activePage,
+                                    'info'=>$info,
+                                    'products'=>$products
+                                )
+                             );
+                    }
+                }else {
+                    return $this->twig->render("admin/shop-products.html.twig", 
+                                        array(
+                                            'menu'=>$this->adminMenu,
+                                            'menuChild'=>$this->adminMenuChild,
+                                            'config'=>$this->config,
+                                            'searchInput'=>$this->searchInput,
+                                            'activePage'=>$activePage,
+                                            'info'=>$info,
+                                            'products'=>$products
+                                        )
+                                    );
+                }
+            break;
             
             default:
+                if(isset($_GET['perf'])){
+                        switch($_GET['perf']){
+                            case 'deleteOrder':
+                                if(shop::deleteOrder($_GET['orderId'])){
+                                    $info = 'deleteOrder-success';
+                                } else {
+                                    $info = 'deleteOrder-fail';
+                                }
+                            break;
+                            case 'updateOrderStatus':
+                                if(shop::updateOrderStatus($_GET['orderId'], $_POST['inputStatus'], $_POST['comments'])){
+                                    $info = 'updateOrderStatus-success';
+                                } else {
+                                    $info = 'updateOrderStatus-fail';
+                                }
+                            break;
+                        }
+                }
+                
                 $pagin = shop::getPagination($activePage);
-
+                echo $info;
                 return $this->twig->render("admin/shop.html.twig", 
                             array(
                                 'menu'=>$this->adminMenu,
@@ -543,7 +707,8 @@ class adminController
                                 'pagin'=>$pagin,
                                 'searchInput'=>$this->searchInput,
                                 'activePage'=>$activePage,
-                                'orderStatuses'=>$orderStatuses
+                                'orderStatuses'=>$orderStatuses,
+                                'info'=>$info
                             )
                         );
         }

@@ -1,0 +1,217 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'deleteOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
+        {% elseif info == 'deleteOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
+        {% elseif info == 'updateOrderStatus-success'%}
+            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
+        {% elseif info == 'updateOrderStatus-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% elseif info == 'updateUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane do Faktury użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane do Faktury użytkownika nie zostały zmienione</div>
+        {% elseif info == 'updateUserData-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserData-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=shop&act=users&show=userDetail&userId="~user.id %}
+    <div class="row">
+        <div class="pull-right">
+            <a href="index.php?site=admin&action=shop&act=users" class="btn btn-default">Powrót do listy użytkowników</a>
+        </div>
+        <br/><br/>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10 bg-white">
+            <div class="row">
+            <div class="col-md-5">
+            <div class="pull-left">
+            Data utworzenia: {{ user.registerDate|date("d-m-Y H:i:s") }}
+            </div>
+            <form action="{{url}}&perf=updateUserInfo" method="POST">
+            <div class="pull-right">
+                <input type="submit" class="btn btn-success" value="Zapisz"/>
+            </div>
+            <br/><br/>
+            <table class="table table-bordered">
+                <tr>
+                    <td>
+                        Nazwa firmy
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="company" value="{{ user.company }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Imię
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="firstName" value="{{ user.first_name }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Nazwisko
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="lastName" value="{{ user.last_name }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Email
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="email" value="{{ user.email }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Telefon
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="phone1" value="{{ user.phone_1 }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Telefon 2
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="phone2" value="{{ user.phone_2 }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Ulica
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="address1" value="{{ user.address_1 }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Miasto
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="city" value="{{ user.city }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Kod pocztowy
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="zip" value="{{ user.zip }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        NIP
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="extraField1" value="{{ user.extra_field_1 }}"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Konsultant
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" name="extraField2" value="{{ user.extra_field_2 }}"/>
+                    </td>
+                </tr>
+            </table>
+            </form>
+            </div>
+            <div class="col-md-7">
+                <div class="well">
+                    <strong>Dane użytkownika:</strong>
+                    <form action="{{url}}}&perf=updateUserData" method="POST">
+                        Nazwa: <input type="text" class="form-control" name="name" value="{{user.name}}"/>
+                        Nazwa użytkownika: <input type="text" class="form-control" name="username" value="{{user.username}}"/>
+                        Email: <input type="text" class="form-control" name="email" value="{{user.email}}"/>
+                        Hasło: <input type="password" class="form-control" name="password" placeholder="Wpisz nowe hasło"/>
+                        
+                        <input type="submit" class="btn btn-success" value="Zapisz zmiany"/>
+                    </form>
+                </div>
+                <div class="well">
+                    <strong>Wysyłki:</strong>
+                    {% for userAddres in userAddresses %}
+                        {% if userAddresses|length == 1 %}
+                            <br/>Brak dodatkowych adresów wysyłki
+                        {% endif %}
+                        {% if userAddres.address_type == "BT" %}
+                        {% else %}
+                        <div class="panel">
+                            <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#{{userAddres.user_info_id}}" aria-expanded="false" aria-controls="{{userAddres.user_info_id}}">
+                              {{userAddres.address_type_name}}
+                            </button>
+                            <div class="collapse" id="{{userAddres.user_info_id}}">
+                              <div class="well bg-grey">
+                                <form action="{{url}}" method="POST">
+                                    <input type="hidden" class="form-control" name="addressTypeName" value="{{userAddres.address_type_name}}"/>
+                                    Nazwa firmy: <input type="text" class="form-control" name="company" value="{{userAddres.company}}"/>
+                                    Nazwisko: <input type="text" class="form-control" name="last_name" value="{{userAddres.last_name}}"/>
+                                    Imię: <input type="text" class="form-control" name="first_name" value="{{userAddres.first_name}}"/>
+                                    Telefon: <input type="text" class="form-control" name="phone_1" value="{{userAddres.phone_1}}"/>
+                                    Telefon 2 :<input type="text" class="form-control" name="phone_2" value="{{userAddres.phone_2}}"/>
+                                    Adres:<input type="text" class="form-control" name="address_1" value="{{userAddres.address_1}}"/>
+                                    Adres 2:<input type="text" class="form-control" name="address_2" value="{{userAddres.address_2}}"/>
+                                    Miasto: <input type="text" class="form-control" name="city" value="{{userAddres.city}}"/>
+                                    <input type="submit" class="btn btn-success" value="Zapisz zmiany"/>
+                                </form>
+                              </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="well">
+                    <strong>Zamówienia:</strong>
+                    <table class="table table-condensed">
+                    <tr>
+                        <td>Lp.</td>
+                        <td>Data zamówienia</td>
+                        <td>Data modyfikacji</td>
+                        <td>NIP</td>
+                        <td>Konsultant</td>
+                        <td>Suma</td>
+                        <td>Usuń</td>
+                    </tr>
+                    {% set a = 1 %}
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ a }}</td>
+                            <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
+                            <td>{{ order.cdate|date("d-m-Y",false) }}</a></td>
+                            <td>{{ order.mdate|date("d-m-Y",false) }}</a></td>
+                            <td>{{ order.extra_field_1 }}</td>
+                            <td><span class="font11">{{ order.extra_field_2 }}</span></td>
+                            <td>{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
+                            <td><a href="index.php?site=admin&action=shop&perf=deleteOrder&orderId={{ order.order_id }}" class="btn btn-danger">Usuń</a></td>
+                        </tr>
+                        {% set a = a+1 %}
+                    {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

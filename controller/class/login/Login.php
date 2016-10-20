@@ -50,8 +50,19 @@ class Login {
     public function checkSession()
     {
         if(isset($_SESSION['user']) && isset($_SESSION['auth']) && $_SESSION['auth']== true && $this->checkSessionTime()>0){
+            login::renewSessionTime();
             return true;
         }else {
+            $info = array();
+            if(!isset($_SESSION['user'])){
+                $info[] = 'session-user-lack';
+            }
+            if(!isset($_SESSION['user'])){
+                $info[] = 'session-auth-lack';
+            }
+            if($this->checkSessionTime()<=0){
+                $info[] = 'session-timeout';
+            }
             return false;
         }
     }
