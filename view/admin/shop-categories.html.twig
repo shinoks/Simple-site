@@ -15,6 +15,7 @@
 {% endblock %}
 
 {% block body %}
+    <h1>Sklep</h1>
     <div class="row">
         <div class="pull-right">
         <form action="index.php?site=admin&action=shop" method="GET" class="form-inline">
@@ -31,10 +32,10 @@
         <div class="col-md-2">
             {% include 'admin/shop-menu.html.twig' %}
         </div>
-        <div class="col-md-10 bg-white table-responsive">
+        <div class="col-md-10 bg-white">
             <div class="row">
                 <div class="pull-right">
-                    <a href="" class="btn btn-success">Dodaj produkt</a>
+                    <a href="index.php?site=admin&action=shop&act=categories&show=categoryAdd" class="btn btn-success">Dodaj kategorie</a>
                 </div>
                 <br/>
                 <br/>
@@ -43,34 +44,24 @@
             <tr>
                 <td><strong>Lp.</strong></td>
                 <td><strong>Nazwa</strong></td>
-                <td><strong>SKU</strong></td>
-                <td><strong>Netto</strong></td>
-                <td><strong>Brutto</strong></td>
-                <td><strong>Kategoria</strong></td>
+                <td><strong>Opis</strong></td>
                 <td><strong>Opublikowany</strong></td>
                 <td><strong>Usuń</strong></td>
             </tr>
             {% set a = 1 %}
-            {% for product in products %}
-                {% if product.product_publish == 'Y' %}
-                    <tr>
-                {% else %}
-                    <tr class="danger">
-                {% endif %}
+            {% for category in categories %}
+                <tr>
                     <td>{{ a }}</td>
-                    <td><span class="font11"><a href="index.php?site=admin&action=shop&act=products&show=productDetail&productId={{ order.order_id }}">{{ product.product_name }}</a></span></td>
-                    <td><span class="font11">{{ product.product_sku }}</span></td>
-                    <td><span class="font11">{{ product.product_price|round(2,'common') }} zł</span></td>
-                    <td><span class="font11">{{ (product.product_price*product.tax_rate + product.product_price)|round(2,'common') }} zł</span></td>
-                    <td><span class="font11">{{ product.category_name }}</span></td>
+                    <td><span class="font11"><a href="index.php?site=admin&action=shop&act=categories&show=categoryDetail&categoryId={{ category.category_id }}">{{ category.category_name }}</a></span></td>
+                    <td><span class="font11">{{ category.category_description }}</span></td>
                     <td><span class="font11">
-                    {% if product.product_publish == 'Y' %}
+                    {% if category.category_publish == 'Y' %}
                         <p class="text-success">Tak</p>
                     {% else %}
                         <p class="text-danger">Nie</p>
                     {% endif %}
                     </span></td>
-                    <td><a href="index.php?site=admin&action=shop&act=products&perf=deleteProduct{{ product.product_id }}" class="btn btn-danger">Usuń</a></td>
+                    <td><a href="index.php?site=admin&action=shop&act=categories&perf=deleteCategory&categoryId={{ category.category_id }}" class="btn btn-danger">Usuń</a></td>
                 </tr>
                 {% set a = a+1 %}
             {% endfor %}

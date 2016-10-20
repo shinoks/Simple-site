@@ -32,7 +32,7 @@ class adminController
        $login = new Login($this->db);
        $sess = $login->checkSession();
        
-        if($sess == true){
+        if($sess['session'] == true){
             switch($_GET['action']){
                 
                 case 'configuration':
@@ -81,6 +81,7 @@ class adminController
             }
 
         }else {
+            
            switch ($_GET['action']){
                case 'login':
                    $login = $login->login($_POST['username'], $_POST['password']);
@@ -562,6 +563,21 @@ class adminController
                                                 $info = 'updateUserData-fail';
                                             }
                                         break;
+                                        case 'addUserInfo':
+                                            if(shop::addUserInfo($_GET['userId'],$_POST['addressTypeName'],$_POST['company'] ,$_POST['lastName'],$_POST['firstName'],
+                                            $_POST['phone1'],$_POST['phon2'],$_POST['address'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_POST['extraField2'])){
+                                                $info = 'addUserInfo-success';
+                                            } else {
+                                                $info = 'addUserInfo-fail';
+                                            }
+                                        break;
+                                        case 'deleteUserInfo':
+                                            if(shop::deleteUserInfo($_GET['userInfoId'])){
+                                                $info = 'deleteUserInfo-success';
+                                            } else {
+                                                $info = 'deleteUserInfo-fail';
+                                            }
+                                        break;
                                     }
                                 }
                                 
@@ -637,6 +653,7 @@ class adminController
                     switch($_GET['show']){
                         case 'productDetail':
                             $product = shop::getProductById($_GET['productId']);
+                            
                             return $this->twig->render("admin/shop-productsDetails.html.twig", 
                                 array(
                                     'menu'=>$this->adminMenu,
@@ -677,6 +694,83 @@ class adminController
                 }
             break;
             
+            case 'categories':
+                $categories = shop::getCategories();
+                if(isset($_GET['perf'])){
+                        switch($_GET['perf']){
+                            case 'deleteCategory':
+                                if(shop::deleteCategory($_GET['categoryId'])){
+                                    $info = 'deleteCategory-success';
+                                } else {
+                                    $info = 'deleteCategory-fail';
+                                }
+                            break;
+                            case 'addCategory':
+                                if(shop::addCategory($_POST['categoryName'],$_POST['categoryDescription'],$_POST['categoryThumbImage'],$_POST['categoryFullImage'],$_POST['categoryPublish'],$_POST['categoryName'],$_POST['cdate'],$_POST['listOrder'])){
+                                    $info = 'addCategory-success';
+                                } else {
+                                    $info = 'addCategory-fail';
+                                }
+                            break;
+                        }
+                }
+                if(isset($_GET['show'])){
+                    switch($_GET['show']){
+                        case 'categoryDetail':
+                            $category = shop::getCategoryById($_GET['categoryId']);
+                            return $this->twig->render("admin/shop-categoryDetails.html.twig", 
+                                array(
+                                    'menu'=>$this->adminMenu,
+                                    'menuChild'=>$this->adminMenuChild,
+                                    'config'=>$this->config,
+                                    'searchInput'=>$this->searchInput,
+                                    'activePage'=>$activePage,
+                                    'info'=>$info,
+                                    'category'=>$category
+                                )
+                             );
+                        break;
+                        case 'categoryAdd':
+                            $category = shop::getCategoryById($_GET['categoryId']);
+                            return $this->twig->render("admin/shop-categoryAdd.html.twig", 
+                                array(
+                                    'menu'=>$this->adminMenu,
+                                    'menuChild'=>$this->adminMenuChild,
+                                    'config'=>$this->config,
+                                    'searchInput'=>$this->searchInput,
+                                    'activePage'=>$activePage,
+                                    'info'=>$info,
+                                    'category'=>$category
+                                )
+                             );
+                        break;
+                        default:
+                            return $this->twig->render("admin/shop-categories.html.twig", 
+                                array(
+                                    'menu'=>$this->adminMenu,
+                                    'menuChild'=>$this->adminMenuChild,
+                                    'config'=>$this->config,
+                                    'searchInput'=>$this->searchInput,
+                                    'activePage'=>$activePage,
+                                    'info'=>$info,
+                                    'categories'=>$categories
+                                )
+                             );
+                    }
+                }else {
+                    return $this->twig->render("admin/shop-categories.html.twig", 
+                                        array(
+                                            'menu'=>$this->adminMenu,
+                                            'menuChild'=>$this->adminMenuChild,
+                                            'config'=>$this->config,
+                                            'searchInput'=>$this->searchInput,
+                                            'activePage'=>$activePage,
+                                            'info'=>$info,
+                                            'categories'=>$categories
+                                        )
+                                    );
+                }
+            break;
             default:
                 if(isset($_GET['perf'])){
                         switch($_GET['perf']){

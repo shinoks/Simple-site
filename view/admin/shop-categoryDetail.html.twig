@@ -1,0 +1,53 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'addCategory-success'%}
+            <div class="alert alert-success text-center" role="alert">Kategoria została dodana</div>
+        {% elseif info == 'addCategory-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Kategoria nie została dodana</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="pull-right">
+        <form action="index.php?site=admin&action=shop" method="GET" class="form-inline">
+            <input type="hidden" value="admin" name="site" />
+            <input type="hidden" value="shop" name="action" />
+            <input type="text" class="form-control" name="searchInput" {% if searchInput is not empty %}value="{{searchInput}}"{% endif %} placeholder="Wyszukaj użytkownika ..."/>
+            <input type="submit" value="Szukaj" class="btn btn-default" />
+        </form>
+        </div>
+        <br/><br/>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10 bg-white">
+            <div class="row table-responsive">
+                <table class="table table-bordered">
+                <tr>
+                    <td>Id kategorii.</td>
+                    <td>{{category.category_id}}</td>
+                </tr>
+                <tr>
+                    <td>Nazwa.</td>
+                    <td>{{category.category_name}}</td>
+                </tr>
+                <tr>
+                    <td>Opis.</td>
+                    <td>{{category.category_description}}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><a href="index.php?site=admin&action=shop&act=categories&perf=deleteCategory&categoryId={{category.category_id}}"</td>
+                </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

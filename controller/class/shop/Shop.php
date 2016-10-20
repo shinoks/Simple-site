@@ -173,9 +173,38 @@ class Shop {
         return $stmt->fetchAll();
     }
     
+    public function getCategories()
+    {
+        $stmt = $this->dbGf->prepare("SELECT category_id, category_name, category_description, category_publish, cdate, list_order FROM jos_vm_category");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getCategoryById($categoryId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT category_id, category_name, category_description, category_publish, cdate, list_order FROM jos_vm_category WHERE category_id = :categoryId");
+        $stmt->bindParam(":categoryId",$categoryId);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
     public function getProductById($productId)
     {
-        $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_product LEFT JOIN jos_vm_product_price USING(product_id) LEFT JOIN jos_vm_tax_rate ON jos_vm_product.product_tax_id = jos_vm_tax_rate.tax_rate_id WHERE product_id = :productId");
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_product.product_id,
+        jos_vm_product.product_sku, jos_vm_product.product_desc, 
+        jos_vm_product.product_thumb_image, jos_vm_product.product_full_image,
+        jos_vm_product.product_publish, jos_vm_product.cdate,
+        jos_vm_product.product_name,
+        jos_vm_product_price.product_price,
+        jos_vm_category.category_name
+        FROM jos_vm_product 
+        LEFT JOIN jos_vm_product_price USING(product_id) 
+        LEFT JOIN jos_vm_product_category_xref USING(product_id) 
+        LEFT JOIN jos_vm_category USING(category_id) 
+        LEFT JOIN jos_vm_tax_rate ON jos_vm_product.product_tax_id = jos_vm_tax_rate.tax_rate_id 
+        WHERE jos_vm_product.product_id = :productId");
         $stmt->bindParam(':productId', $productId);
         $stmt->execute();
         
@@ -377,6 +406,53 @@ class Shop {
         
         return $in;
         
+    }
+    
+    public function addUserInfo($userId,$addressTypeName='',$company='',$lastName='',$firstName='',$phone='',$phone2='',$address='',$address2='',$city='',$zip=' ',$extraField1='',$extraField2='')
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_user_info`
+        (`user_info_id`, `user_id`, `address_type`, `address_type_name`,
+        `company`, `last_name`, `first_name`, 
+        `phone_1`, `phone_2`, `address_1`, `address_2`, `city`, `zip`,
+        `extra_field_1`, `extra_field_2`, `cdate`) 
+        VALUES (UUID(),:userId,'ST',:addressTypeName,:company,
+        :lastName,:firstName,:phone,:phone2,:address,:address2,
+        :city,:zip,:extraField1,:extraField2,:cdate)");
+        
+        $stmt->bindParam(":userId",$userId);
+        $stmt->bindParam(":addressTypeName",$addressTypeName);
+        $stmt->bindParam(":company",$company);
+        $stmt->bindParam(":lastName",$lastName);
+        $stmt->bindParam(":firstName",$firstName);
+        $stmt->bindParam(":phone",$phone);
+        $stmt->bindParam(":phone2",$phone2);
+        $stmt->bindParam(":address",$address);
+        $stmt->bindParam(":address2",$address2);
+        $stmt->bindParam(":city",$city);
+        $stmt->bindParam(":zip",$zip);
+        $stmt->bindParam(":extraField1",$extraField1);
+        $stmt->bindParam(":extraField2",$extraField2);
+        $stmt->bindParam(":cdate",time());
+        
+        return $stmt->execute();
+    }
+    
+    public function addCategory($categoryName, $categoryDescription = '', $categoryThumbImage='web/images/shop/emptyImageThumb.jpg', $categoryFullImage='web/images/shop/emptyImage.jpg', $categoryPublish = 'Y', $cdate = 'NOW()', $listOrder = '')
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_category`
+        (`category_name`, `category_description`, `category_thumb_image`, 
+        `category_full_image`, `category_publish`, `cdate`, `list_order`) 
+        VALUES
+        (:categoryName,:categoryDescription,:categoryThumbImage,:categoryFullImage,:categoryPublish,:cdate,:listOrder)");
+        $stmt->bindParam(":categoryName",$categoryName);
+        $stmt->bindParam(":categoryDescription",$categoryDescription);
+        $stmt->bindParam(":categoryThumbImage",$categoryThumbImage);
+        $stmt->bindParam(":categoryFullImage",$categoryFullImage);
+        $stmt->bindParam(":categoryPublish",$categoryPublish);
+        $stmt->bindParam(":cdate",$cdate);
+        $stmt->bindParam(":listOrder",$listOrder);
+        
+        return $stmt->execute();
     }
     
     private function updateOrderPrice($orderId)
@@ -735,7 +811,37 @@ class Shop {
         
         return $in;
     }
-
+    
+    public function deleteUserInfo($userInfoId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM jos_vm_user_info WHERE user_info_id = :userInfoId");
+        $stmt->bindParam(":userInfoId",$userInfoId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function deleteCategory($categoryId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM jos_vm_category WHERE category_id = :categoryId");
+        $stmt->bindParam(":categoryId",$categoryId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
     private function getPasswordHash($password)
     {
         $newPassword = password_hash($password,PASSWORD_DEFAULT);

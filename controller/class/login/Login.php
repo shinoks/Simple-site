@@ -49,21 +49,29 @@ class Login {
     
     public function checkSession()
     {
+        $info = array();
         if(isset($_SESSION['user']) && isset($_SESSION['auth']) && $_SESSION['auth']== true && $this->checkSessionTime()>0){
             login::renewSessionTime();
-            return true;
+            $info['session'] = true;
+            $info['info'] = 'logged';
+            $info['sessionTime'] = $this->sessionTime;
+            
+            return $info;
+            
         }else {
-            $info = array();
+            $info['session'] = false;
             if(!isset($_SESSION['user'])){
-                $info[] = 'session-user-lack';
+                $info['info'] = 'session-user-lack';
             }
-            if(!isset($_SESSION['user'])){
-                $info[] = 'session-auth-lack';
+            if(!isset($_SESSION['auth'])){
+                $info['info'] = 'session-auth-lack';
             }
             if($this->checkSessionTime()<=0){
-                $info[] = 'session-timeout';
+                $info['info'] = 'session-timeout';
             }
-            return false;
+            $info['sessionTime'] = $this->sessionTime;
+            
+            return $info;
         }
     }
     

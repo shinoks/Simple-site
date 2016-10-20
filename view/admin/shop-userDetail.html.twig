@@ -18,6 +18,14 @@
             <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
         {% elseif info == 'updateUserData-fail'%}
             <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
+        {% elseif info == 'addUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został dodany</div>
+        {% elseif info == 'addUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został dodany</div>
+        {% elseif info == 'deleteUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
+        {% elseif info == 'deleteUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -162,18 +170,20 @@
                             <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#{{userAddres.user_info_id}}" aria-expanded="false" aria-controls="{{userAddres.user_info_id}}">
                               {{userAddres.address_type_name}}
                             </button>
+                            <a href="{{url}}&perf=deleteUserInfo&userInfoId={{userAddres.user_info_id}}" class="btn btn-danger">Usuń</a>
                             <div class="collapse" id="{{userAddres.user_info_id}}">
                               <div class="well bg-grey">
-                                <form action="{{url}}" method="POST">
+                                <form action="{{url}}&perf=updateUserInfo" method="POST">
                                     <input type="hidden" class="form-control" name="addressTypeName" value="{{userAddres.address_type_name}}"/>
                                     Nazwa firmy: <input type="text" class="form-control" name="company" value="{{userAddres.company}}"/>
-                                    Nazwisko: <input type="text" class="form-control" name="last_name" value="{{userAddres.last_name}}"/>
-                                    Imię: <input type="text" class="form-control" name="first_name" value="{{userAddres.first_name}}"/>
-                                    Telefon: <input type="text" class="form-control" name="phone_1" value="{{userAddres.phone_1}}"/>
-                                    Telefon 2 :<input type="text" class="form-control" name="phone_2" value="{{userAddres.phone_2}}"/>
-                                    Adres:<input type="text" class="form-control" name="address_1" value="{{userAddres.address_1}}"/>
-                                    Adres 2:<input type="text" class="form-control" name="address_2" value="{{userAddres.address_2}}"/>
+                                    Nazwisko: <input type="text" class="form-control" name="lastName" value="{{userAddres.last_name}}"/>
+                                    Imię: <input type="text" class="form-control" name="firstName" value="{{userAddres.first_name}}"/>
+                                    Telefon: <input type="text" class="form-control" name="phone1" value="{{userAddres.phone_1}}"/>
+                                    Telefon 2 :<input type="text" class="form-control" name="phone2" value="{{userAddres.phone_2}}"/>
+                                    Adres:<input type="text" class="form-control" name="address1" value="{{userAddres.address_1}}"/>
+                                    Adres 2:<input type="text" class="form-control" name="address2" value="{{userAddres.address_2}}"/>
                                     Miasto: <input type="text" class="form-control" name="city" value="{{userAddres.city}}"/>
+                                    NIP: <input type="text" class="form-control" name="extraField1" value="{{userAddres.extra_field_1}}"/>
                                     <input type="submit" class="btn btn-success" value="Zapisz zmiany"/>
                                 </form>
                               </div>
@@ -181,6 +191,30 @@
                         </div>
                         {% endif %}
                     {% endfor %}
+                    <br/>
+                    <div class="panel">
+                            <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#addAddress" aria-expanded="false" aria-controls="addAddress">
+                              Dodaj adres wysyłki
+                            </button>
+                            <div class="collapse" id="addAddress">
+                              <div class="well bg-grey">
+                                <form action="{{url}}&perf=addUserInfo" method="POST">
+                                    Nazwa adresu: <input type="text" class="form-control" name="addressTypeName" required/>
+                                    Nazwa firmy: <input type="text" class="form-control" name="company"/>
+                                    Nazwisko: <input type="text" class="form-control" name="lastName" />
+                                    Imię: <input type="text" class="form-control" name="firstName"/>
+                                    Telefon: <input type="text" class="form-control" name="phone1"/>
+                                    Telefon 2 :<input type="text" class="form-control" name="phone2"/>
+                                    Adres:<input type="text" class="form-control" name="address1"/>
+                                    Adres 2:<input type="text" class="form-control" name="address2" />
+                                    Miasto: <input type="text" class="form-control" name="city" />
+                                    Kod pocztowy: <input type="text" class="form-control" name="zip" />
+                                    NIP: <input type="text" class="form-control" name="extraField1" />
+                                    <input type="submit" class="btn btn-success" value="Zapisz nowy adres"/>
+                                </form>
+                              </div>
+                            </div>
+                        </div>
                 </div>
                 <div class="well">
                     <strong>Zamówienia:</strong>

@@ -15,7 +15,6 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Sklep</h1>
     <div class="row">
         <div class="pull-right">
         <form action="index.php?site=admin&action=shop" method="GET" class="form-inline">
@@ -43,39 +42,47 @@
             <div class="table-responsive">
                 <table class="table table-bordered">
                 <tr>
-                    <td><strong>Lp.</strong></td>
                     <td><strong>Nazwa</strong></td>
-                    <td><strong>SKU</strong></td>
-                    <td><strong>Netto</strong></td>
-                    <td><strong>Brutto</strong></td>
-                    <td><strong>Kategoria</strong></td>
-                    <td><strong>Opublikowany</strong></td>
-                    <td><strong>Usuń</strong></td>
+                    <td>{{ product.product_name }}</td>
                 </tr>
-                {% set a = 1 %}
-                {% for product in products %}
-                    {% if product.product_publish == 'Y' %}
-                        <tr>
-                    {% else %}
-                        <tr class="danger">
-                    {% endif %}
-                        <td>{{ a }}</td>
-                        <td><span class="font11"><a href="index.php?site=admin&action=shop&act=products&show=productDetail&productId={{ product.product_id }}">{{ product.product_name }}</a></span></td>
-                        <td><span class="font11">{{ product.product_sku }}</span></td>
-                        <td><span class="font11">{{ product.product_price|round(2,'common') }} zł</span></td>
-                        <td><span class="font11">{{ (product.product_price*product.tax_rate + product.product_price)|round(2,'common') }} zł</span></td>
-                        <td><span class="font11">{{ product.category_name }}</span></td>
-                        <td><span class="font11">
+                <tr>
+                    <td><strong>SKU</strong></td>
+                    <td>{{ product.product_sku }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Netto</strong></td>
+                    <td>{{ product.product_price }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Brutto</strong></td>
+                    <td>{{ product.product_price+product.product_price*tax_rate }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Kategoria</strong></td>
+                    <td>{{ product.category_name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Miniatura</strong></td>
+                    <td><img src="{{ product.product_thumb_image }}"/></td>
+                </tr>
+                <tr>
+                    <td><strong>Obrazek</strong></td>
+                    <td><img src="{{ product.product_full_image }}"/></td>
+                </tr>
+                <tr>
+                    <td><strong>Opublikowany</strong></td>
+                    <td>
                         {% if product.product_publish == 'Y' %}
                             <p class="text-success">Tak</p>
                         {% else %}
                             <p class="text-danger">Nie</p>
                         {% endif %}
-                        </span></td>
-                        <td><a href="index.php?site=admin&action=shop&act=products&perf=deleteProduct{{ product.product_id }}" class="btn btn-danger">Usuń</a></td>
-                    </tr>
-                    {% set a = a+1 %}
-                {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Usuń</strong></td>
+                    <td><a href="index.php?site=admin&action=shop&act=products&perf=deleteProduct&productId={{product_product_id}}" class="btn btn-danger"> Usuń </a>
+                </tr>
                 </table>
             </div>
         </div>
