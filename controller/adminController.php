@@ -7,8 +7,6 @@ require_once("../config/DbConn.php");
     use Menu\Menu;
     use Articles\Articles;
     use Shop\Shop;
-
-
     
 class adminController
 {
@@ -706,10 +704,18 @@ class adminController
                                 }
                             break;
                             case 'addCategory':
-                                if(shop::addCategory($_POST['categoryName'],$_POST['categoryDescription'],$_POST['categoryThumbImage'],$_POST['categoryFullImage'],$_POST['categoryPublish'],$_POST['categoryName'],$_POST['cdate'],$_POST['listOrder'])){
+                                if(shop::addCategory($_POST['categoryName'],$_POST['categoryDescription'],$_POST['categoryThumbImage'],$_POST['categoryFullImage'],$_POST['categoryPublish'],$_POST['cdate'],$_POST['listOrder'])){
                                     $info = 'addCategory-success';
                                 } else {
                                     $info = 'addCategory-fail';
+                                }
+                            break;
+                            case 'updateCategory':
+                                if(shop::updateCategory($_GET['categoryId'],$_POST['categoryName'],$_POST['categoryDescription'],$_POST['categoryThumbImage'],$_POST['categoryFullImage'],$_POST['categoryPublish'],$_POST['cdate'],$_POST['listOrder'])){
+                                    $info = 'updateCategory-success';
+                                    $category = shop::getCategoryById($_GET['categoryId']);
+                                } else {
+                                    $info = 'updateCategory-fail';
                                 }
                             break;
                         }
@@ -731,8 +737,20 @@ class adminController
                              );
                         break;
                         case 'categoryAdd':
-                            $category = shop::getCategoryById($_GET['categoryId']);
                             return $this->twig->render("admin/shop-categoryAdd.html.twig", 
+                                array(
+                                    'menu'=>$this->adminMenu,
+                                    'menuChild'=>$this->adminMenuChild,
+                                    'config'=>$this->config,
+                                    'searchInput'=>$this->searchInput,
+                                    'activePage'=>$activePage,
+                                    'info'=>$info
+                                )
+                             );
+                        break;
+                        case 'categoryEdit':
+                            $category = shop::getCategoryById($_GET['categoryId']);
+                            return $this->twig->render("admin/shop-categoryEdit.html.twig", 
                                 array(
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,

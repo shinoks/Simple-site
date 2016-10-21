@@ -1,14 +1,18 @@
 <?php
-if(!isset($_GET['site'])){
-    $start = new siteController();
-    echo $start->getStartSite();
-} elseif ($_GET['site']=='kontakt'){
-    $kontakt = new kontaktController();
-    echo $kontakt->getkontaktSite();
-}  elseif ($_GET['site']=='admin'){
-    $admin = new adminController();
-    echo $admin->getAdminSite();
-} else {
-    $start = new siteController();
-    echo $start->getStartSite();
+switch($_GET['site']){
+    case 'admin':
+        $admin = new adminController();
+        echo $admin->getAdminSite();
+    break;
+    case 'kontakt':
+        $kontakt = new kontaktController();
+        echo $kontakt->getkontaktSite();
+    break;
+    case 'shop':
+        $shop = new sites_shopController();
+        echo $shop->getShopSite();
+    break;
+    default:
+        $start = new siteController();
+        echo $start->getStartSite();
 }

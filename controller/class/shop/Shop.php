@@ -160,14 +160,22 @@ class Shop {
         return $sum;
     }
     
-    public function getAllProducts()
+    public function getAllProducts($publish = '%')
     {
-        $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_product 
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_product.product_id,
+        jos_vm_product.product_sku, jos_vm_product.product_desc, 
+        jos_vm_product.product_thumb_image, jos_vm_product.product_full_image,
+        jos_vm_product.product_publish, jos_vm_product.cdate,
+        jos_vm_product.product_name,
+        jos_vm_product_price.product_price,
+        jos_vm_category.category_name FROM jos_vm_product 
         LEFT JOIN jos_vm_tax_rate ON jos_vm_product.product_tax_id = jos_vm_tax_rate.tax_rate_id 
         LEFT JOIN jos_vm_product_price USING(product_id)
         LEFT JOIN jos_vm_product_category_xref USING(product_id)
         LEFT JOIN jos_vm_category USING(category_id)
+        WHERE jos_vm_product.product_publish LIKE :publish
         ");
+        $stmt->bindParam(':publish',$publish);
         $stmt->execute();
         
         return $stmt->fetchAll();
@@ -183,7 +191,7 @@ class Shop {
     
     public function getCategoryById($categoryId)
     {
-        $stmt = $this->dbGf->prepare("SELECT category_id, category_name, category_description, category_publish, cdate, list_order FROM jos_vm_category WHERE category_id = :categoryId");
+        $stmt = $this->dbGf->prepare("SELECT category_id, category_name, category_description, category_publish, cdate, list_order, category_thumb_image, category_full_image FROM jos_vm_category WHERE category_id = :categoryId");
         $stmt->bindParam(":categoryId",$categoryId);
         $stmt->execute();
         
@@ -740,6 +748,32 @@ class Shop {
         }
         
         return $in;
+    }
+    
+    public function updateCategory($categoryId, $categoryName, $categoryDescription = '', $categoryThumbImage='web/images/shop/emptyImageThumb.jpg', $categoryFullImage='web/images/shop/emptyImage.jpg', $categoryPublish = 'Y', $cdate = 'NOW()', $listOrder = '')
+    {
+        (empty($categoryThumbImage))?$categoryThumbImage='web/images/shop/emptyImageThumb.jpg':'';
+        (empty($categoryFullImage))?$categoryFullImage='web/images/shop/emptyImage.jpg':'';
+        (empty($cdate))?$cdate='NOW()':'';
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_category` 
+        SET `category_name`=:categoryName,
+        `category_description`=:categoryDescription,
+        `category_thumb_image`=:categoryThumbImage,
+        `category_full_image`=:categoryFullImage,
+        `category_publish`=:categoryPublish,
+        `cdate`=:cdate,
+        `list_order`=:listOrder 
+        WHERE category_id = :categoryId");
+        $stmt->bindParam(":categoryId",$categoryId);
+        $stmt->bindParam(":categoryName",$categoryName);
+        $stmt->bindParam(":categoryDescription",$categoryDescription);
+        $stmt->bindParam(":categoryThumbImage",$categoryThumbImage);
+        $stmt->bindParam(":categoryFullImage",$categoryFullImage);
+        $stmt->bindParam(":categoryPublish",$categoryPublish);
+        $stmt->bindParam(":cdate",$cdate);
+        $stmt->bindParam(":listOrder",$listOrder);
+        
+        return $stmt->execute();
     }
     
     public function countOrders()

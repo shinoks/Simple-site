@@ -111,7 +111,7 @@ $(document).scroll(function () {
     {% if config.carousel == true %}
         {% include 'carousel.html.twig' %}
     {% endif %}
-    
+    {% block body%}
       <div class="parralex">
           <section class="bgnd bgnd-1 js-parallax-bg">
                 <div class="centerBow">
@@ -279,7 +279,8 @@ Proin volutpat nulla in turpis molestie hendrerit. Nam vitae diam semper, alique
            </div>
           </section>
       </div>
-    
+      </div>
+    {% endblock %}
            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="web/js/bootstrap.min.js"></script>
     <script src="web/js/lightbox.js"></script>

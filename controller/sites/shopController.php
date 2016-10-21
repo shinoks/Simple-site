@@ -1,13 +1,14 @@
 <?php
 require_once("../config/DbConn.php");
-    
+require_once("../config/DbConnGf.php");
+                    
     use Cart\Cart;
     use Config\Config;
     use Menu\Menu;
     use Articles\Articles;
     use Shop\Shop;
     
-class siteController 
+class sites_shopController 
 {
     
     function __construct()
@@ -16,42 +17,22 @@ class siteController
             array( "cache" => "./view/cache",
              'debug' => true,
             )
+            
             );
         
         $this->db = dbConn::getConnection();
+        $this->dbGf = dbConnGf::getConnection();
         $this->config = config::getConfig();
         $this->menu = menu::getMenuItems();
         $this->menuChild = menu::getChildMenuItems();
+        $cart = new Cart();
     }
     
     
-    public function getStartSite()
-    {
-        if(isset($_GET['site'])){
-            switch($_GET['site']){
-                case 'sklep':
-                    
-                break;
-                case 'kontakt':
-                    
-                break;
-                default:
-                
-                    return $this->twig->render("start.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
-                        'config'=>$this->config,
-                        'products'=>$products,
-                        'items'=>$items,
-                        'id'=>$id,
-                        'info'=>$info
-                        )
-                    );
-            }
-        }
-        
-        
-        $cart = new Cart();
+    public function getShopSite()
+    {   $cart = new Cart();
+    
+        $products = shop::getAllProducts('Y');
                 
         $products = array(
             array('id'=>8001, 'name'=>'Apple iPhone', 'price'=>'699.00'),
@@ -88,11 +69,10 @@ class siteController
                 $cart->update($id,$qty);
                 $info = "cart-updated";
         }
-
-        $items = $cart->getItems();
-
         
-        return $this->twig->render("start.html.twig", array(
+        $items = $cart->getItems();
+        
+        return $this->twig->render("shop.html.twig", array(
             'szkId'=>$_GET['szkId'],
             'menu'=>'start',
             'config'=>$this->config,

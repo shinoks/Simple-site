@@ -13,12 +13,7 @@
 {% block body %}
     <div class="row">
         <div class="pull-right">
-        <form action="index.php?site=admin&action=shop" method="GET" class="form-inline">
-            <input type="hidden" value="admin" name="site" />
-            <input type="hidden" value="shop" name="action" />
-            <input type="text" class="form-control" name="searchInput" {% if searchInput is not empty %}value="{{searchInput}}"{% endif %} placeholder="Wyszukaj użytkownika ..."/>
-            <input type="submit" value="Szukaj" class="btn btn-default" />
-        </form>
+            <a href="index.php?site=admin&action=shop&act=categories" class="btn btn-default">Powrót do kategorii</a>
         </div>
         <br/><br/>
     </div>

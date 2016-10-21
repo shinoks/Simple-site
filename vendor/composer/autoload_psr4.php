@@ -13,5 +13,5 @@ return array(
     'Cart\\' => array($controllerClass.'/cart'),
     'Login\\' => array($controllerClass.'/login'),
     'Menu\\' => array($controllerClass.'/menu'),
-    'Articles\\' => array($controllerClass.'/articles'),
+    'Articles\\' => array($controllerClass.'/articles')
 );

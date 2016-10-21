@@ -1,0 +1,59 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'updateCategory-success'%}
+            <div class="alert alert-success text-center" role="alert">Kategoria została zmieniona</div>
+        {% elseif info == 'updateCategory-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Kategoria nie została zmieniona</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = 'index.php?site=admin&action=shop&act=categories' %}
+    <div class="row">
+        <div class="pull-right">
+            <a href="{{url}}" class="btn btn-default">Powrót do kategorii</a>
+        </div>
+        <br/><br/>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10 bg-white">
+            <div class="row">
+                <div class="col-md-6">
+                    <form  action="{{url}}&show=categoryEdit&perf=updateCategory&categoryId={{category.category_id}}" method="POST"/>
+                        <input type="hidden" name="cdate" class="form-control" value="{{category.category_cdate}}"/><br/>
+                        Nazwa: <input name="categoryName" class="form-control" value="{{category.category_name}}"/><br/>
+                        Opis:<br/>
+                        <textarea name="categoryDescription" class="form-control">{{category.category_description}}</textarea><br/>
+                        Miniatura: <input name="categoryThumbImage" class="form-control" value="{{category.category_thumb_image}}"/><br/>
+                        {% if category.category_thumb_image is not empty %}
+                            <img src="{{category.category_thumb_image}}"/><br/>
+                        {% endif %}
+                        Obrazek: <input name="categoryFullImage" class="form-control" value="{{category.category_full_image}}"/><br/>
+                        {% if category.category_full_image is not empty %}
+                            <img src="{{category.category_full_image}}"/><br/>
+                        {% endif %}
+                        Kolejność: <input name="listOrder" class="form-control" value="{{category.list_order}}"/><br/>
+                        
+                        Opublikowana:<br/><select class="form-control" name="categoryPublish">
+                            {% if category.category_publish == 'Y' %}
+                                <option selected value="Y">Tak</option>
+                                <option value="N">Nie</option>
+                            {% else %}
+                                <option value="Y">Tak</option>
+                                <option selected value="N">Nie</option>
+                            {% endif %}
+                        </select><br/><br/>
+                        <input type="submit" class="btn btn-success" value="Zapisz"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
