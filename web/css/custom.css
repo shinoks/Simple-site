@@ -394,3 +394,7 @@ header + .bgnd {
    filter: alpha(opacity=100);
    opacity: 1;
 }
+
+.font11{
+    font-size: 11px;
+}

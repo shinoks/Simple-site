@@ -1,0 +1,217 @@
+{% extends 'base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'cart-add'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>
+        {% elseif info == 'cart-updated'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
+        {% elseif info == 'cart-removed'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
+        {% elseif info == 'cart-empty' %}
+            <div class="alert alert-success text-center" role="alert">Koszyk został opróżniony</div>
+        {% elseif info == 'login-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie zalogowany</div>
+        {% elseif info == 'login-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś zalogowany</div>
+        {% elseif info == 'logout-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś wylogowany</div>
+        {% elseif info == 'logout-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś wylogowany</div>        
+        {% elseif info == 'deleteOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
+        {% elseif info == 'deleteOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
+        {% elseif info == 'updateOrderStatus-success'%}
+            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
+        {% elseif info == 'updateOrderStatus-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% elseif info == 'updateUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane do Faktury użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane do Faktury użytkownika nie zostały zmienione</div>
+        {% elseif info == 'updateUserData-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserData-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
+        {% elseif info == 'addUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został dodany</div>
+        {% elseif info == 'addUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został dodany</div>
+        {% elseif info == 'deleteUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
+        {% elseif info == 'deleteUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    {% set url = "index.php?site=shop&view=account" %}
+    <div class="container width-full">
+        <div class="well">
+            <div class="row">
+                <div class="row">
+                    <div class="col-md-3">
+                        {% include "shop-leftMenu.html.twig" %}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="well responsive">
+                            <div class="row">
+                                <div class="well fade in" id="order-step-1">
+                                  {% if items is not empty %}
+                                    
+                                
+                                    <table class="table table-cendensed font11">
+                                    <tr>
+                                        <td><strong>Produkt</strong></td>
+                                        <td><strong>Cena Netto</strong></td>
+                                        <td><strong>Cena Brutto</strong></td>
+                                        <td><strong>Ilość</strong></td>
+                                        <td><strong>Kwota</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    {% set total = 0 %}
+                                    {% set totalFinal = 0 %}
+                                    {% for id, qty in items %}
+                                        {% for product in products if product.product_id == id %}                                
+                                        <tr>
+                                            <td>{{ product.product_name }}</td>
+                                            <td>{{ product.product_price|round(2,"common") }}zł</td>
+                                            <td>{{ product.final_price|round(2,"common") }}zł</td>
+                                            <td><div class="row">
+                                            <form action="index.php" method="GET">
+                                                    <input type="hidden" value="shop" name="site" />
+                                                    <input type="text" class="form-control" value="{{ qty }}" name="qty" />
+                                                    <input type="hidden" value="{{ id }}" name="productId" />
+                                                    <input type="hidden" value="update" name="action" />
+                                                    <input type="submit" value="aktualizuj" class="btn btn-default font11" />
+                                            </form>
+                                            </td>
+                                            <td>{{ product.product_price * qty }}  zł</td>
+                                            <td><a class="btn btn-danger font11" href="{{ url }}&action=remove&productId={{ id }}">Usuń</a></td>
+                                        </tr>
+                                        
+                                        {% set total = total + product.product_price * qty %}
+                                        {% set totalFinal = totalFinal + product.final_price * qty %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    <tr>
+                                        <td><a class="btn btn-danger" href="{{ url }}&action=empty">Opróżnij koszyk</a></td>
+                                        <td colspan="5" align="right">Całkowity koszt netto: {{  total }} zł<br/>
+                                                                                Całkowity koszt brutto: {{  totalFinal }} zł</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"></td>
+                                        <td colspan="2"><a class="btn btn-success" href="#">Zamów</a></td>
+                                    </tr>
+                                    </table>
+                                    <p class="text-left">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                Produktów w koszyku {{products|length}}<br/>
+                                                Kwota netto: {{ total }}zł<br/>
+                                                Kwota brutto: {{ totalFinal }}zł<br/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <a class="btn btn-success" id="continueOrder" href="#">Zamów</a>
+                                            </div>
+                                        </div>
+                                    </p>
+                                {% else %}
+                                   <p style="color:#990000;">Twój koszyk jest pusty.</p>
+                                {% endif %}
+                                </div>
+                                <div id='order-step-2' class="collapse fade" >
+                                <form action="index.php?site=shop&view=doOrder" method="POST">
+                                
+                                <strong>Koszyk - potwierdzenie</strong>
+                                {% if items is not empty %}
+                                    
+                                
+                                    <table class="table table-cendensed font11">
+                                    <tr>
+                                        <td><strong>Produkt</strong></td>
+                                        <td><strong>Cena Netto</strong></td>
+                                        <td><strong>Cena Brutto</strong></td>
+                                        <td><strong>Ilość</strong></td>
+                                        <td><strong>Kwota</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    {% set total = 0 %}
+                                    {% set totalFinal = 0 %}
+                                    {% for id, qty in items %}
+                                        {% for product in products if product.product_id == id %}                                
+                                        <tr>
+                                            <td>{{ product.product_name }}</td>
+                                            <td>{{ product.product_price|round(2,"common") }}zł</td>
+                                            <td>{{ product.final_price|round(2,"common") }}zł</td>
+                                            <td>{{ qty }}</td>
+                                            <td>{{ product.product_price * qty }}  zł</td>
+                                        </tr>
+                                        
+                                        {% set total = total + product.product_price * qty %}
+                                        {% set totalFinal = totalFinal + product.final_price * qty %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    <tr>
+                                        <td colspan="6" align="right">Całkowity koszt netto: {{  total }} zł<br/>
+                                                                      Całkowity koszt brutto: {{  totalFinal }} zł</td>
+                                    </tr>
+                                    </table>
+                                {% else %}
+                                   <p style="color:#990000;">Twój koszyk jest pusty.</p>
+                                {% endif %}
+                                <div class="well">
+                                    <strong>Wybierz adres wysyłki:</strong>
+                                    <hr/>
+                                    {% for userAdress in userAddresses %}
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <input type="radio" value="{{userAdress.user_info_id}}" name="userInfoId" {%if userAdress.address_type == "BT"%} checked="checked" {% endif %}/> {{userAdress.address_type_name}}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{userAdress.company}}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{userAdress.first_name}} 
+                                                {{userAdress.last_name}}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{userAdress.zip}} 
+                                                {{userAdress.city}}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{userAdress.address_1}} 
+                                                {{userAdress.address_2}}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    </div>
+                                    <div class="well">
+                                        <strong>Wybierz sposób płatności:</strong>
+                                        {% for payment in paymentsMethod %}
+                                            <div class="row">
+                                                <input type="radio" name="paymentMethodId" value="{{payment.payment_method_id}}"> - {{payment.payment_method_name}}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <a href="" class="block-right btn btn-success">Zamawiam</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $( "#continueOrder" ).click(function() {
+          $( "#order-step-2" ).collapse();
+          $( "#order-step-1" ).collapse();
+        });
+    </script>
+    
+{% endblock%}

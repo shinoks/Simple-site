@@ -29,7 +29,7 @@ class siteController
     {
         if(isset($_GET['site'])){
             switch($_GET['site']){
-                case 'sklep':
+                case 'shop':
                     
                 break;
                 case 'kontakt':

@@ -1,11 +1,86 @@
 {% extends 'base.html.twig' %}
 
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'cart-add'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>
+        {% elseif info == 'cart-updated'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
+        {% elseif info == 'cart-removed'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
+        {% elseif info == 'cart-empty' %}
+            <div class="alert alert-success text-center" role="alert">Koszyk został opróżniony</div>
+        {% elseif info == 'login-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie zalogowany</div>
+        {% elseif info == 'login-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś zalogowany</div>
+        {% elseif info == 'logout-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś wylogowany</div>
+        {% elseif info == 'logout-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś wylogowany</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
 
 {% block body %}
-    <div class="container width-900">
-        <div class="row">
+    {% set url = "index.php?site=shop" %}
+    <div class="container width-full">
+        <div class="well">
             <div class="row">
-                aaa
+                <div class="row">
+                    <div class="col-md-3 bg-info">
+                        {% include "shop-leftMenu.html.twig"%}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="well responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <td>Lp.</td>
+                                        <td>Miniatura</td>
+                                        <td>Nazwa</td>
+                                        <td>Krótki opis</td>
+                                        <td>Cena Netto</td>
+                                        <td>Cena Brutto</td>
+                                        <td>Koszyk</td>
+                                    </tr>
+                                </thead>
+                                    {% set a = 1 %}
+                                    {% for product in products %}
+                                        <tr class="font11">
+                                            <td>{{ a }}</td>
+                                            <td>
+                                            <a class="imageLight" href="web/images/shop_product/resized/{{ product.product_full_image }}" data-lightbox="example-set" data-title="Lub naciśnij prawą strzałkę na klawiaturze">
+                                                <img class="img-rounded" src="web/images/shop_product/{{ product.product_thumb_image }}" alt="" />
+                                            </a>
+                                            </td>
+                                            <td>{{ product.product_name }}</td>
+                                            <td>{{ product.product_description }} <div class="row"><a href="#" class="btn btn-default">więcej ...</a></div></td>
+                                            <td>{{ product.product_price|round(2,"common") }}zł</td>
+                                            <td>
+                                            {% if product.final_price is empty %}
+                                                {{ product.product_price|round(2,"common") }}zł
+                                            {% else %}
+                                                {{ product.final_price|round(2,"common") }}zł
+                                            {% endif %}
+                                            
+                                            </td>
+                                            <td>
+                                                <form class="form-inline" action="index.php" method="GET">
+                                                    <input type="hidden" value="shop" name="site" />
+                                                    <input type="text" value="1" name="qty"  class="form-control"/>
+                                                    <input type="hidden" value="{{ product.product_id }}" name="productId" />
+                                                    <input type="hidden" value="add" name="action" />
+                                                    <input type="submit" value="Dodaj" class="btn btn-default" />
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% set a = a +1 %}
+                                    {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -20,60 +20,11 @@
     <link rel="icon"  type="web/images/png" href="favicon.png">
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script>
+{% block script %}
 
-$(document).ready(function(){
-    $( ".imageLight" ).hover(
-        function() {
-            $( this ).fadeTo( "fast", 1 );},
-        function() {
-          $( this ).fadeTo( "fast", 0.5 );
-        }
-    );
-});
-$(document).scroll(function () {
-    var documentHeight = document.documentElement.clientHeight;
-    var y = $(this).scrollTop();
-    $('.well').each(function () {
-        var t = $(this).parent().offset().top - innerHeight *1.1 ;
-        if (y > t) {
-            $(this).fadeIn("slow");
-        }
-    });
-});
-(function() {
-  var delay = false;
-
-  $(document).on('mousewheel DOMMouseScroll', function(event) {
-    event.preventDefault();
-    if(delay) return;
-
-    delay = true;
-    setTimeout(function(){delay = false},200)
-
-    var wd = event.originalEvent.wheelDelta || -event.originalEvent.detail;
-
-    var a= document.getElementsByClassName('js-parallax-bg');
-    if(wd < 0) {
-      for(var i = 0 ; i < a.length ; i++) {
-        var t = a[i].getClientRects()[0].top;
-        if(t >= 80) break;
-      }
-    }
-    else {
-      for(var i = a.length-1 ; i >= 0 ; i--) {
-        var t = a[i].getClientRects()[0].top;
-        if(t < -20) break;
-      }
-    }
-    $('html,body').animate({
-      scrollTop: a[i].offsetTop
-    });
-  });
-})();
-</script>
+{% endblock %}
   </head>
-  <body>
+  <body background="{{ config.siteBackgroundImage }}">
     <div class="{% if config.menuPosition is defined %}{{ config.menuPosition }}{% else%}menu{% endif %}{% if config.menuShadow is defined %} menu-shadow {% endif %} {{ config.menuWidth }}" id="menu">
         <nav class="navbar navbar-default">
             <div class="container-fluid">
@@ -96,6 +47,7 @@ $(document).scroll(function () {
                             <li{% if menu == 'start' %} class="active"{% endif %}><a href="index.php?szkId={{ szkId }}">Start</a></li> 
                             <li{% if menu == 'dokumenty' %} class="active"{% endif %}><a href="index.php?site=dokumenty&szkId={{ szkId }}">Dokumentacja</a></li>
                             <li{% if menu == 'creator' %} class="active"{% endif %}><a href="index.php?site=creator&szkId={{ szkId }}">Kreator celów</a></li>
+                            <li{% if menu == 'shop' %} class="active"{% endif %}><a href="index.php?site=shop">Sklep</a></li>
                             <li{% if menu == 'kontakt' %} class="active"{% endif %}><a href="index.php?site=kontakt&szkId={{ szkId }}">Kontakt</a></li>
                         </ul>
                         </div>
@@ -111,175 +63,9 @@ $(document).scroll(function () {
     {% if config.carousel == true %}
         {% include 'carousel.html.twig' %}
     {% endif %}
+    {% block info %}
+    {% endblock %}
     {% block body%}
-      <div class="parralex">
-          <section class="bgnd bgnd-1 js-parallax-bg">
-                <div class="centerBow">
-                    <span class='h1Decor'>Test sklep</span><br/>
-                    <div class="well">
-                    {% if info is defined %}
-                    <div class="bg-success text-center">
-                        {% if info == 'cart-add'%}
-                            Produkt został dodany do koszyka
-                        {% elseif info == 'cart-updated'  %}
-                            Ilość produktu została zaktualizowana
-                        {% elseif info == 'cart-removed'  %}
-                            Produkt został usunięty
-                        {% elseif info == 'cart-empty'  %}
-                            Koszyk został opróżniony
-                        {% endif %}
-                    </div>
-                    {% endif %}
-                    
-                    
-                        {% if items is not empty %}
-                            <table class="table table-bordered">
-                            <tr>
-                                <td><strong>Produkt</strong></td>
-                                <td><strong>Cena</strong></td>
-                                <td><strong>Ilość</strong></td>
-                                <td><strong>Kwota</strong></td>
-                                <td></td>
-                            </tr>';
-                            {% set total = 0 %}
-                            {% for id, qty in items %}
-                                {% for product in products if product.id == id %}                                
-                                <tr>
-                                    <td>{{ product['name'] }}</td>
-                                    <td>{{ product['price'] }} zł</td>
-                                    <td><div class="row">
-                                    <form action="index.php" method="GET">
-                                        <div class="col-md-8">
-                                            <input type="text" class="form-control" value="{{ qty }}" name="qty" />
-                                            <input type="hidden" value="{{ id }}" name="id" />
-                                            <input type="hidden" value="update" name="action" />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <input type="submit" value="aktualizuj" class="btn btn-default" />
-                                        </div>
-                                    </form>
-                                    </td>
-                                    <td>{{ product['price'] * qty }}  zł</td>
-                                    <td><a class="btn btn-danger" href="?action=remove&id={{ id }}">Usuń</a></td>
-                                </tr>
-                                
-                                {% set total = total + product['price'] * qty %}
-                                {{ total }} {{ product['price'] }} {{qty}}<br/>
-                                {% endfor %}
-                            {% endfor %}
-                            <tr>
-                                <td><a class="btn btn-danger" href="?action=empty">Opróżnij koszyk</a></td>
-                                <td colspan="4" align="right"><strong>Całkowity koszt: {{  total }} zł</strong></td>
-                            </tr>
-                            </table>
-                        {% else %}
-                           <p style="color:#990000;">Twój koszyk jest pusty.</p>
-                        {% endif %}
-                        
-                        <h3>Dodaj do koszyka:</h3>
-                        <table class="table table-bordered">
-                        {% for product in products%}
-                            <tr>
-                                <td>{{ product['name'] }}</td>
-                                <td>$ {{ product['price'] }}</td>
-                                <td><a class="btn btn-primary" href="?action=add&id={{ product['id'] }}">Dodaj do koszyka</a></td>
-                            </tr>
-                        {% endfor %}
-                        </table>
-                    </div>
-                </div>
-          </section>
-          <section class="bgnd bgnd-2 js-parallax-bg">
-             <div class="leftBow">
-             <div class="row">
-                
-                    <div class="col-md-8">
-                        <h2>Article</h2>
-                    </div>
-                    <div class="col=md-4">
-                        <span class="articleDate">22.09.2019 r.</span>
-                    </div></div>
-Phasellus efficitur aliquam ligula, sed euismod nulla interdum in. In in nunc posuere, mattis lacus non, mattis sapien. Curabitur vestibulum diam sit amet orci vulputate molestie. Pellentesque dapibus vitae leo sit amet efficitur. Quisque id commodo erat. Nunc rhoncus libero in lobortis finibus. Cras a diam scelerisque, dapibus mauris nec, convallis mauris. Morbi euismod lacinia nisl, at venenatis neque convallis nec. Ut finibus diam sit amet purus scelerisque, scelerisque commodo lectus vulputate. Etiam eu ante sapien. Aenean quis est eget lorem feugiat molestie. Vestibulum id suscipit orci.
-
-Proin volutpat nulla in turpis molestie hendrerit. Nam vitae diam semper, aliquet orci ac, consectetur lectus. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Integer tincidunt vehicula pulvinar. Cras lorem purus, iaculis eu odio sit amet, dapibus accumsan lorem. Aliquam viverra dolor in ante porttitor, eget luctus elit aliquam. Maecenas viverra tellus nec posuere condimentum. Curabitur tincidunt velit sit amet finibus pharetra.
-                </div>
-          </section>
-          <section class="bgnd bgnd-3 js-parallax-bg">
-            <div class="rightBow">
-            <div class="row">
-                
-                    <div class="col-md-8">
-                        <h2>Gallery</h2>
-                    </div>
-                    <div class="col=md-4">
-                        <span class="articleDate">22.09.2019 r.</span>
-                    </div>
-                  </div>
-                    <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-3.jpg" data-lightbox="example-set" data-title="Click the right half of the image to move forward."><img class="example-image" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-3.jpg" alt=""/></a>
-                      <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-4.jpg" data-lightbox="example-set" data-title="Or press the right arrow on your keyboard.">
-                      <img class="img-rounded" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-4.jpg" alt="" /></a>
-                      <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-5.jpg" data-lightbox="example-set" data-title="The next image in the set is preloaded as you're viewing.">
-                      <img class="img-circle" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-5.jpg" alt="" /></a>
-                      <a class="imageLight" href="http://lokeshdhakar.com/projects/lightbox2/images/image-6.jpg" data-lightbox="example-set" data-title="Click anywhere outside the image or the X to the right to close.">
-                      <img class="img-thumbnail" src="http://lokeshdhakar.com/projects/lightbox2/images/thumb-6.jpg" alt="" /></a>
-                  </div>
-          </section>
-          <section class="bgnd bgnd-4 js-parallax-bg">
-            <div class="centerBow">
-                                <div class="main"> 
-                        <div class="view view-tenth">
-                            <img src="web/images/16.jpg" />
-                            <div class="mask">
-                                <h2>Hover Style</h2>
-                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
-                                <a href="#" class="info">Read More</a>
-                            </div>
-                        </div>
-                        <div class="view view-tenth">
-                            <img src="web/images/2.jpg" />
-                            <div class="mask">
-                                <h2>Hover Style</h2>
-                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
-                                <a href="#" class="info">Read More</a>
-                            </div>
-                        </div>
-                        <div class="view view-tenth">
-                            <img src="web/images/1.jpg" />
-                            <div class="mask">
-                                <h2>Hover Style</h2>
-                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
-                                <a href="#" class="info">Read More</a>
-                            </div>
-                        </div>
-                        <div class="view view-tenth">
-                            <img src="web/images/7.jpg" />
-                            <div class="mask">
-                                <h2>Hover Style</h2>
-                                <p>A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart.</p>
-                                <a href="#" class="info">Read More</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-          </section>
-          <section class="bgnd bgnd-5 js-parallax-bg">
-          <div class="embed-responsive embed-responsive-16by9">
-          <div class="overlay embed-responsive-item" onClick="style.pointerEvents='none'"></div>
-  <iframe class="embed-responsive-item" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2562.1329892235763!2d18.693538415918113!3d50.04633997942165!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4716aebe4df597dd%3A0x5e6047ad5772edbc!2sGrupa+Format!5e0!3m2!1spl!2spl!4v1474626168355"></iframe>
-</div>
-               
-          </section>
-          <section class="js-parallax-bg">
-           <div class="footer">
-                {% if config.footer == true %}
-                    {{ config.footerText }}
-                {% endif %}
-                <br/>
-                <a href="http://grupaformat.pl">www.grupaformat.pl</a>
-           </div>
-          </section>
-      </div>
-      </div>
     {% endblock %}
            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="web/js/bootstrap.min.js"></script>

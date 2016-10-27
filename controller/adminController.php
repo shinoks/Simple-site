@@ -1,6 +1,7 @@
 <?php
     
 require_once("../config/DbConn.php");
+require_once("../config/DbConnGf.php");
 
     use Config\Config;
     use Login\Login;
@@ -18,6 +19,7 @@ class adminController
                 )
             );
         $this->db = dbConn::getConnection();
+        $this->dbGf = dbConnGf::getConnection();
         $this->config = config::getConfig();
         $this->adminMenu = menu::getAdminMenuItems();
         $this->adminMenuChild = menu::getAdminChildMenuItems();
@@ -47,7 +49,7 @@ class adminController
                 
                 case 'shop':
                     require_once("../config/DbConnGf.php");
-                    $this->dbGf = dbConnGf::getConnection();
+                    
                     echo $this->getAdminShop();
                 break;
                 
@@ -82,8 +84,12 @@ class adminController
             
            switch ($_GET['action']){
                case 'login':
-                   $login = $login->login($_POST['username'], $_POST['password']);
-                    if($login == 1 || $sess == true){
+                    
+                   $login = login::loginJoomla($_POST['username'],$_POST['password']);
+                   $sess = login::checkSession();
+
+                    if($login == true && $sess['session'] == true){
+                        
                         return $this->twig->render("admin/start.html.twig", 
                             array(
                                 'login'=>$login,
@@ -93,6 +99,7 @@ class adminController
                             )
                         );
                     } else {
+                        
                         $info = 'login-error';
                         return $this->twig->render("admin/login.html.twig", 
                             array(
@@ -517,7 +524,6 @@ class adminController
                 }
                 
                 $orderProducts = shop::getOrderProducts($_GET['orderId']);
-                $userAddress = shop::getUserAddress($order['user_id']);
                 $products = shop::getAllProducts();
                 $users = shop::getAllUsers();
                 $orderHistory = shop::getOrderHistory($_GET['orderId']);

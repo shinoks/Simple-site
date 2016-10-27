@@ -1,0 +1,62 @@
+{% if items is not empty %}
+                                    
+                                
+                                    <table class="table table-cendensed font11">
+                                    <tr>
+                                        <td><strong>Produkt</strong></td>
+                                        <td><strong>Cena Netto</strong></td>
+                                        <td><strong>Cena Brutto</strong></td>
+                                        <td><strong>Iloœæ</strong></td>
+                                        <td><strong>Kwota</strong></td>
+                                        <td></td>
+                                    </tr>
+                                    {% set total = 0 %}
+                                    {% set totalFinal = 0 %}
+                                    {% for id, qty in items %}
+                                        {% for product in products if product.product_id == id %}                                
+                                        <tr>
+                                            <td>{{ product.product_name }}</td>
+                                            <td>{{ product.product_price|round(2,"common") }}z³</td>
+                                            <td>{{ product.final_price|round(2,"common") }}z³</td>
+                                            <td><div class="row">
+                                            <form action="index.php" method="GET">
+                                                    <input type="hidden" value="shop" name="site" />
+                                                    <input type="text" class="form-control" value="{{ qty }}" name="qty" />
+                                                    <input type="hidden" value="{{ id }}" name="productId" />
+                                                    <input type="hidden" value="update" name="action" />
+                                                    <input type="submit" value="aktualizuj" class="btn btn-default font11" />
+                                            </form>
+                                            </td>
+                                            <td>{{ product.product_price * qty }}  z³</td>
+                                            <td><a class="btn btn-danger font11" href="{{ url }}&action=remove&productId={{ id }}">Usuñ</a></td>
+                                        </tr>
+                                        
+                                        {% set total = total + product.product_price * qty %}
+                                        {% set totalFinal = totalFinal + product.final_price * qty %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    <tr>
+                                        <td><a class="btn btn-danger" href="{{ url }}&action=empty">Opró¿nij koszyk</a></td>
+                                        <td colspan="5" align="right">Ca³kowity koszt netto: {{  total }} z³<br/>
+                                                                                Ca³kowity koszt brutto: {{  totalFinal }} z³</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"></td>
+                                        <td colspan="2"><a class="btn btn-success" href="index.php?site=shop&view=continueOrder">Zamów</a></td>
+                                    </tr>
+                                    </table>
+                                    <p class="text-left">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                Produktów w koszyku {{products|length}}<br/>
+                                                Kwota netto: {{ total }}z³<br/>
+                                                Kwota brutto: {{ totalFinal }}z³<br/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <a class="btn btn-success" href="index.php?site=shop&view=continueOrder">Zamów</a>
+                                            </div>
+                                        </div>
+                                    </p>
+                                {% else %}
+                                   <p style="color:#990000;">Twój koszyk jest pusty.</p>
+                                {% endif %}

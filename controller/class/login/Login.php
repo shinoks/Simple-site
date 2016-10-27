@@ -12,7 +12,7 @@ class Login {
     {
         $this->db = $db;
         $this->config = config::getConfig();
-        $this->sessionTime = 3600;
+        
     }
 
     
@@ -25,17 +25,17 @@ class Login {
         $select = $stmt->fetch();
         
         if($select['count'] == 1){
-            $this->sess($username);
+            login::sess($username);
             return true;
         } else {
             return false;
         }
     }
     
-    public function sess($username)
+    private function sess($username)
     {
         $_SESSION['user']= $username;
-        $_SESSION['session_time']= $this->renewSessionTime();
+        login::renewSessionTime();
         $_SESSION['auth'] = true;
     }
     
@@ -45,12 +45,14 @@ class Login {
         unset($_SESSION['auth']);
         unset($_SESSION['session_time']);
         
+        return true;
+        
     }
     
     public function checkSession()
     {
         $info = array();
-        if(isset($_SESSION['user']) && isset($_SESSION['auth']) && $_SESSION['auth']== true && $this->checkSessionTime()>0){
+        if(isset($_SESSION['user']) && isset($_SESSION['auth']) && $_SESSION['auth']== true && login::checkSessionTime()>0){
             login::renewSessionTime();
             $info['session'] = true;
             $info['info'] = 'logged';
@@ -60,16 +62,23 @@ class Login {
             
         }else {
             $info['session'] = false;
+            $a = 0;
             if(!isset($_SESSION['user'])){
                 $info['info'] = 'session-user-lack';
+                $a ++;
             }
             if(!isset($_SESSION['auth'])){
                 $info['info'] = 'session-auth-lack';
+                $a ++;
             }
-            if($this->checkSessionTime()<=0){
+            if(login::checkSessionTime()<=0){
                 $info['info'] = 'session-timeout';
+                $a ++;
             }
+            ($a == 3)?$info['info'] = 'session-notLogged': '';
             $info['sessionTime'] = $this->sessionTime;
+            
+            login::logout();
             
             return $info;
         }
@@ -77,7 +86,7 @@ class Login {
     
     public function renewSessionTime()
     {
-        $_SESSION['sessionTime'] = time()+$this->sessionTime; 
+        $_SESSION['sessionTime'] = time()+3600; 
     }
     
     public function checkSessionTime()
@@ -87,6 +96,44 @@ class Login {
         return $czas;
     }
     
-
+    public function loginJoomla($username, $password)
+    {
+        $user = login::getUserByUsername($username);
+        $parts= explode( ':', $user['password'] );
+        $salt= $parts[1];
+        $hashedPassword = login::getHashedPasswordJoomla($password,$salt);
+        $stmt=$this->dbGf->prepare("SELECT COUNT(*) as `count` FROM jos_users WHERE username = :username and password = :password");
+        $stmt->bindParam(':username',$username);
+        $stmt->bindParam(':password',$hashedPassword);
+        $stmt->execute();
+        $select = $stmt->fetch();
+        
+        if($select['count'] == 1){
+            login::sess($username);
+            
+            return true;
+        } else {
+            login::logout();
+            return false;
+        }
+    }
+    
+    public function getUserByUsername($username)
+    { 
+        $stmt = $this->dbGf->prepare("SELECT password FROM jos_users WHERE username = :username");
+        $stmt->bindParam(":username",$username);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
+    private function getHashedPasswordJoomla($cryptedPass,$salt)
+    {
+        $pass = md5($cryptedPass.$salt);
+        $pass = $pass.':'.$salt;
+        
+        return $pass;
+    }
+    
 }
 ?>

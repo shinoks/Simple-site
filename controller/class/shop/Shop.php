@@ -83,18 +83,40 @@ class Shop {
     
     public function getOrderById($orderId)
     {
-        $stmt = $this->dbGf->prepare("SELECT *
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
             LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
+            LEFT JOIN jos_vm_order_payment USING(order_id) 
+            LEFT JOIN jos_vm_payment_method USING(payment_method_id) 
             WHERE jos_vm_orders.order_id = :orderId
             GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc
-            
             ");
             
         $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
+    public function getOrderByIdFromUser($orderId,$userId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
+            FROM jos_vm_orders
+            LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
+            LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
+            LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
+            LEFT JOIN jos_vm_order_payment USING(order_id) 
+            LEFT JOIN jos_vm_payment_method USING(payment_method_id) 
+            WHERE jos_vm_orders.order_id = :orderId and jos_users.id = :userId
+            GROUP BY jos_vm_orders.order_id
+            ORDER BY jos_vm_orders.order_id desc
+            ");
+            
+        $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->bindParam(':userId',$userId,$this->dbGf->PARAM_INT);
         $stmt->execute();
         
         return $stmt->fetch();
@@ -112,6 +134,25 @@ class Shop {
             WHERE order_id = :orderId
             ");
         $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getOrderProductsFromUser($orderId,$userId)
+    {
+        $orderId = (int) $orderId;
+        
+        $stmt = $this->dbGf->prepare("SELECT *
+            FROM `jos_vm_order_item`
+            LEFT JOIN jos_vm_orders USING(order_id)
+            LEFT JOIN jos_vm_product
+            USING ( product_id )
+            LEFT JOIN jos_vm_tax_rate ON jos_vm_tax_rate.tax_rate_id = jos_vm_product.product_tax_id 
+            WHERE order_id = :orderId and jos_vm_orders.user_id = :userId
+            ");
+        $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt->bindParam(':userId',$userId,$this->dbGf->PARAM_INT);
         $stmt->execute();
         
         return $stmt->fetchAll();
@@ -168,7 +209,9 @@ class Shop {
         jos_vm_product.product_publish, jos_vm_product.cdate,
         jos_vm_product.product_name,
         jos_vm_product_price.product_price,
-        jos_vm_category.category_name FROM jos_vm_product 
+        jos_vm_category.category_name,
+        jos_vm_product_price.product_price+jos_vm_product_price.product_price*jos_vm_tax_rate.tax_rate as final_price
+        FROM jos_vm_product 
         LEFT JOIN jos_vm_tax_rate ON jos_vm_product.product_tax_id = jos_vm_tax_rate.tax_rate_id 
         LEFT JOIN jos_vm_product_price USING(product_id)
         LEFT JOIN jos_vm_product_category_xref USING(product_id)
@@ -359,6 +402,14 @@ class Shop {
         return $pagin;
     }
     
+    public function getPaymentsMethod()
+    {
+        $stmt = $this->dbGf->prepare("SELECT payment_method_id, payment_method_name FROM `jos_vm_payment_method`");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
     public function getOrderHistory($orderId)
     {
         $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_order_history LEFT JOIN jos_vm_order_status USING(order_status_code) WHERE order_id = :orderId");
@@ -459,6 +510,62 @@ class Shop {
         $stmt->bindParam(":categoryPublish",$categoryPublish);
         $stmt->bindParam(":cdate",$cdate);
         $stmt->bindParam(":listOrder",$listOrder);
+        
+        return $stmt->execute();
+    }
+    
+    public function addOrder($userId,$vendorId=1,$orderNumber=1,$userInfoId,$orderTotal,$orderSubtotal,$orderTax,$orderTaxDetails='', $orderDiscount=0, $orderCurrency='PLN',
+                            $orderStatus='!', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote=NULL, $ipAddress)
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_orders`
+        ( `user_id`, `vendor_id`, `order_number`, `user_info_id`, `order_total`, `order_subtotal`, `order_tax`, `order_tax_details`, `order_shipping`, `order_shipping_tax`, `coupon_discount`, `coupon_code`, `order_discount`, `order_currency`, 
+        `order_status`, `cdate`, `mdate`, `ship_method_id`, `customer_note`, `ip_address`) 
+        VALUES (:userId,:vendorId,:orderNumber,:userInfoId,:orderTotal,:orderSubtotal,:orderTax,:orderTaxDetails,:orderShipping,:orderShippingTax,:couponDiscount,:couponCode,:orderDiscount,:orderCurrency,:orderStatus,:cdate,:mdate,
+        :shipMethodId,:customerNote,:ipAddress)");
+        $stmt->bindParam(':userId',$userId);
+        $stmt->bindParam(':vendorId',$vendorId);
+        $stmt->bindParam(':orderNumber',$orderNumber);
+        $stmt->bindParam(':userInfoId',$userInfoId);
+        $stmt->bindParam(':orderTotal',$orderTotal);
+        $stmt->bindParam(':orderSubtotal',$orderSubtotal);
+        $stmt->bindParam(':orderTax',$orderTax);
+        $stmt->bindParam(':orderTaxDetails',$orderTaxDetails);
+        $stmt->bindParam(':orderShipping',$orderShipping);
+        $stmt->bindParam(':orderShippingTax',$orderShippingTax);
+        $stmt->bindParam(':couponDiscount',$couponDiscount);
+        $stmt->bindParam(':couponCode',$couponCode);
+        $stmt->bindParam(':orderStatus',$orderStatus);
+        $stmt->bindParam(':orderDiscount',$orderDiscount);
+        $stmt->bindParam(':orderCurrency',$orderCurrency);
+        $stmt->bindParam(':cdate',time());
+        $stmt->bindParam(':mdate',time());
+        $stmt->bindParam(':shipMethodId',$shipMethodId);
+        $stmt->bindParam(':customerNote',$customerNote);
+        $stmt->bindParam(':ipAddress',$ipAddress);
+        $stmt->execute();
+        
+        return $this->dbGf->lastInsertId();
+    }
+    
+    public function addProductToNewOrder($orderId,$userInfoId,$vendorId = 1,$productId,$orderItemSku, $orderItemName,$productQuantity, $productItemPrice, $productFinalPrice, $orderItemCurrency = 'PLN', $orderStatus='!', $producAttribute='')
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_order_item`
+        (`order_id`, `user_info_id`, `vendor_id`, `product_id`, `order_item_sku`, `order_item_name`, `product_quantity`, `product_item_price`, `product_final_price`, `order_item_currency`, `order_status`, `cdate`, `mdate`, `product_attribute`) 
+        VALUES (:orderId, :userInfoId, :vendorId, :productId, :orderItemSku:, orderItemName,:productQuantity, :productItemPrice, :productFinalPrice, :orderItemCurrency, :orderStatus, :cdate, :mdate, :producAttribute)");
+        $stmt->bindParam(":orderId",$orderId);
+        $stmt->bindParam(":userInfoId",$userInfoId);
+        $stmt->bindParam(":vendorId",$vendorId);
+        $stmt->bindParam(":productId",$productId);
+        $stmt->bindParam(":orderItemSku",$orderItemSku);
+        $stmt->bindParam(":orderItemName",$orderItemName);
+        $stmt->bindParam(":productQuantity",$productQuantity);
+        $stmt->bindParam(":productItemPrice",$productItemPrice);
+        $stmt->bindParam(":productFinalPrice",$productFinalPrice);
+        $stmt->bindParam(":orderItemCurrency",$orderItemCurrency);
+        $stmt->bindParam(":orderStatus",$orderStatus);
+        $stmt->bindParam(":producAttribute",$producAttribute);
+        $stmt->bindParam(":cdate",time());
+        $stmt->bindParam(":mdate",time());
         
         return $stmt->execute();
     }
@@ -711,7 +818,7 @@ class Shop {
         $query = "UPDATE jos_users SET";
         $a = 1;
         $pasHash =  shop::getPasswordHash($password);
-        var_dump(shop::verifyPassword($password,$pasHash));
+        shop::verifyPassword($password,$pasHash);
         if(!empty($name)){
             $a++;
             $query .= "`name`=:name ";
@@ -725,6 +832,11 @@ class Shop {
             if($a>=2){ $query .= " , ";}
             $a++;
             $query .= "`email`=:email ";
+        }
+        if(!empty($password)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            echo $password. ' - '. $pass;
         }
         $query .= "WHERE id = :userId ";
         

@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'cart-add'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>
+        {% elseif info == 'cart-updated'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
+        {% elseif info == 'cart-removed'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
+        {% elseif info == 'cart-empty' %}
+            <div class="alert alert-success text-center" role="alert">Koszyk został opróżniony</div>
+        {% elseif info == 'login-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie zalogowany</div>
+        {% elseif info == 'login-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś zalogowany</div>
+        {% elseif info == 'logout-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś wylogowany</div>
+        {% elseif info == 'logout-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś wylogowany</div>        
+        {% elseif info == 'deleteOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
+        {% elseif info == 'deleteOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
+        {% elseif info == 'updateOrderStatus-success'%}
+            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
+        {% elseif info == 'updateOrderStatus-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% elseif info == 'updateUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane do Faktury użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane do Faktury użytkownika nie zostały zmienione</div>
+        {% elseif info == 'updateUserData-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserData-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
+        {% elseif info == 'addUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został dodany</div>
+        {% elseif info == 'addUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został dodany</div>
+        {% elseif info == 'deleteUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
+        {% elseif info == 'deleteUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    {% set url = "index.php?site=shop&view=account" %}
+    <div class="container width-full">
+        <div class="well">
+            <div class="row">
+                <div class="col-md-3  bg-info">
+                    {% include "shop-leftMenu.html.twig" %}
+                </div>
+                <div class="col-md-9">
+                    <div class="well">
+                        <div class="row">
+                            <div class="pull-left col-md-6">
+                                Zamówienie nr. {{ order.order_id }}<br/>
+                                Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
+                                Data modyfikacji: {{ order.mdate|date("d-m-Y H:i:s") }}<br/>
+                                Stan zamówienia: {{ order.order_status_name }}<br/>
+                                <br/>
+                                <br/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Rachunek</strong><br/>  
+                                <table class="table table-bordered ">
+                                <tr>
+                                    <td>E-mail:</td>
+                                    <td>{{ order.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Nazwa firmy:</td>
+                                    <td>{{ order.company }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Imię i Nazwisko:</td>
+                                    <td>{{ order.first_name }} {{ order.last_name }}</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Ulica:</td>
+                                    <td>{{ order.address_1 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Miasto:</td>
+                                    <td>{{ order.city }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Kod pocztowy:</td>
+                                    <td>{{ order.zip }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Telefon:</td>
+                                    <td>{{ order.phone_1 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Telefon kom.:</td>
+                                    <td>{{ order.phone_2 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Numer NIP:</td>
+                                    <td>{{ order.extra_field_1 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Konsultant:</td>
+                                    <td>{{ order.extra_field_2 }}</td>
+                                </tr>
+                                 </table>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Wysyłka do</strong>
+                                {% for userSendTo in userAddresses%}
+                                    {% if userSendTo.user_info_id == order.user_info_id %}
+                                    <table class="table table-bordered">
+                                    <tr>
+                                        <td>Alias:</td>
+                                        <td>{{ userSendTo.address_type_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nazwa firmy:</td>
+                                        <td>{{ userSendTo.company }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Imię i Nazwisko:</td>
+                                        <td>{{ userSendTo.first_name }} {{ userSendTo.last_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ulica:</td>
+                                        <td>{{ userSendTo.address_1 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Miasto:</td>
+                                        <td>{{ userSendTo.city }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Kod pocztowy:</td>
+                                        <td>{{ userSendTo.zip }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Telefon:</td>
+                                        <td>{{ userSendTo.phone_1 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Telefon kom.:</td>
+                                        <td>{{ userSendTo.phone_2 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Numer NIP:</td>
+                                        <td>{{ userSendTo.extra_field_1 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Konsultant:</td>
+                                        <td>{{ userSendTo.extra_field_2 }}</td>
+                                    </tr>
+                                    
+                                     </table>
+                                     {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="well table-responsive">
+                            <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <td><strong>Ilość</strong></td>
+                                    <td><strong>Nazwa</strong></td>
+                                    <td><strong>Cena netto</strong></td>
+                                    <td><strong>Cena brutto</strong></td>
+                                    <td><strong>Podatek</strong></td>
+                                    <td><strong>Suma</strong></td>
+                                </tr>
+                            </thead>
+                            {% for item in orderProducts %}
+                                <tr>
+                                    <td>{{ item.product_quantity }}</td>
+                                    <td>{{ item.product_name }}</td>
+                                    <td>{{ item.product_item_price|round(2,"common") }}</td>
+                                    <td>{{ item.product_final_price|round(2,"common") }}</td>
+                                    <td>{{ item.tax_rate * 100 }}%</td>
+                                    <td>{{ item.product_quantity * item.product_final_price|round(2,"common") }}</td>
+                                </tr>
+                                </form>
+                            {% endfor %}
+                                <tr>
+                                    <td colspan="4">
+                                    </td>
+                                    <td>
+                                        Suma netto:
+                                    </td>
+                                    <td>
+                                        {{ order.order_subtotal|round(2,"common") }}zł
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">
+                                    </td>
+                                
+                                    <td>
+                                        Suma:
+                                    </td>
+                                    <td>
+                                        {{ order.order_total|round(2,"common") }}zł
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                        </div>
+                        <div class="well">
+                            <strong>Informacje o wysyłce</strong><br/>
+                            <div class="col-md-6">
+                                Metoda płatności:  <br/>
+                                {{order.payment_method_name}}
+                            </div>
+                            <div class="col-md-6">
+                                Rodzaj wysyłki:
+                                
+                            </div>
+                            <br/>
+                            <br/>
+                        </div>
+                    </div>
+                    <div class="well">
+                        <strong>Notatka klienta</strong><br/>
+                        <textarea class="form-control" rows="5" disabled>{{ order.customer_note }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock%}
