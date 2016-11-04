@@ -13,11 +13,16 @@
                                     {% set total = 0 %}
                                     {% set totalFinal = 0 %}
                                     {% for id, qty in items %}
-                                        {% for product in products if product.product_id == id %}                                
+                                        {% for product in products if product.product_id == id %}
+                                            {% if product.final_price|round(2,"common") == '0' %}
+                                                {% set productFinalPrice = product.product_price|round(2,"common") %}
+                                            {% else %}
+                                                {% set productFinalPrice = product.final_price|round(2,"common") %}
+                                            {% endif %} 
                                         <tr>
                                             <td>{{ product.product_name }}</td>
                                             <td>{{ product.product_price|round(2,"common") }}z³</td>
-                                            <td>{{ product.final_price|round(2,"common") }}z³</td>
+                                            <td>{{ productFinalPrice|round(2,"common") }}z³</td>
                                             <td><div class="row">
                                             <form action="index.php" method="GET">
                                                     <input type="hidden" value="shop" name="site" />
@@ -32,7 +37,7 @@
                                         </tr>
                                         
                                         {% set total = total + product.product_price * qty %}
-                                        {% set totalFinal = totalFinal + product.final_price * qty %}
+                                        {% set totalFinal = totalFinal + productFinalPrice * qty %}
                                         {% endfor %}
                                     {% endfor %}
                                     <tr>

@@ -135,5 +135,23 @@ class Login {
         return $pass;
     }
     
+    private function genRandomSalt($length = 32)
+    {
+        $salt = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        $len = strlen($salt);
+        $makepass = '';
+
+        $stat = @stat(__FILE__);
+        if(empty($stat) || !is_array($stat)) $stat = array(php_uname());
+
+        mt_srand(crc32(microtime() . implode('|', $stat)));
+
+        for ($i = 0; $i < $length; $i ++) {
+        $makepass .= $salt[mt_rand(0, $len -1)];
+        }
+
+        return $makepass;
+    }
+    
 }
 ?>

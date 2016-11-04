@@ -515,7 +515,7 @@ class Shop {
     }
     
     public function addOrder($userId,$vendorId=1,$orderNumber=1,$userInfoId,$orderTotal,$orderSubtotal,$orderTax,$orderTaxDetails='', $orderDiscount=0, $orderCurrency='PLN',
-                            $orderStatus='!', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote=NULL, $ipAddress)
+                            $orderStatus='!', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote='', $ipAddress)
     {
         $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_orders`
         ( `user_id`, `vendor_id`, `order_number`, `user_info_id`, `order_total`, `order_subtotal`, `order_tax`, `order_tax_details`, `order_shipping`, `order_shipping_tax`, `coupon_discount`, `coupon_code`, `order_discount`, `order_currency`, 
@@ -540,6 +540,7 @@ class Shop {
         $stmt->bindParam(':cdate',time());
         $stmt->bindParam(':mdate',time());
         $stmt->bindParam(':shipMethodId',$shipMethodId);
+        
         $stmt->bindParam(':customerNote',$customerNote);
         $stmt->bindParam(':ipAddress',$ipAddress);
         $stmt->execute();
@@ -551,7 +552,7 @@ class Shop {
     {
         $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_order_item`
         (`order_id`, `user_info_id`, `vendor_id`, `product_id`, `order_item_sku`, `order_item_name`, `product_quantity`, `product_item_price`, `product_final_price`, `order_item_currency`, `order_status`, `cdate`, `mdate`, `product_attribute`) 
-        VALUES (:orderId, :userInfoId, :vendorId, :productId, :orderItemSku:, orderItemName,:productQuantity, :productItemPrice, :productFinalPrice, :orderItemCurrency, :orderStatus, :cdate, :mdate, :producAttribute)");
+        VALUES (:orderId, :userInfoId, :vendorId, :productId, :orderItemSku, :orderItemName,:productQuantity, :productItemPrice, :productFinalPrice, :orderItemCurrency, :orderStatus, :cdate, :mdate, :producAttribute)");
         $stmt->bindParam(":orderId",$orderId);
         $stmt->bindParam(":userInfoId",$userInfoId);
         $stmt->bindParam(":vendorId",$vendorId);
@@ -566,6 +567,22 @@ class Shop {
         $stmt->bindParam(":producAttribute",$producAttribute);
         $stmt->bindParam(":cdate",time());
         $stmt->bindParam(":mdate",time());
+        
+        return $stmt->execute();
+    }
+    
+    public function addPaymentMethod($orderId,$paymentMethodId,$orderPaymentCode='',$orderPaymentNumber=NULL, $orderPaymentExpire=NULL, $orderPaymentName=NULL, $orderPaymentLog = '', $orderPaymentTransId = '')
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_order_payment`(`order_id`, `payment_method_id`, `order_payment_code`, `order_payment_number`, `order_payment_expire`, `order_payment_name`, `order_payment_log`, `order_payment_trans_id`)
+        VALUES (:orderId,:paymentMethodId,:orderPaymentCode,:orderPaymentNumber,:orderPaymentExpire,:orderPaymentName,:orderPaymentLog,:orderPaymentTransId)");
+        $stmt->bindParam(':orderId',$orderId);
+        $stmt->bindParam(':paymentMethodId',$paymentMethodId);
+        $stmt->bindParam(':orderPaymentCode',$orderPaymentCode);
+        $stmt->bindParam(':orderPaymentNumber',$orderPaymentNumber);
+        $stmt->bindParam(':orderPaymentExpire',$orderPaymentExpire);
+        $stmt->bindParam(':orderPaymentName',$orderPaymentName);
+        $stmt->bindParam(':orderPaymentLog',$orderPaymentLog);
+        $stmt->bindParam(':orderPaymentTransId',$orderPaymentTransId);
         
         return $stmt->execute();
     }

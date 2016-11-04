@@ -161,6 +161,7 @@ class sites_shopController
                     $order = shop::getOrderByIdFromUser($_GET['orderId'],$user['id']);
                     $userAddresses = shop::getUserAddress($user['id']);
                     
+                    
                     return $this->twig->render("shop-orderDetail.html.twig", array(
                         'szkId'=>$_GET['szkId'],
                         'menu'=>'start',
@@ -203,22 +204,34 @@ class sites_shopController
                     $paymentsMethod= shop::getPaymentsMethod();
                     
                     if(!empty($_POST['userInfoId'])&&!empty($_POST['paymentMethodId'])){
-                        
                         $total = 0;
                         $totalFinal = 0;
                         foreach($items as $id =>$qty){
-                            foreach($products as product){
-                                if(product.product_id == id){
+                            foreach($products as $product){
+                                if($product['product_id'] == $id){
                                     $total = $total + $product['product_price'] * $qty;
-                                    $totalFinal = $totalFinal + $product['final_price'] * $qty;
+                                    (empty($product['final_price']))?$productFinalPrice=$product['product_price']:$productFinalPrice=$product['final_price'];
+                                    $totalFinal = $totalFinal + $productFinalPrice * $qty;
+                                    echo $total.'-'.$totalFinal.'<br/>';
                                 }
                             }
                         }
                         
                        $orderTax = $totalFinal-$total;
-                        if(shop::addOrder($user['id'],,,$_POST['userInfoId'],$totalFinal,$total,$orderTax,,,0,0,0,'',$_POST['paymentMethodId'],$_POST['customerNote'],$_SERVER['REMOTE_ADDR']) > 0){
-                            
+                       $adord = shop::addOrder($user['id'],1,1,$_POST['userInfoId'],$totalFinal,$total,$orderTax,'',0,'PLN','!',0,0,0,'',$_POST['paymentMethodId'],'',$_SERVER['REMOTE_ADDR']);
+                        if( $adord > 0){
+                            foreach($items as $id =>$qty){
+                                foreach($products as $product){
+                                    if($product['product_id'] == $id){
+                                        (empty($product['final_price']))?$productFinalPrice = $product['product_price']:$productFinalPrice = $product['final_price'];
+                                        shop::addProductToNewOrder($adord,$_POST['userInfoId'],1,$id,$product['product_sku'], $product['product_name'],$qty, $product['product_price'], $productFinalPrice);
+                                    }
+                                }
+                            }
+                            $addPayment = shop::addPaymentMethod($adord,$_POST['paymentMethodId']);
                             $info = "shop-doOrder-success-addOrder";
+                            $cart->clear();
+                            $items = $cart->getItems();
                         }else {
                             $info = "shop-doOrder-fail-addOrder";
                         }

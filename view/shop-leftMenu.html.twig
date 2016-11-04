@@ -33,6 +33,11 @@
                                     {% set totalFinal = 0 %}
                                     {% for id, qty in items %}
                                         {% for product in products if product.product_id == id %}   
+                                            {% if product.final_price|round(2,"common") == '0' %}
+                                                {% set productFinalPrice = product.product_price|round(2,"common") %}
+                                            {% else %}
+                                                {% set productFinalPrice = product.final_price|round(2,"common") %}
+                                            {% endif %} 
                                             <div class="row">
                                                 <div class="col-md-8">
                                                     {{product.product_name}}
@@ -46,7 +51,7 @@
                                             </div>
                                             <hr/>
                                             {% set total = total + product.product_price * qty %}
-                                            {% set totalFinal = totalFinal + product.final_price * qty %}
+                                            {% set totalFinal = totalFinal + productFinalPrice * qty %}
                                         {% endfor %}
                                     {% endfor %}
                                     <br/>
