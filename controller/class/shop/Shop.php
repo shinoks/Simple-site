@@ -83,13 +83,15 @@ class Shop {
     
     public function getOrderById($orderId)
     {
-        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
+        jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, 
+        company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
-            LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
-            LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
-            LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
             LEFT JOIN jos_vm_order_payment USING(order_id) 
             LEFT JOIN jos_vm_payment_method USING(payment_method_id) 
+            LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
+            LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
+            LEFT JOIN jos_vm_order_user_info ON jos_vm_orders.user_id = jos_vm_order_user_info.user_id
             WHERE jos_vm_orders.order_id = :orderId
             GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc
@@ -103,14 +105,16 @@ class Shop {
     
     public function getOrderByIdFromUser($orderId,$userId)
     {
-        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, 
+        jos_vm_orders.order_subtotal, jos_vm_orders.order_status, jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, 
+        order_status_name, address_type_name, company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
-            LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
-            LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
-            LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
             LEFT JOIN jos_vm_order_payment USING(order_id) 
             LEFT JOIN jos_vm_payment_method USING(payment_method_id) 
-            WHERE jos_vm_orders.order_id = :orderId and jos_users.id = :userId
+            LEFT JOIN jos_vm_order_user_info ON jos_vm_order_user_info.order_id=jos_vm_orders.order_id
+            LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
+            LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
+            WHERE jos_vm_orders.order_id = :orderId and jos_users.id = :userId and `address_type`='BT'
             GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc
             ");
@@ -224,9 +228,10 @@ class Shop {
         return $stmt->fetchAll();
     }
     
-    public function getCategories()
+    public function getCategories($publish = '%')
     {
-        $stmt = $this->dbGf->prepare("SELECT category_id, category_name, category_description, category_publish, cdate, list_order FROM jos_vm_category");
+        $stmt = $this->dbGf->prepare("SELECT category_id, category_name, category_description, category_publish, cdate, list_order FROM jos_vm_category WHERE jos_vm_category.category_publish LIKE :publish");
+        $stmt->bindParam(':publish',$publish);
         $stmt->execute();
         
         return $stmt->fetchAll();
@@ -311,12 +316,10 @@ class Shop {
     
     public function getUserOrders($userId)
     {
-        $stmt = $this->dbGf->prepare("SELECT *
-            FROM jos_vm_orders
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_tax, jos_vm_orders.order_id, jos_vm_orders.order_currency,  jos_vm_orders.order_status,jos_vm_orders.cdate, jos_vm_orders.mdate, jos_vm_orders.ship_method_id, jos_vm_orders.customer_note, jos_vm_orders.order_id, ip_address            
+FROM jos_vm_orders
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
-            LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
-            LEFT JOIN jos_vm_order_item ON jos_vm_orders.order_id = jos_vm_order_item.order_id 
             WHERE jos_users.id = :userId
             GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc 
@@ -361,7 +364,9 @@ class Shop {
     {
         $stmt = $this->dbGf->prepare("SELECT *
         FROM jos_vm_user_info
-        WHERE user_id =:userId");
+        WHERE user_id =:userId
+        ORDER BY cdate
+        ");
         $stmt->bindParam(':userId', $userId);
         $stmt->execute();
     
@@ -410,6 +415,31 @@ class Shop {
         return $stmt->fetchAll();
     }
     
+    public function getProductFromCategory($categoryId,$publish = '%')
+    {
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_product.product_id,
+        jos_vm_product.product_sku, jos_vm_product.product_desc, 
+        jos_vm_product.product_thumb_image, jos_vm_product.product_full_image,
+        jos_vm_product.product_publish, jos_vm_product.cdate,
+        jos_vm_product.product_name,
+        jos_vm_product_price.product_price,
+        jos_vm_category.category_name,
+        jos_vm_category.category_id,
+        jos_vm_product_price.product_price+jos_vm_product_price.product_price*jos_vm_tax_rate.tax_rate as final_price
+        FROM jos_vm_product 
+        LEFT JOIN jos_vm_tax_rate ON jos_vm_product.product_tax_id = jos_vm_tax_rate.tax_rate_id 
+        LEFT JOIN jos_vm_product_price USING(product_id)
+        LEFT JOIN jos_vm_product_category_xref USING(product_id)
+        LEFT JOIN jos_vm_category USING(category_id)
+        WHERE jos_vm_product_category_xref.category_id = :categoryId and jos_vm_product.product_publish LIKE :publish
+        ");
+        $stmt->bindParam(':categoryId',$categoryId);
+        $stmt->bindParam(':publish',$publish);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
     public function getOrderHistory($orderId)
     {
         $stmt = $this->dbGf->prepare("SELECT * FROM jos_vm_order_history LEFT JOIN jos_vm_order_status USING(order_status_code) WHERE order_id = :orderId");
@@ -417,6 +447,31 @@ class Shop {
         $stmt->execute();
         
         return $stmt->fetchAll();
+    }
+    
+    public function getOrderUserInfo($orderId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT `order_info_id`, `order_id`, `user_id`, `address_type`, `address_type_name`, `company`, `title`, `last_name`, `first_name`, `middle_name`, `phone_1`, `phone_2`, `fax`, `address_1`, `address_2`, `city`, `state`, `country`, `zip`, `user_email`, `extra_field_1`, `extra_field_2`, `extra_field_3`, `extra_field_4`, `extra_field_5`, `bank_account_nr`, `bank_name`, `bank_sort_code`, `bank_iban`, `bank_account_holder`, `bank_account_type` FROM `jos_vm_order_user_info` 
+        WHERE order_id = :orderId");
+        $stmt ->bindParam(":orderId", $orderId);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getUserInfo($userInfoId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT `user_info_id`, `user_id`, `address_type`, `address_type_name`, `company`, 
+        `title`, `last_name`, `first_name`, `middle_name`, `phone_1`, `phone_2`, `fax`, `address_1`, `address_2`, `city`, 
+        `state`, `country`, `zip`, `user_email`, `extra_field_1`, `extra_field_2`, `extra_field_3`, `extra_field_4`, 
+        `extra_field_5`, `cdate`, `mdate`, `perms`, `bank_account_nr`, `bank_name`, `bank_sort_code`, `bank_iban`, 
+        `bank_account_holder`, `bank_account_type` 
+        FROM `jos_vm_user_info` 
+        WHERE user_info_id = :userInfoId");
+        $stmt ->bindParam(":userInfoId", $userInfoId);
+        $stmt->execute();
+        
+        return $stmt->fetch();
     }
     
     private function addHistoryItem($orderId,$statusCode,$comments = NULL,$notified = 0)
@@ -467,18 +522,19 @@ class Shop {
         
     }
     
-    public function addUserInfo($userId,$addressTypeName='',$company='',$lastName='',$firstName='',$phone='',$phone2='',$address='',$address2='',$city='',$zip=' ',$extraField1='',$extraField2='')
+    public function addUserInfo($userId,$addressTypeName='',$company='',$lastName='',$firstName='',$phone='',$phone2='',$address='',$address2='',$city='',$zip=' ',$extraField1='',$extraField2='',$addressType = 'ST')
     {
         $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_user_info`
         (`user_info_id`, `user_id`, `address_type`, `address_type_name`,
         `company`, `last_name`, `first_name`, 
         `phone_1`, `phone_2`, `address_1`, `address_2`, `city`, `zip`,
         `extra_field_1`, `extra_field_2`, `cdate`) 
-        VALUES (UUID(),:userId,'ST',:addressTypeName,:company,
+        VALUES (UUID(),:userId,:addressType,:addressTypeName,:company,
         :lastName,:firstName,:phone,:phone2,:address,:address2,
         :city,:zip,:extraField1,:extraField2,:cdate)");
         
         $stmt->bindParam(":userId",$userId);
+        $stmt->bindParam(":addressType",$addressType);
         $stmt->bindParam(":addressTypeName",$addressTypeName);
         $stmt->bindParam(":company",$company);
         $stmt->bindParam(":lastName",$lastName);
@@ -492,6 +548,48 @@ class Shop {
         $stmt->bindParam(":extraField1",$extraField1);
         $stmt->bindParam(":extraField2",$extraField2);
         $stmt->bindParam(":cdate",time());
+        
+        return $stmt->execute();
+    }
+    
+    public function addOrderUserInfo($orderId,$userId,$addressType,$addressTypeName,$company,$title=NULL,$lastName,$firstName,$middleName=NULL,$phone1,$phone2='',$fax=NULL,$address1,$address2=NULL,$city,$state='',$country='PL',$zip,
+        $userEmail,$extraField1,$extraField2,$extraField3=NULL,$extraField4=NULL,$extraField5=NULL,$bankAccountNr='',$bankName='',$bankSortCode='',$bankIban='',$bankAccountHolder='',$bankAccountType='')
+    {
+        $stmt=$this->dbGf->prepare("INSERT INTO `jos_vm_order_user_info`(`order_id`, `user_id`, `address_type`, `address_type_name`, `company`, `title`, 
+        `last_name`, `first_name`, `middle_name`, `phone_1`, `phone_2`, `fax`, `address_1`, `address_2`, `city`, `state`, `country`, `zip`, `user_email`, `extra_field_1`, 
+        `extra_field_2`, `extra_field_3`, `extra_field_4`, `extra_field_5`, `bank_account_nr`, `bank_name`, `bank_sort_code`, `bank_iban`, `bank_account_holder`, `bank_account_type`) 
+        VALUES (:orderId,:userId,:addressType,:addressTypeName,:company,:title,:lastName,:firstName,:middleName,:phone1,:phone2,:fax,:address1,:address2,:city,:state,:country,:zip,
+        :userEmail,:extraField1,:extraField2,:extraField3,:extraField4,:extraField5,:bankAccountNr,:bankName,:bankSortCode,:bankIban,:bankAccountHolder,:bankAccountType)");
+        $stmt->bindParam(":orderId",$orderId);
+        $stmt->bindParam(":userId",$userId);
+        $stmt->bindParam(":addressType",$addressType);
+        $stmt->bindParam(":addressTypeName",$addressTypeName);
+        $stmt->bindParam(":company",$company);
+        $stmt->bindParam(":title",$title);
+        $stmt->bindParam(":lastName",$lastName);
+        $stmt->bindParam(":firstName",$firstName);
+        $stmt->bindParam(":middleName",$middleName);
+        $stmt->bindParam(":phone1",$phone1);
+        $stmt->bindParam(":phone2",$phone2);
+        $stmt->bindParam(":fax",$fax);
+        $stmt->bindParam(":address1",$address1);
+        $stmt->bindParam(":address2",$address2);
+        $stmt->bindParam(":city",$city);
+        $stmt->bindParam(":state",$state);
+        $stmt->bindParam(":country",$country);
+        $stmt->bindParam(":zip",$zip);
+        $stmt->bindParam(":userEmail",$userEmail);
+        $stmt->bindParam(":extraField1",$extraField1);
+        $stmt->bindParam(":extraField2",$extraField2);
+        $stmt->bindParam(":extraField3",$extraField3);
+        $stmt->bindParam(":extraField4",$extraField4);
+        $stmt->bindParam(":extraField5",$extraField5);
+        $stmt->bindParam(":bankAccountNr",$bankAccountNr);
+        $stmt->bindParam(":bankName",$bankName);
+        $stmt->bindParam(":bankSortCode",$bankSortCode);
+        $stmt->bindParam(":bankIban",$bankIban);
+        $stmt->bindParam(":bankAccountHolder",$bankAccountHolder);
+        $stmt->bindParam(":bankAccountType",$bankAccountType);
         
         return $stmt->execute();
     }
@@ -515,7 +613,7 @@ class Shop {
     }
     
     public function addOrder($userId,$vendorId=1,$orderNumber=1,$userInfoId,$orderTotal,$orderSubtotal,$orderTax,$orderTaxDetails='', $orderDiscount=0, $orderCurrency='PLN',
-                            $orderStatus='!', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote='', $ipAddress)
+                            $orderStatus='P', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote='', $ipAddress)
     {
         $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_orders`
         ( `user_id`, `vendor_id`, `order_number`, `user_info_id`, `order_total`, `order_subtotal`, `order_tax`, `order_tax_details`, `order_shipping`, `order_shipping_tax`, `coupon_discount`, `coupon_code`, `order_discount`, `order_currency`, 

@@ -1,6 +1,20 @@
+{% set url = "index.php?site=shop" %}
 
-<a href="index.php?site=shop" class="btn btn-success center-block"><strong>Produkty</strong></a>
-<br/>
+                        <div class="panel panel-default">
+                            <div class="panel-heading bg-primary">
+                                <strong>Kategorie</strong>
+                            </div>
+                            <div class="panel-body text-center">
+                                <a href="index.php?site=shop" class="btn btn-info center-block"><strong>Wszystkie produkty</strong></a>
+                                <ul class="list-group">
+                                {% for category in categories %}
+                                    <li class="list-group-item"><a class="deco" href="{{url}}&view=category&categoryId={{category.category_id}}">{{category.category_name}}</a></li>
+                                {% endfor %}
+                                </ul>
+                            </div>
+                            
+                        </div>
+                        
                         <div class="panel panel-default">
                             <div class="panel-heading bg-primary">
                                 <strong>Logowanie</strong>
@@ -12,7 +26,8 @@
                                         <input class="form-control" type="text" name="username" placeholder="Nazwa użytkownika"/>
                                         <input class="form-control" type="password" name="password" placeholder="Hasło" />
                                         <input class="btn btn-success" type="submit" value="Zaloguj"/>
-                                    </form>
+                                    </form><br/>
+                                    Nie masz jeszcze konta ?<br/> <a href="{{url}}&view=register">Zarejestruj się</a>
                                 {% else %}
                                     Jesteś zalogowany jako:<br/>
                                     {{user.name}}<br/>
@@ -46,7 +61,7 @@
                                                     {{qty}} szt
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <a class="btn btn-danger font11" href="{{ url }}&action=remove&productId={{ id }}">Usuń</a>
+                                                    <a class="btn btn-danger font11" href="{{ url }}&action=remove&productId={{ id }}"><strong>X</strong></a>
                                                 </div>
                                             </div>
                                             <hr/>
@@ -63,7 +78,7 @@
                                                             Kwota netto:
                                                         </td>
                                                         <td>
-                                                            <span class="badge">{{ total }}zł</span>
+                                                            <span class="badge">{{ total|round(2,"common") }}zł</span>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -71,7 +86,7 @@
                                                             Kwota brutto:
                                                         </td>
                                                         <td>
-                                                            <span class="badge">{{ totalFinal }}zł</span>
+                                                            <span class="badge">{{ totalFinal|round(2,"common") }}zł</span>
                                                         </td>
                                                     </tr>
                                                 </table>

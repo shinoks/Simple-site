@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% set url = "index.php?site=shop&view=login" %}
+    <div class="container width-full">
+        <div class="well">
+            <div class="row">
+                <div class="row">
+                    <div class="col-md-3">
+                        {% include "shop-leftMenu.html.twig" %}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="well responsive">
+                            <div class="row">
+                                {% if user is empty %}
+                                <div class="col-md-6 text-center">
+                                    Nie jesteś zalogowany. Zaloguj się<br/>
+                                    <form action="index.php?site=shop&view=cart&action=login" method="POST">
+                                        <input class="form-control" type="text" name="username" placeholder="Nazwa użytkownika"/>
+                                        <input class="form-control" type="password" name="password" placeholder="Hasło" />
+                                        <input class="btn btn-success" type="submit" value="Zaloguj"/>
+                                    </form>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    Nie posiadasz konta?<br/>
+                                    <a href="index.php?site=shop&view=register" class="btn btn-primary">Zarejestruj się</a>
+                                </div>
+                                {% else %}
+                                    Jesteś zalogowany jako:<br/>
+                                    {{user.name}}<br/>
+                                    <a href="{{url}}&view=account" class="btn btn-default btn-xs">Moje konto</a>
+                                    <a href="{{url}}&view=orders" class="btn btn-default btn-xs">Moje zamówienia</a><br/><br/>
+                                    <a href="index.php?site=shop&action=logout" class="btn btn-info">Wyloguj się</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock%}

@@ -14,5 +14,6 @@ return array(
     'Login\\' => array($controllerClass.'/login'),
     'Menu\\' => array($controllerClass.'/menu'),
     'Articles\\' => array($controllerClass.'/articles'),
-    'User\\' => array($controllerClass.'/user')
+    'User\\' => array($controllerClass.'/user'),
+    'Validate\\' => array($controllerClass.'/validate')
 );

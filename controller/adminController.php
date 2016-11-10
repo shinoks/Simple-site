@@ -527,7 +527,8 @@ class adminController
                 $products = shop::getAllProducts();
                 $users = shop::getAllUsers();
                 $orderHistory = shop::getOrderHistory($_GET['orderId']);
-                echo $info;
+                $userAddresses = shop::getUserAddress($order['user_id']);
+                $orderSendAddress = shop::getOrderUserInfo($_GET['orderId']);
                 
                 return $this->twig->render("admin/shop-orderDetail.html.twig", 
                             array(
@@ -539,10 +540,11 @@ class adminController
                                 'orderProducts'=>$orderProducts,
                                 'products'=>$products,
                                 'users'=>$users,
-                                'userAddress'=>$userAddress,
+                                'userAddresses'=>$userAddresses,
                                 'activePage'=>$activePage,
                                 'orderStatuses'=>$orderStatuses,
-                                'orderHistory'=>$orderHistory
+                                'orderHistory'=>$orderHistory,
+                                'orderSendAddress'=>$orderSendAddress
                             )
                         );
             break;

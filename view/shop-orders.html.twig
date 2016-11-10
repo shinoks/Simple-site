@@ -1,73 +1,26 @@
 {% extends 'base.html.twig' %}
 
-{% block info %}
-    {% if info is defined %}
-        {% if info == 'cart-add'%}
-            <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>
-        {% elseif info == 'cart-updated'%}
-            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
-        {% elseif info == 'cart-removed'%}
-            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
-        {% elseif info == 'cart-empty' %}
-            <div class="alert alert-success text-center" role="alert">Koszyk został opróżniony</div>
-        {% elseif info == 'login-success' %}
-            <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie zalogowany</div>
-        {% elseif info == 'login-fail' %}
-            <div class="alert alert-danger text-center" role="alert">Nie zostałeś zalogowany</div>
-        {% elseif info == 'logout-success' %}
-            <div class="alert alert-success text-center" role="alert">Zostałeś wylogowany</div>
-        {% elseif info == 'logout-fail' %}
-            <div class="alert alert-danger text-center" role="alert">Nie zostałeś wylogowany</div>        
-        {% elseif info == 'deleteOrder-success'%}
-            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
-        {% elseif info == 'deleteOrder-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
-        {% elseif info == 'updateOrderStatus-success'%}
-            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
-        {% elseif info == 'updateOrderStatus-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
-        {% elseif info == 'updateUserInfo-success'%}
-            <div class="alert alert-success text-center" role="alert">Dane do Faktury użytkownika zostały zmienione</div>
-        {% elseif info == 'updateUserInfo-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Dane do Faktury użytkownika nie zostały zmienione</div>
-        {% elseif info == 'updateUserData-success'%}
-            <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
-        {% elseif info == 'updateUserData-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
-        {% elseif info == 'addUserInfo-success'%}
-            <div class="alert alert-success text-center" role="alert">Adres wysyłki został dodany</div>
-        {% elseif info == 'addUserInfo-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został dodany</div>
-        {% elseif info == 'deleteUserInfo-success'%}
-            <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
-        {% elseif info == 'deleteUserInfo-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
-        {% endif %}
-    {% endif %}
-{% endblock %}
-
 {% block body %}
     {% set url = "index.php?site=shop&view=account" %}
     <div class="container width-full">
         <div class="well">
             <div class="row">
                 <div class="row">
-                    <div class="col-md-3">
-                        {% include "shop-leftMenu.html.twig" %}
+                    <div class="col-md-3 bg-info"><br/>
+                        {% include "shop-leftMenu.html.twig"%}
                     </div>
                     <div class="col-md-9">
-                        <div class="well responsive">
+                        <div class="well">
                             <div class="row">
                                 <div class="well">
+                                    <div class="table-responsive">
                                             <strong>Zamówienia:</strong>
                                             <table class="table table-bordered">
-                                            <tr>
+                                            <tr class="bg-success">
                                                 <td>Lp.</td>
                                                 <td>Nr zamówienia</td>
                                                 <td>Data zamówienia</td>
                                                 <td>Data modyfikacji</td>
-                                                <td>NIP</td>
-                                                <td>Konsultant</td>
                                                 <td>Suma</td>
                                             </tr>
                                             {% set a = 1 %}
@@ -75,15 +28,14 @@
                                                 <tr>
                                                     <td>{{ a }}</td>
                                                     <td><a href="index.php?site=shop&view=orderDetail&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
-                                                    <td>{{ order.cdate|date("d-m-Y",false) }}</a></td>
-                                                    <td>{{ order.mdate|date("d-m-Y",false) }}</a></td>
-                                                    <td>{{ order.extra_field_1 }}</td>
-                                                    <td><span class="font11">{{ order.extra_field_2 }}</span></td>
+                                                    <td>{{ order.cdate|date("d-m-Y H:i:s",false) }}</a></td>
+                                                    <td>{{ order.mdate|date("d-m-Y H:i:s",false) }}</a></td>
                                                     <td>{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
                                                 </tr>
                                                 {% set a = a+1 %}
                                             {% endfor %}
                                             </table>
+                                        </div>
                                 </div>
                             </div>
                         </div>

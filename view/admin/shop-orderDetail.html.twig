@@ -165,55 +165,58 @@
                     </div>
                     <div class="col-md-6">
                         <strong>Wysyłka do</strong>
-                        {% for userSendTo in userAddress%}
-                            {% if userSendTo.user_info_id == order.4 %}
-                            <table class="table table-bordered">
-                            <tr>
-                                <td>Alias:</td>
-                                <td>{{ userSendTo.address_type_name }}</td>
-                            </tr>
-                            <tr>
-                                <td>Nazwa firmy:</td>
-                                <td>{{ userSendTo.company }}</td>
-                            </tr>
-                            <tr>
-                                <td>Imię i Nazwisko:</td>
-                                <td>{{ userSendTo.first_name }} {{ userSendTo.last_name }}</td>
-                            </tr>
-                            <tr>
-                                <td>Ulica:</td>
-                                <td>{{ userSendTo.address_1 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Miasto:</td>
-                                <td>{{ userSendTo.city }}</td>
-                            </tr>
-                            <tr>
-                                <td>Kod pocztowy:</td>
-                                <td>{{ userSendTo.zip }}</td>
-                            </tr>
-                            <tr>
-                                <td>Telefon:</td>
-                                <td>{{ userSendTo.phone_1 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Telefon kom.:</td>
-                                <td>{{ userSendTo.phone_2 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Numer NIP:</td>
-                                <td>{{ userSendTo.extra_field_1 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Konsultant:</td>
-                                <td>{{ userSendTo.extra_field_2 }}</td>
-                            </tr>
+                        {% set countAddresses = orderSendAddress|length %}
+                                {% if countAddresses > 1 %}
+                                    {% set addType = 'ST'%}
+                                {% else %}
+                                    {% set addType = 'BT'%}
+                                {% endif %}
+                                {% for userSendTo in orderSendAddress%} 
+                                    {% if userSendTo.address_type == addType %}
+                                        <table class="table table-bordered">
+                                        <tr>
+                                            <td>Alias:</td>
+                                            <td>{{ userSendTo.address_type_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nazwa firmy:</td>
+                                            <td>{{ userSendTo.company }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Imię i Nazwisko:</td>
+                                            <td>{{ userSendTo.first_name }} {{ userSendTo.last_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Ulica:</td>
+                                            <td>{{ userSendTo.address_1 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Miasto:</td>
+                                            <td>{{ userSendTo.city }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kod pocztowy:</td>
+                                            <td>{{ userSendTo.zip }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Telefon:</td>
+                                            <td>{{ userSendTo.phone_1 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Telefon kom.:</td>
+                                            <td>{{ userSendTo.phone_2 }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Numer NIP:</td>
+                                            <td>{{ userSendTo.extra_field_1 }}</td>
+                                        </tr>
+                                        
                             <tr>
                                 <td>Zmień adres wysyłki: </td>
                                 <td>
                                     <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateOrderSendTo" method="POST">
                                         <select name="userInfoId"class="form-control">
-                                            {% for userAddres in userAddress %}
+                                            {% for userAddres in userAddresses %}
                                                 {% if userAddres.user_info_id == order.4 %}
                                                     <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
                                                 {% else %}

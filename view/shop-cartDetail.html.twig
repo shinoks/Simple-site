@@ -1,63 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block info %}
-    {% if info is defined %}
-        {% if info == 'cart-add'%}
-            <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>
-        {% elseif info == 'cart-updated'%}
-            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
-        {% elseif info == 'cart-removed'%}
-            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
-        {% elseif info == 'cart-empty' %}
-            <div class="alert alert-success text-center" role="alert">Koszyk został opróżniony</div>
-        {% elseif info == 'login-success' %}
-            <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie zalogowany</div>
-        {% elseif info == 'login-fail' %}
-            <div class="alert alert-danger text-center" role="alert">Nie zostałeś zalogowany</div>
-        {% elseif info == 'logout-success' %}
-            <div class="alert alert-success text-center" role="alert">Zostałeś wylogowany</div>
-        {% elseif info == 'logout-fail' %}
-            <div class="alert alert-danger text-center" role="alert">Nie zostałeś wylogowany</div>        
-        {% elseif info == 'deleteOrder-success'%}
-            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
-        {% elseif info == 'deleteOrder-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
-        {% elseif info == 'updateOrderStatus-success'%}
-            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
-        {% elseif info == 'updateOrderStatus-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
-        {% elseif info == 'updateUserInfo-success'%}
-            <div class="alert alert-success text-center" role="alert">Dane do Faktury użytkownika zostały zmienione</div>
-        {% elseif info == 'updateUserInfo-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Dane do Faktury użytkownika nie zostały zmienione</div>
-        {% elseif info == 'updateUserData-success'%}
-            <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
-        {% elseif info == 'updateUserData-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
-        {% elseif info == 'addUserInfo-success'%}
-            <div class="alert alert-success text-center" role="alert">Adres wysyłki został dodany</div>
-        {% elseif info == 'addUserInfo-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został dodany</div>
-        {% elseif info == 'deleteUserInfo-success'%}
-            <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
-        {% elseif info == 'deleteUserInfo-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
-        {% elseif info == 'shop-doOrder-success-addOrder'%}
-            <div class="alert alert-success text-center" role="alert">Zamówienie zostało złożone</div>
-        {% elseif info == 'shop-doOrder-fail-addOrder'%}
-            <div class="alert alert-danger text-center" role="alert">Niestety zamówieni nie zostało zapisane</div>
-        {% endif %}
-    {% endif %}
-{% endblock %}
-
 {% block body %}
-    {% set url = "index.php?site=shop&view=account" %}
+    {% set url = "index.php?site=shop&view=cart" %}
     <div class="container width-full">
         <div class="well">
             <div class="row">
                 <div class="row">
-                    <div class="col-md-3">
-                        {% include "shop-leftMenu.html.twig" %}
+                    <div class="col-md-3 bg-info"><br/>
+                        {% include "shop-leftMenu.html.twig"%}
                     </div>
                     <div class="col-md-9">
                         <div class="well responsive">
@@ -87,17 +37,19 @@
                                         <tr>
                                             <td>{{ product.product_name }}</td>
                                             <td>{{ product.product_price|round(2,"common") }}zł</td>
-                                            <td>{{ productFinalPrice }}zł</td>
+                                            <td>{{ productFinalPrice|round(2,"common") }}zł</td>
                                             <td><div class="row">
                                             <form action="index.php" method="GET">
                                                     <input type="hidden" value="shop" name="site" />
+                                                    <input type="hidden" value="cart" name="view" />
                                                     <input type="text" class="form-control" value="{{ qty }}" name="qty" />
                                                     <input type="hidden" value="{{ id }}" name="productId" />
                                                     <input type="hidden" value="update" name="action" />
                                                     <input type="submit" value="aktualizuj" class="btn btn-default font11" />
                                             </form>
                                             </td>
-                                            <td>{{ product.product_price * qty }}  zł</td>
+                                            {% set productsPrice = product.product_price * qty %}
+                                            <td>{{ productsPrice|round(2,"common") }}  zł</td>
                                             <td><a class="btn btn-danger font11" href="{{ url }}&action=remove&productId={{ id }}">Usuń</a></td>
                                         </tr>
                                         
@@ -107,19 +59,23 @@
                                     {% endfor %}
                                     <tr>
                                         <td><a class="btn btn-danger" href="{{ url }}&action=empty">Opróżnij koszyk</a></td>
-                                        <td colspan="5" align="right">Całkowity koszt netto: {{  total }} zł<br/>
-                                                                                Całkowity koszt brutto: {{  totalFinal }} zł</td>
+                                        <td colspan="5" align="right">Całkowity koszt netto: {{  total|round(2,"common") }} zł<br/>
+                                                                                Całkowity koszt brutto: {{  totalFinal|round(2,"common") }} zł</td>
                                     </tr>
                                     </table>
                                     <p class="text-left">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                Produktów w koszyku {{products|length}}<br/>
-                                                Kwota netto: {{ total }}zł<br/>
-                                                Kwota brutto: {{ totalFinal }}zł<br/>
+                                                Produktów w koszyku {{items|length}}<br/>
+                                                Kwota netto: {{ total|round(2,"common") }}zł<br/>
+                                                Kwota brutto: {{ totalFinal|round(2,"common") }}zł<br/>
                                             </div>
                                             <div class="col-md-6">
-                                                <a class="btn btn-success" id="continueOrder" href="#">Zamów</a>
+                                                {% if user is empty %}
+                                                    <a class="btn btn-success" href="index.php?site=shop&view=login">Zaloguj się</a>
+                                                {% else %}
+                                                    <a class="btn btn-success" id="continueOrder" href="#">Zamów</a>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </p>
@@ -128,7 +84,7 @@
                                 {% endif %}
                                 </div>
                                 <div id='order-step-2' class="collapse fade" >
-                                <form action="index.php?site=shop&view=doOrder" method="POST">
+                                
                                 
                                 <strong>Koszyk - potwierdzenie</strong>
                                 {% if items is not empty %}
@@ -165,8 +121,8 @@
                                         {% endfor %}
                                     {% endfor %}
                                     <tr>
-                                        <td colspan="6" align="right">Całkowity koszt netto: {{  total }} zł<br/>
-                                                                      Całkowity koszt brutto: {{  totalFinal }} zł</td>
+                                        <td colspan="6" align="right">Całkowity koszt netto: {{  total|round(2,"common") }} zł<br/>
+                                                                      Całkowity koszt brutto: {{  totalFinal|round(2,"common") }} zł</td>
                                     </tr>
                                     </table>
                                 {% else %}
@@ -175,6 +131,30 @@
                                 <div class="well">
                                     <strong>Wybierz adres wysyłki:</strong>
                                     <hr/>
+                                    <div class="panel">
+                                        <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#addAddress" aria-expanded="false" aria-controls="addAddress">
+                                          Dodaj adres wysyłki
+                                        </button>
+                                        <div class="collapse" id="addAddress">
+                                            <div class="well bg-grey">
+                                                <form action="{{url}}&perf=addUserInfo" method="POST">
+                                                    Nazwa adresu: <input type="text" class="form-control" name="addressTypeName" required/>
+                                                    Nazwa firmy: <input type="text" class="form-control" name="company"/>
+                                                    Nazwisko: <input type="text" class="form-control" name="lastName" />
+                                                    Imię: <input type="text" class="form-control" name="firstName"/>
+                                                    Telefon: <input type="text" class="form-control" name="phone1"/>
+                                                    Telefon 2 :<input type="text" class="form-control" name="phone2"/>
+                                                    Adres:<input type="text" class="form-control" name="address1"/>
+                                                    Adres 2:<input type="text" class="form-control" name="address2" />
+                                                    Miasto: <input type="text" class="form-control" name="city" />
+                                                    Kod pocztowy: <input type="text" class="form-control" name="zip" />
+                                                    NIP: <input type="text" class="form-control" name="extraField1" />
+                                                    <input type="submit" class="btn btn-success" value="Zapisz nowy adres"/>
+                                                </form>
+                                             </div>
+                                         </div>
+                                    </div>
+                                    <form action="index.php?site=shop&view=doOrder" method="POST">
                                     {% for userAdress in userAddresses %}
                                         <div class="row">
                                             <div class="col-md-2">
@@ -197,14 +177,23 @@
                                             </div>
                                         </div>
                                     {% endfor %}
+
                                     </div>
                                     <div class="well">
                                         <strong>Wybierz sposób płatności:</strong>
                                         {% for payment in paymentsMethod %}
                                             <div class="row">
-                                                <input type="radio" name="paymentMethodId" value="{{payment.payment_method_id}}"> - {{payment.payment_method_name}}
+                                                {% if payment.payment_method_id == 1%}
+                                                    <input type="radio" name="paymentMethodId" value="{{payment.payment_method_id}}" checked> - {{payment.payment_method_name}}
+                                                {% else %}
+                                                    <input type="radio" name="paymentMethodId" value="{{payment.payment_method_id}}"> - {{payment.payment_method_name}}
+                                                {% endif %}
                                             </div>
                                         {% endfor %}
+                                    </div>
+                                    <div class="well">
+                                        <strong>Notatka klienta:</strong>
+                                        <textarea class="form-control" name="customerNote" placeholder="Uwagi do swojego zamówienia"></textarea>
                                     </div>
                                     <div class="row">
                                         <input type="submit" class="block-right btn btn-success" value="Zamawiam"/>
@@ -218,11 +207,18 @@
             </div>
         </div>
     </div>
-    <script>
-        $( "#continueOrder" ).click(function() {
-          $( "#order-step-2" ).collapse();
-          $( "#order-step-1" ).collapse();
-        });
-    </script>
-    
+    {% if info == 'addUserInfo-success' %}
+        <script>
+            $(function() {
+                $( "#order-step-2" ).collapse();
+                $( "#order-step-1" ).collapse();
+            });
+        </script>
+    {% endif %}
+            <script>
+            $( "#continueOrder" ).click(function() {
+              $( "#order-step-2" ).collapse();
+              $( "#order-step-1" ).collapse();
+            });
+        </script>
 {% endblock%}

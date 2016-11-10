@@ -58,13 +58,14 @@
                 </div>
             </div>
         </nav>
-    </div>
+    </div><br/>
     <p style="height:40px;"></p>
     {% if config.carousel == true %}
         {% include 'carousel.html.twig' %}
     {% endif %}
-    {% block info %}
-    {% endblock %}
+    
+    {% include "shop-info.html.twig" %}
+    
     {% block body%}
     {% endblock %}
            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>

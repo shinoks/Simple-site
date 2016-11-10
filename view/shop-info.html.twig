@@ -1,0 +1,63 @@
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'cart-add'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>
+        {% elseif info == 'cart-updated'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został zaktualizowany</div>
+        {% elseif info == 'cart-removed'%}
+            <div class="alert alert-success text-center" role="alert">Produkt został usunięty</div>
+        {% elseif info == 'cart-empty' %}
+            <div class="alert alert-success text-center" role="alert">Koszyk został opróżniony</div>
+        {% elseif info == 'login-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś poprawnie zalogowany</div>
+        {% elseif info == 'login-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś zalogowany</div>
+        {% elseif info == 'logout-success' %}
+            <div class="alert alert-success text-center" role="alert">Zostałeś wylogowany</div>
+        {% elseif info == 'logout-fail' %}
+            <div class="alert alert-danger text-center" role="alert">Nie zostałeś wylogowany</div>        
+        {% elseif info == 'deleteOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
+        {% elseif info == 'deleteOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
+        {% elseif info == 'updateOrderStatus-success'%}
+            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
+        {% elseif info == 'updateOrderStatus-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% elseif info == 'updateUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane do Faktury użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane do Faktury użytkownika nie zostały zmienione</div>
+        {% elseif info == 'updateUserData-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane użytkownika zostały zmienione</div>
+        {% elseif info == 'updateUserData-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane użytkownika nie zostały zmienione</div>
+        {% elseif info == 'addUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został dodany</div>
+        {% elseif info == 'addUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został dodany</div>
+        {% elseif info == 'deleteUserInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
+        {% elseif info == 'deleteUserInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
+        {% elseif info == 'shop-doOrder-success-addOrder'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało złożone</div>
+        {% elseif info == 'shop-doOrder-fail-addOrder'%}
+            <div class="alert alert-danger text-center" role="alert">Niestety zamówienie nie zostało zapisane</div>
+        {% elseif info == 'shop-addNewUser-success'%}
+            <div class="alert alert-success text-center" role="alert">Użytkownik został utworzony. Zaloguj się.</div>
+        {% elseif info == 'shop-addNewUser-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Użytkownik nie został utworzony.</div>
+        {% endif %}
+    {% endif %}
+    
+    {% if error != true and error is defined and error is not empty %}
+        {% set error = error|split(';') %}
+        <div class="alert alert-danger text-center" rolet="alert">
+            Poniższe pola nie zostały wypełnione:<br/>
+            {% for er in error %}
+                {{er}}, 
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

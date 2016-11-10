@@ -42,8 +42,8 @@
                                     {% endfor %}
                                     <tr>
                                         <td><a class="btn btn-danger" href="{{ url }}&action=empty">Opró¿nij koszyk</a></td>
-                                        <td colspan="5" align="right">Ca³kowity koszt netto: {{  total }} z³<br/>
-                                                                                Ca³kowity koszt brutto: {{  totalFinal }} z³</td>
+                                        <td colspan="5" align="right">Ca³kowity koszt netto: {{  total|round(2,"common") }} z³<br/>
+                                                                                Ca³kowity koszt brutto: {{  totalFinal|round(2,"common") }} z³</td>
                                     </tr>
                                     <tr>
                                         <td colspan="4"></td>
@@ -58,7 +58,11 @@
                                                 Kwota brutto: {{ totalFinal }}z³<br/>
                                             </div>
                                             <div class="col-md-6">
-                                                <a class="btn btn-success" href="index.php?site=shop&view=continueOrder">Zamów</a>
+                                                {% if user is empty %}
+                                                    <a class="btn btn-success" href="index.php?site=shop&view=login">Zaloguj siê</a>
+                                                {% else %}
+                                                    <a class="btn btn-success" id="continueOrder" href="#">Zamów</a>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </p>
