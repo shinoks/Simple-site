@@ -38,6 +38,9 @@ class Config
         $this->dbPrefix = $config['dbPrefix'];
         $this->pageName = $config['pageName'];
         $this->pageSite = $config['pageSite'];
+        $this->siteEmail = $config['siteEmail'];
+        $this->email = $config['email'];
+        $this->emailPassword = $config['emailPassword'];
     }
 
     public function getConfig(){
@@ -60,7 +63,9 @@ class Config
             'dbPrefix'=>$this->dbPrefix,
             'pageName'=>$this->pageName,
             'pageSite'=>$this->pageSite,
-            'siteBackgroundImage'=>$this->siteBackgroundImage,
+            'email'=>$this->email,
+            'siteEmail'=>$this->siteEmail,
+            'emailPassword'=>$this->emailPassword,
         );
 
         return $config;

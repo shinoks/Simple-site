@@ -1,6 +1,7 @@
 <?php
 require_once("../config/DbConn.php");
 require_once("../config/DbConnGf.php");
+//require_once("../vendor/phpmailer/class.phpmailer.php");
                     
     use Cart\Cart;
     use Config\Config;
@@ -32,7 +33,7 @@ class sites_shopController
     
     public function getShopSite()
     {   $cart = new Cart();
-    
+        $menu = 'shop';
         $products = shop::getAllProducts('Y');
         $categories = shop::getCategories('Y');
                 
@@ -130,11 +131,11 @@ class sites_shopController
                     $user = shop::getUserById($user['id']);
                     
                     return $this->twig->render("shop-account.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -148,11 +149,11 @@ class sites_shopController
                     validate::checkShopLogged();
                     $orders = shop::getUserOrders($user['id']);
                     return $this->twig->render("shop-orders.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -169,11 +170,11 @@ class sites_shopController
                     $orderSendAddress = shop::getOrderUserInfo($_GET['orderId']);
                     
                     return $this->twig->render("shop-orderDetail.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -189,11 +190,11 @@ class sites_shopController
                     $categoryProducts = shop::getProductFromCategory($_GET['categoryId'],'Y');
                     
                     return $this->twig->render("shop-category.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -221,11 +222,11 @@ class sites_shopController
                     $paymentsMethod= shop::getPaymentsMethod();
                     
                     return $this->twig->render("shop-cartDetail.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -240,11 +241,11 @@ class sites_shopController
                 case 'login';
                     
                     return $this->twig->render("shop-login.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -281,11 +282,11 @@ class sites_shopController
                     }
                     
                     return $this->twig->render("shop-register.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -299,7 +300,7 @@ class sites_shopController
                     $userAddresses = shop::getUserAddress($user['id']);
                     $paymentsMethod= shop::getPaymentsMethod();
                     
-                    if(!empty($_POST['userInfoId'])&&!empty($_POST['paymentMethodId'])){
+                    if(!empty($_POST['userInfoId'])&&!empty($_POST['paymentMethodId']) && !empty($products)){
                         $total = 0;
                         $totalFinal = 0;
                         foreach($items as $id =>$qty){
@@ -348,6 +349,235 @@ class sites_shopController
                             
                             $info = "shop-doOrder-success-addOrder";
                             $cart->clear();
+                            
+                            
+                            $orderProducts = shop::getOrderProductsFromUser($adord,$user['id']);
+                            $order = shop::getOrderByIdFromUser($adord,$user['id']);
+                            $orderSendAddress = shop::getOrderUserInfo($adord);
+                            $config=$this->config;
+                            
+                            if(count($orderSendAddress)>1){
+                                $addType = 'ST';
+                            } else {
+                                $addType = 'BT';
+                            }
+                            $a = 0;
+                            foreach($orderSendAddress as $sendAddres){
+                                 if ($sendAddres['address_type'] == $addType){
+                                     $address = $sendAddres;
+                                 }
+                            }
+                            
+                            $productsHtml = '';
+                            foreach($orderProducts as $products)
+                            {
+                                $finalPrice = round($products['product_quantity']*$products['product_final_price'],2);
+                                $productsPrice = round($products['product_quantity']*$products['product_item_price'],2);
+                                $productsHtml .= '<tr>';
+                                    $productsHtml .= '<td>'.round($products['product_quantity'],2).'</td>';
+                                    $productsHtml .= '<td>'.$products['order_item_name'].'</td>';
+                                    $productsHtml .= '<td>'.$products['order_item_sku'].'</td>';
+                                    $productsHtml .= '<td>'.round($products['product_item_price'],2).'/'.round($products['product_final_price'],2).'</td>';
+                                    $productsHtml .= '<td>'.$productsPrice.'/'.$finalPrice.'</td>';
+                                    $productsHtml .= '<td>'.$finalPrice.'</td>';
+                                $productsHtml .= '</tr>';
+                            }
+                            
+                            $mail = new PHPMailer;
+                            
+                            $mail->setFrom($config['email']);
+                            $mail->addAddress($user['email']);     // Add a recipient
+                            $mail->addReplyTo($config['siteEmail'], $config['pageName']);
+                            $mail->addBCC($config['siteEmail']);
+                            
+                            $mail->isHTML(true);                                  // Set email format to HTML
+                            
+                            $mail->Subject = $config['pageName'].' zamówienie nr. '.$adord;
+                            $mail->Body    = '
+                            <style type="text/css">
+                                body{
+                                    font-family:Calibri;
+                                    background:#efefef;
+                                }
+                                .bo{
+                                    background:#fff;
+                                    padding:20px;
+                                    border-radius:5px;
+                                    width: 940px;
+                                }
+                                table.sample {
+                                    width:900px;
+                                    border-width: 0px;
+                                    border-spacing: 0px;
+                                    border-style: none;
+                                    border-collapse: separate;
+                                }
+                                table.sample th {
+                                    border-width: 0px;
+                                    padding: 1px;
+                                    border-style: inset;
+                                    -moz-border-radius: ;
+                                }
+                                table.sample td {
+                                    border-width: 0px;
+                                    padding: 5px;
+                                    border-style: inset;
+                                    -moz-border-radius: ;
+                                }
+                            </style>
+                            <body>
+                                <div class="bo">
+                                <h1>Zamówienie nr. '.$adord.'</h1>
+                            <table class="sample" style="">
+                                <tr style="background:#c1c1c1">
+                                    <td style="width:200px;">Informacja o zamówieniu</td>
+                                    <td style="text-align:left;"></td>
+                                    <td style="width:200px;"></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Numer zamówienia</td>
+                                    <td>'.$adord.'</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Data zamówienia</td>
+                                    <td>'.date('d-m-Y H:i:s', time()).'</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <tr style="background:#c1c1c1">
+                                    <td>Dane klienta</td>
+                                    <td></td>
+                                    <td>Dane wysyłki</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>Email:</td>
+                                    <td style="text-align:left;">'.$order['email'].'</td>
+                                    <td>Alias adresu:</td>
+                                    <td style="text-align:left;width:200px;">'.$address['address_type_name'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Nazwa firmy:</td>
+                                    <td style="text-align:left;">'.$order['company'].'</td>
+                                    <td>Nazwa firmy:</td>
+                                    <td style="text-align:left;">'.$address['company'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Imię i nazwisko:</td>
+                                    <td style="text-align:left;">'.$order['first_name'].$order['last_name'].'</td>
+                                    <td>Imię i nazwisko:</td>
+                                    <td style="text-align:left;">'.$address['first_name'].$address['last_name'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Ulica:</td>
+                                    <td style="text-align:left;">'.$order['address_1'].'</td>
+                                    <td>Ulica:</td>
+                                    <td style="text-align:left;">'.$address['address_1'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Miasto:</td>
+                                    <td style="text-align:left;">'.$order['city'].'</td>
+                                    <td>Miasto:</td>
+                                    <td style="text-align:left;">'.$address['city'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Kod pocztowy:</td>
+                                    <td style="text-align:left;">'.$order['zip'].'</td>
+                                    <td>Kod pocztowy:</td>
+                                    <td style="text-align:left;">'.$address['zip'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Telefon:</td>
+                                    <td style="text-align:left;">'.$order['phone_1'].'</td>
+                                    <td>Telefon:</td>
+                                    <td style="text-align:left;">'.$address['phone_1'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Telefon kom.:</td>
+                                    <td style="text-align:left;">'.$order['phone_2'].'</td>
+                                    <td>Telefon kom.:</td>
+                                    <td style="text-align:left;">'.$address['phone_2'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>NIP:</td>
+                                    <td style="text-align:left;">'.$order['extra_field_1'].'</td>
+                                    <td>NIP:</td>
+                                    <td style="text-align:left;">'.$address['extra_field_1'].'</td>
+                                </tr>
+                                <tr>
+                                    <td>Konsultant:</td>
+                                    <td style="text-align:left;">'.$order['extra_field_2'].'</td>
+                                    <td>Konsultant:</td>
+                                    <td style="text-align:left;">'.$address['extra_field_2'].'</td>
+                                </tr>
+                                </table>
+                                
+                                <br/>
+                                <table class="sample" style="width:100%; cell-padding:0; cell-spacing:0;">
+                                <tr style="background:#c1c1c1">
+                                    <td colspan="6"><b>Szczegóły zamówienia</b></td>
+                                </tr>
+                                <tr>
+                                    <td><b>Ilość</b></td>
+                                    <td><b>Nazwa</b></td>
+                                    <td><b>Symbol</b></td>
+                                    <td><b>Cena</b></td>
+                                    <td><b>Suma netto</b></td>
+                                    <td><b>Suma brutto</b></td>
+                                </tr>
+                                <tr>
+                                    '.$productsHtml.'
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td><b>Suma netto:</b></td>
+                                    <td>'.round($order['order_total'],2).'</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td><b>Suma brutto:</b></td>
+                                    <td>'.round($order['order_subtotal'],2).'</td>
+                                </tr>
+                                </table>
+                                <br/>
+                                <table class="sample" style="width:100%; cell-padding:0; cell-spacing:0;">
+                                <tr style="background:#c1c1c1">
+                                    <td colspan="6"><b>Notatka klienta</b></td>
+                                </tr>
+                                <tr>
+                                    <td>'.$order['customer_note'].'</td>
+                                </tr>
+                                </table>
+                                <br/>
+                                <table class="sample" style="width:100%; cell-padding:0; cell-spacing:0;">
+                                <tr style="background:#c1c1c1">
+                                    <td colspan="6"><b>Informacje o płatności</b></td>
+                                </tr>
+                                <tr>
+                                    <td>'.$order['payment_method_name'].'</td>
+                                </tr>
+                            </table>
+                                <br/><br/><br/>
+                                <center><a href="'.$config['pageSite'].'">'.$config['pageSite'].'</a></center>
+                                </bo></body>';
+                            
+                            if(!$mail->send()) {
+                                echo 'Message could not be sent.';
+                                echo 'Mailer Error: ' . $mail->ErrorInfo;
+                            } else {
+                                echo 'Message has been sent';
+                            }
+                            
+                            
                             $items = $cart->getItems();
                         }else {
                             $info = "shop-doOrder-fail-addOrder";
@@ -358,27 +588,30 @@ class sites_shopController
                     
                     
                     return $this->twig->render("shop-cartDetail.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
                         'user'=>$user,
                         'userAddresses'=>$userAddresses,
-                        'paymentsMethod'=>$paymentsMethod
+                        'paymentsMethod'=>$paymentsMethod,
+                        'orderProduct'=>$orderProduct,
+                        'order'=>$order,
+                        'orderSendAddress'=>$orderSendAddress
                         )
                     );
                 break;
                 default:
                     return $this->twig->render("shop.html.twig", array(
-                        'szkId'=>$_GET['szkId'],
-                        'menu'=>'start',
+                        'menu'=>$menu,
                         'config'=>$this->config,
                         'products'=>$products,
                         'categories'=>$categories,
+                        'menu'=>$menu,
                         'items'=>$items,
                         'id'=>$id,
                         'info'=>$info,
@@ -389,11 +622,11 @@ class sites_shopController
         }
         
         return $this->twig->render("shop.html.twig", array(
-            'szkId'=>$_GET['szkId'],
-            'menu'=>'start',
+            'menu'=>$menu,
             'config'=>$this->config,
             'products'=>$products,
             'categories'=>$categories,
+            'menu'=>$menu,
             'items'=>$items,
             'id'=>$id,
             'info'=>$info,
@@ -401,5 +634,6 @@ class sites_shopController
             )
         );
     }
+    
    
 }
