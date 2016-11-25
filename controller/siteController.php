@@ -1,7 +1,9 @@
 <?php
 require_once("../config/DbConn.php");
+require_once("../config/DbConnGf.php");
     
     use Cart\Cart;
+    use User\User;
     use Config\Config;
     use Menu\Menu;
     use Articles\Articles;
@@ -17,8 +19,10 @@ class siteController
              'debug' => true,
             )
             );
+        $this->twig->addGlobal('session', $_SESSION);
         
         $this->db = dbConn::getConnection();
+        $this->dbGf = dbConnGf::getConnection();
         $this->config = config::getConfig();
         $this->menu = menu::getMenuItems();
         $this->menuChild = menu::getChildMenuItems();
@@ -27,6 +31,7 @@ class siteController
     
     public function getStartSite()
     {
+
         if(isset($_GET['site'])){
             switch($_GET['site']){
                 case 'shop':
@@ -102,6 +107,54 @@ class siteController
             'info'=>$info
         )
             );
+    }
+    
+    public function getLoginKonsultantSite()
+    {
+        
+        switch($_GET['action']) {
+            case 'loginKonsultant':
+                if(!empty($_POST['konsultantFirstName'])||!empty($_POST['konsultantLastName'])||!empty($_POST['konsultantPassword'])||!empty($_POST['konsultantNumber'])){
+                    
+                    $firstName = $_POST['konsultantFirstName'];
+                    $lastName = $_POST['konsultantLastName'];
+                    $password = $_POST['konsultantPassword'];
+                    $number = $_POST['konsultantNumber'];
+                    $config = $this->config;
+                    
+                    if($_SERVER['REMOTE_ADDR']=='193.239.145.34'){
+                        if(user::getKonsultant($firstName,$lastName,$password,$number)){
+                            user::setKonsultantSession($firstName, $lastName, $number);
+                            header('Location: http://'.$config['pageSite'].'/index.php?info=loginKonsultant-success');
+                        }else {
+                            $info = 'loginKonsultant-fail';
+                            header('Location: http://'.$config['pageSite'].'/index.php?info=loginKonsultant-fail');
+                        }
+                    } else {
+                        $info = 'loginKonsultant-ipfail';
+                    }
+                }else {
+                    $info = 'loginKonsultant-lackField';
+                }
+            break;
+            case 'logoutKonsultant':
+                (user::logoutKonsultant())?$info='logoutKonsultant-success':$info='logoutKonsultant-fail';
+            break;
+        }
+        (empty($info))?$info = $_GET['info']:'';
+        return $this->twig->render("loginKonsultant.html.twig", array(
+            'config'=>$this->config,
+            'info'=>$info
+        )
+            );
+    }
+    public function checkKonsultant()
+    {
+        if(user::getKonsultantLog()==1){
+            return true;
+        } else {
+            return false;
+        }
     }
    
 }

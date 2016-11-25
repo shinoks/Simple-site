@@ -1,0 +1,47 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'deleteOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
+        {% elseif info == 'deleteOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
+        {% elseif info == 'updateOrderStatus-success'%}
+            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
+        {% elseif info == 'updateOrderStatus-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=konsultanci" %}
+{% if searchInput is not empty %}{% set url = url ~ "&searchInput=" ~ searchInput %}{% endif %}
+    
+    <div class="row">
+
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10 bg-white">
+            <div class="row">
+                <div class="pull-right">
+                    <a class="btn btn-success" href="index.php?site=admin&action=konsultanci&perf=add">Dodaj konsultanta</a><br/>
+                </div>
+            </div>
+                <form action="index.php?site=admin&action=konsultanci&perf=add" method="POST">
+                    <label>Imię</label><br/>
+                    <input type="text" name="firstName" placeholder="Wpisz imię konsultanta" class="form-control" >
+                    <label>Nazwisko</label><br/>
+                    <input type="text" name="lastName" placeholder="Wpisz nazwisko konsultanta" class="form-control">
+                    <label>Hasło</label><br/>
+                    <input type="text" name="password" placeholder="Wpisz hasło" class="form-control">
+                    <input type="hidden" name="adding" value="adding">
+                    
+                    <input type="submit" value="Dodaj konsultanta" class="btn btn-class">
+                </form>
+            </table>
+        </div>
+    </div>
+    
+{% endblock %}

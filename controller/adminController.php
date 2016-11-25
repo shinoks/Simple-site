@@ -8,6 +8,7 @@ require_once("../config/DbConnGf.php");
     use Menu\Menu;
     use Articles\Articles;
     use Shop\Shop;
+    use User\User;
     
 class adminController
 {
@@ -18,6 +19,7 @@ class adminController
                 array( "cache" => "./view/cache",
                 )
             );
+        $this->twig->addGlobal('session', $_SESSION);
         $this->db = dbConn::getConnection();
         $this->dbGf = dbConnGf::getConnection();
         $this->config = config::getConfig();
@@ -55,6 +57,10 @@ class adminController
                 
                 case 'contact':
                     echo $this->getAdminContact();
+                break;
+                
+                case 'konsultanci':
+                    echo $this->getAdminKonsultanci();
                 break;
                 
                 case 'logout':
@@ -320,6 +326,52 @@ class adminController
                 'config'=>$this->config
             )
         );
+   }
+   
+   public function getAdminKonsultanci()
+   {
+       if(isset($_GET['perf'])){
+           switch($_GET['perf']){
+               case 'add':
+                    if($_POST['adding']=='adding'){
+                        (user::addKonsultant($_POST['firstName'], $_POST['lastName'], $_POST['password']))?$info = 'konsultant-add-success':$info = 'konsultant-add-fail';
+                    }
+                    return $this->twig->render("admin/konsultanci-add.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'config'=>$this->config
+                        )
+                    );
+               break;
+                
+                default :
+                    $konsultanci = user::getKonsultanci();
+                    return $this->twig->render("admin/konsultanci.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'konsultanci'=>$konsultanci,
+                            'config'=>$this->config
+                        )
+                    );
+            }
+           
+       }else {
+           $konsultanci = user::getKonsultanci();
+           
+            return $this->twig->render("admin/konsultanci.html.twig", 
+                array(
+                    'menu'=>$this->adminMenu,
+                    'menuChild'=>$this->adminMenuChild,
+                    'info'=>$info,
+                    'konsultanci'=>$konsultanci,
+                    'config'=>$this->config
+                )
+            );
+        }
    }
    
    public function getAdminMenu()

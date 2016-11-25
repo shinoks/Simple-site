@@ -1,18 +1,23 @@
 <?php
+
 switch($_GET['site']){
     case 'admin':
         $admin = new adminController();
         echo $admin->getAdminSite();
     break;
-    case 'kontakt':
-        $kontakt = new kontaktController();
-        echo $kontakt->getkontaktSite();
-    break;
-    case 'shop':
-        $shop = new sites_shopController();
-        echo $shop->getShopSite();
-    break;
+
     default:
+    
         $start = new siteController();
-        echo $start->getStartSite();
+        if(!empty($_SESSION['fN'])&&!empty($_SESSION['lN'])&&!empty($_SESSION['hP'])&&!empty($_SESSION['kN'])){
+            if($start->checkKonsultant()){
+                $shop = new sites_shopController();
+                echo $shop->getShopSite();
+            }else {
+                echo $start->getLoginKonsultantSite();
+            }
+        }else {
+            echo $start->getLoginKonsultantSite();
+        }
+        var_dump($_SESSION);
 }

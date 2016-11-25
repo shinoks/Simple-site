@@ -27,13 +27,13 @@
                                         <input class="form-control" type="password" name="password" placeholder="Hasło" />
                                         <input class="btn btn-success" type="submit" value="Zaloguj"/>
                                     </form><br/>
-                                    Nie masz jeszcze konta ?<br/> <a href="{{url}}&view=register">Zarejestruj się</a>
+                                    Nowy klient ?<br/> <a href="{{url}}&view=register">Zarejestruj</a>
                                 {% else %}
                                     Jesteś zalogowany jako:<br/>
                                     {{user.name}}<br/>
                                     <a href="{{url}}&view=account" class="btn btn-default btn-xs">Moje konto</a>
                                     <a href="{{url}}&view=orders" class="btn btn-default btn-xs">Moje zamówienia</a><br/><br/>
-                                    <a href="index.php?site=shop&action=logout" class="btn btn-info">Wyloguj się</a>
+                                    <a href="index.php?site=shop&action=logout" class="btn btn-info">Wyloguj klienta</a>
                                 {% endif %}
                             </div>
                             

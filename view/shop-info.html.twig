@@ -1,4 +1,8 @@
 {% block info %}
+    <div class="well text-center">
+        Zalogowany konsultant <b>{{session.fN}} {{session.lN}}  <a href="index.php?action=logoutKonsultant" class="btn btn-default">Zmień konsultanta</a></b>
+    </div>
+
     {% if info is defined %}
         {% if info == 'cart-add'%}
             <div class="alert alert-success text-center" role="alert">Produkt został dodany do koszyka</div>

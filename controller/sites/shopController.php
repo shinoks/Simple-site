@@ -21,6 +21,7 @@ class sites_shopController
              'debug' => true,
             )
         );
+        $this->twig->addGlobal('session', $_SESSION);
         
         $this->db = dbConn::getConnection();
         $this->dbGf = dbConnGf::getConnection();
@@ -80,6 +81,11 @@ class sites_shopController
                 } else {
                     $info = 'logout-fail';
                 }
+            break;
+            case 'logoutKonsultant':
+                (user::logoutKonsultant())?$info='logoutKonsultant-success':$info='logoutKonsultant-fail';
+                    $config = $this->config;
+                    header('Location: http://'.$config['pageSite'].'/index.php?info=logout-success');
             break;
         }
         $sess = login::checkSession();
@@ -263,7 +269,7 @@ class sites_shopController
                                         $usAct = login::addNewJoomlaUser($_POST['name'],$_POST['username'],$_POST['name'],$_POST['password']);
                                         if($usAct>0){
                                             $usAd = shop::addUserInfo($usAct,"Adres faktury",$_POST['company'] ,$_POST['lastName'],$_POST['firstName'],
-                                            $_POST['phone1'],$_POST['phone2'],$_POST['address1'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_POST['extraField2'],'BT');
+                                            $_POST['phone1'],$_POST['phone2'],$_POST['address1'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_SESSION['kN'],'BT');
                                             if($usAd == true){
                                                 $info = 'shop-addNewUser-success';
                                             } else {
@@ -327,11 +333,11 @@ class sites_shopController
                             }
                             $addPayment = shop::addPaymentMethod($adord,$_POST['paymentMethodId']);
                             $userInfo = shop::getUserInfo($_POST['userInfoId']);
-                            
+                            $konsultant = $_SESSION['kN'];
                             $orderUserInfo = shop::addOrderUserInfo($adord,$user['id'],$userInfo['address_type'],$userInfo['address_type_name'],
                             $userInfo['company'],$userInfo['title'],$userInfo['last_name'],$userInfo['first_name'],$userInfo['middle_name'],$userInfo['phone_1'],
                             $userInfo['phone_2'],$userInfo['fax'],$userInfo['address_1'],$userInfo['address_2'],$userInfo['city'],$userInfo['state'],$userInfo['country'],
-                            $userInfo['zip'],$userInfo['user_email'],$userInfo['extra_field_1'],$userInfo['extra_field_2'],$userInfo['extra_field_3'],$userInfo['extra_field_4'],
+                            $userInfo['zip'],$userInfo['user_email'],$userInfo['extra_field_1'],$konsultant,$userInfo['extra_field_3'],$userInfo['extra_field_4'],
                             $userInfo['extra_field_5'],$userInfo['bank_account_nr'],$userInfo['bank_name'],$userInfo['bank_sort_code'],$userInfo['bank_iban'],
                             $userInfo['bank_account_holder'],$userInfo['bank_account_type']);
                             
@@ -509,9 +515,9 @@ class sites_shopController
                                 </tr>
                                 <tr>
                                     <td>Konsultant:</td>
-                                    <td style="text-align:left;">'.$order['extra_field_2'].'</td>
-                                    <td>Konsultant:</td>
-                                    <td style="text-align:left;">'.$address['extra_field_2'].'</td>
+                                    <td style="text-align:left;">'.$_SESSION['kN'].' - '.$_SESSION['fN'].' '.$_SESSION['lN'].' </td>
+                                    <td></td>
+                                    <td style="text-align:left;"></td>
                                 </tr>
                                 </table>
                                 

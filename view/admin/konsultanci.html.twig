@@ -1,0 +1,75 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'deleteOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
+        {% elseif info == 'deleteOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
+        {% elseif info == 'updateOrderStatus-success'%}
+            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
+        {% elseif info == 'updateOrderStatus-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=konsultanci" %}
+{% if searchInput is not empty %}{% set url = url ~ "&searchInput=" ~ searchInput %}{% endif %}
+
+    <div class="row">
+        <div class="pull-right">
+        <form action="{{url}}" method="GET" class="form-inline">
+            <input type="hidden" value="admin" name="site" />
+            <input type="hidden" value="shop" name="action" />
+            <input type="hidden" value="users" name="act" />
+            <input type="text" class="form-control" name="searchInput" {% if searchInput is not empty %}value="{{searchInput}}"{% endif %} placeholder="Wyszukaj użytkownika ..."/>
+            <input type="submit" value="Szukaj" class="btn btn-success" />
+        </form>
+        </div>
+        <br/><br/>
+    </div>
+    
+    <div class="row">
+
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10 bg-white">
+            <div class="row">
+                <div class="pull-right">
+                    <a class="btn btn-success" href="index.php?site=admin&action=konsultanci&perf=add">Dodaj konsultanta</a><br/>
+                </div>
+            </div>
+            <table class="table table-bordered">
+            <tr>
+                <td><strong>Lp.</strong></td>
+                <td><strong>Id. konsultanta.</strong></td>
+                <td><strong>Imię</strong></td>
+                <td><strong>Nazwisko</strong></td>
+                <td><strong>Data logowania</strong></td>
+                <td><strong>Usuń</strong></td>
+            </tr>
+            {% if activePage == 1%}
+                {% set a = 1 %}
+            {% else %}
+                {% set a = 1 + activePage*pagin.limit %}
+            {% endif %}
+            {% for konsultant in konsultanci %}
+                <tr>
+                    <td>{{ a }}</td>
+                    <td>{{ konsultant.konsultantId }}</td>
+                    <td><span class="font11"><a href="index.php?site=admin&action=shop&act=users&show=userDetail&userId={{ konsultant.konsultantId }}">{{ konsultant.konsultantFirstName }}</span></td>
+                    <td><span class="font11">{{ konsultant.konsultantLastName }}</td>
+                    <td><span class="font11">{{ konsultant.konsultantLoginDate }}</td>
+                    <td><a href="" class="btn btn-danger">Usuń</a></td>
+                </tr>
+                {% set a = a+1 %}
+            {% endfor %}
+
+            </table>
+        </div>
+    </div>
+    
+{% endblock %}
