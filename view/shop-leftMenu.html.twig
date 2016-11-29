@@ -1,5 +1,27 @@
 {% set url = "index.php?site=shop" %}
-
+                        <div class="panel panel-default">
+                            <div class="panel-heading bg-primary">
+                                <strong>Logowanie</strong>
+                            </div>
+                            <div class="panel-body text-center">
+                                {% if user is empty %}
+                                    Nie jesteś zalogowany jako klient. Zaloguj się<br/>
+                                    <form action="{{url}}&action=login" method="POST">
+                                        <input class="form-control" type="text" name="username" placeholder="Nazwa użytkownika"/>
+                                        <input class="form-control" type="password" name="password" placeholder="Hasło" />
+                                        <input class="btn btn-success" type="submit" value="Zaloguj"/>
+                                    </form><br/>
+                                    Nowy klient ?<br/> <a href="{{url}}&view=register">Zarejestruj</a>
+                                {% else %}
+                                    Jesteś zalogowany jako:<br/>
+                                    {{user.name}}<br/>
+                                    <a href="{{url}}&view=account" class="btn btn-default btn-xs">Dane klienta</a>
+                                    <a href="{{url}}&view=orders" class="btn btn-default btn-xs">Zamówienia klienta</a><br/><br/>
+                                    <a href="index.php?site=shop&action=logout" class="btn btn-info">Wyloguj klienta</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
                         <div class="panel panel-default">
                             <div class="panel-heading bg-primary">
                                 <strong>Kategorie</strong>
@@ -15,29 +37,7 @@
                             
                         </div>
                         
-                        <div class="panel panel-default">
-                            <div class="panel-heading bg-primary">
-                                <strong>Logowanie</strong>
-                            </div>
-                            <div class="panel-body text-center">
-                                {% if user is empty %}
-                                    Nie jesteś zalogowany. Zaloguj się<br/>
-                                    <form action="{{url}}&action=login" method="POST">
-                                        <input class="form-control" type="text" name="username" placeholder="Nazwa użytkownika"/>
-                                        <input class="form-control" type="password" name="password" placeholder="Hasło" />
-                                        <input class="btn btn-success" type="submit" value="Zaloguj"/>
-                                    </form><br/>
-                                    Nowy klient ?<br/> <a href="{{url}}&view=register">Zarejestruj</a>
-                                {% else %}
-                                    Jesteś zalogowany jako:<br/>
-                                    {{user.name}}<br/>
-                                    <a href="{{url}}&view=account" class="btn btn-default btn-xs">Moje konto</a>
-                                    <a href="{{url}}&view=orders" class="btn btn-default btn-xs">Moje zamówienia</a><br/><br/>
-                                    <a href="index.php?site=shop&action=logout" class="btn btn-info">Wyloguj klienta</a>
-                                {% endif %}
-                            </div>
-                            
-                        </div>
+                        
                         <div class="panel panel-default">
                             <div class="panel-heading bg-success">
                                 <strong>Koszyk</strong>

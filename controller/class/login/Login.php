@@ -102,7 +102,30 @@ class Login {
         $parts= explode( ':', $user['password'] );
         $salt= $parts[1];
         $hashedPassword = login::getHashedPasswordJoomla($password,$salt);
-        $stmt=$this->dbGf->prepare("SELECT COUNT(*) as `count` FROM jos_users WHERE username = :username and password = :password");
+        $stmt=$this->dbGf->prepare("SELECT COUNT(*) as `count` FROM jos_users WHERE username = :username and password = :password and block = 0 and gid=18");
+        $stmt->bindParam(':username',$username);
+        $stmt->bindParam(':password',$hashedPassword);
+        $stmt->execute();
+        $select = $stmt->fetch();
+        
+        if($select['count'] == 1){
+            login::sess($username);
+            
+            return true;
+        } else {
+            login::logout();
+            return false;
+        }
+    }
+    
+    
+    public function loginJoomlaAdministrator($username, $password)
+    {
+        $user = login::getUserByUsername($username);
+        $parts= explode( ':', $user['password'] );
+        $salt= $parts[1];
+        $hashedPassword = login::getHashedPasswordJoomla($password,$salt);
+        $stmt=$this->dbGf->prepare("SELECT COUNT(*) as `count` FROM jos_users WHERE username = :username and password = :password and gid<>18 and block = 0");
         $stmt->bindParam(':username',$username);
         $stmt->bindParam(':password',$hashedPassword);
         $stmt->execute();
@@ -120,7 +143,7 @@ class Login {
     
     public function getUserByUsername($username)
     { 
-        $stmt = $this->dbGf->prepare("SELECT password FROM jos_users WHERE username = :username");
+        $stmt = $this->dbGf->prepare("SELECT password,gid,usertype,block FROM jos_users WHERE username = :username");
         $stmt->bindParam(":username",$username);
         $stmt->execute();
         

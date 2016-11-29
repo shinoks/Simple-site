@@ -36,5 +36,20 @@ class Validate {
             exit;
         }
     }
+    
+    public function checkAdminLogged()
+    {
+        $ses = login::checkSession();
+        if($ses['session']==true){
+            $loggedUser = login::getUserByUsername($_SESSION['user']);
+            if($loggedUser['gid'] == 18 || $loggedUser['block'] == 1 || $loggedUser['usertype']=='Registered' ){
+                return false;
+            } else {
+                return true;
+            }
+        }else {
+            return false;
+        }
+    }
 }
 ?>

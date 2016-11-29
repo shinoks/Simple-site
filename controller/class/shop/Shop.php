@@ -20,17 +20,18 @@ class Shop {
         
         return $stmt->fetchAll();
     }
-    
     public function getOrdersOnPage($start = 0,$end = 50)
     {
-        $query = "SELECT jos_vm_orders.order_id, jos_vm_orders.cdate, jos_vm_orders.user_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, name, jos_vm_user_info.company, jos_vm_user_info.extra_field_1,  jos_vm_user_info.extra_field_2, order_status_name, COUNT(*) as `count`
+        $query = "SELECT konsultantFirstName, konsultantLastName, jos_vm_orders.order_id, jos_vm_orders.cdate, jos_vm_orders.user_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, name, jos_vm_order_user_info.company, 
+        jos_vm_order_user_info.extra_field_1,  jos_vm_order_user_info.extra_field_2, order_status_name, COUNT(*) as `count`
             FROM jos_vm_orders
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
-            LEFT JOIN jos_vm_user_info ON jos_vm_orders.user_id = jos_vm_user_info.user_id
+            LEFT JOIN jos_vm_order_user_info ON jos_vm_orders.order_id = jos_vm_order_user_info.order_id
+            LEFT JOIN konsultanci ON konsultanci.konsultantId = jos_vm_order_user_info.extra_field_2
             ";
         if(isset($this->searchInput)){
-            $query .= " WHERE order_id = :order_id OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName OR extra_field_1 LIKE :extraField1";
+            $query .= " WHERE jos_vm_orders.order_id = :order_id OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName OR extra_field_1 LIKE :extraField1";
         }
         $query .=" GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc 
@@ -83,7 +84,7 @@ class Shop {
     
     public function getOrderById($orderId)
     {
-        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
+        $stmt = $this->dbGf->prepare("SELECT konsultantFirstName, konsultantLastName, konsultanci.konsultantId, jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
         jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, 
         company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
@@ -91,7 +92,8 @@ class Shop {
             LEFT JOIN jos_vm_payment_method USING(payment_method_id) 
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
-            LEFT JOIN jos_vm_order_user_info ON jos_vm_orders.user_id = jos_vm_order_user_info.user_id
+            LEFT JOIN jos_vm_order_user_info ON jos_vm_orders.order_id = jos_vm_order_user_info.order_id
+            LEFT JOIN konsultanci ON konsultanci.konsultantId = jos_vm_order_user_info.extra_field_2
             WHERE jos_vm_orders.order_id = :orderId
             GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc
@@ -269,7 +271,7 @@ class Shop {
     
     public function getAllUsers()
     {
-        $stmt = $this->dbGf->prepare("SELECT * FROM jos_users");
+        $stmt = $this->dbGf->prepare("SELECT id, username, name FROM jos_users");
         $stmt->execute();
         
         return $stmt->fetchAll();
@@ -377,11 +379,9 @@ FROM jos_vm_orders
     {
         $limit = shop::getItemsOnSite();
         $start = $activePage * $limit -$limit;
-        $end = $start + $limit;
         $start = (int)$start;
-        $end = (int)$end;
         
-        $ordersOnPage = shop::getOrdersOnPage($start,$end);
+        $ordersOnPage = shop::getOrdersOnPage($start);
         
         $pages = round(shop::getCountOrdersOnSearch()/$limit);
 
@@ -613,13 +613,13 @@ FROM jos_vm_orders
     }
     
     public function addOrder($userId,$vendorId=1,$orderNumber=1,$userInfoId,$orderTotal,$orderSubtotal,$orderTax,$orderTaxDetails='', $orderDiscount=0, $orderCurrency='PLN',
-                            $orderStatus='P', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote='', $ipAddress)
+                            $orderStatus='P', $orderShipping=0, $orderShippingTax = 0, $couponDiscount=0, $couponCode='',  $shipMethodId, $customerNote='', $ipAddress, $konsultantId)
     {
         $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_orders`
         ( `user_id`, `vendor_id`, `order_number`, `user_info_id`, `order_total`, `order_subtotal`, `order_tax`, `order_tax_details`, `order_shipping`, `order_shipping_tax`, `coupon_discount`, `coupon_code`, `order_discount`, `order_currency`, 
-        `order_status`, `cdate`, `mdate`, `ship_method_id`, `customer_note`, `ip_address`) 
+        `order_status`, `cdate`, `mdate`, `ship_method_id`, `customer_note`, `ip_address`, `konsultantId`) 
         VALUES (:userId,:vendorId,:orderNumber,:userInfoId,:orderTotal,:orderSubtotal,:orderTax,:orderTaxDetails,:orderShipping,:orderShippingTax,:couponDiscount,:couponCode,:orderDiscount,:orderCurrency,:orderStatus,:cdate,:mdate,
-        :shipMethodId,:customerNote,:ipAddress)");
+        :shipMethodId,:customerNote,:ipAddress,:konsultantId)");
         $stmt->bindParam(':userId',$userId);
         $stmt->bindParam(':vendorId',$vendorId);
         $stmt->bindParam(':orderNumber',$orderNumber);
@@ -641,6 +641,7 @@ FROM jos_vm_orders
         
         $stmt->bindParam(':customerNote',$customerNote);
         $stmt->bindParam(':ipAddress',$ipAddress);
+        $stmt->bindParam(':konsultantId',$konsultantId);
         $stmt->execute();
         
         return $this->dbGf->lastInsertId();

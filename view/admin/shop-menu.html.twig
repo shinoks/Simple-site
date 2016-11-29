@@ -1,13 +1,19 @@
+{% if shopMenu is not defined %}
+    {{shopMenu == 'orders'}}
+{% endif %}
+
 <div class="well">
-            <a class="btn btn-default width-full text-left-important active" href="index.php?site=admin&action=shop">Zamówienia</a>
-            <a class="btn btn-default width-full text-left-important" href="index.php?site=admin&action=shop&act=users">Użytkownicy</a>
-            <a class="btn btn-default width-full text-left-important" role="button" data-toggle="collapse" href="#Produkty" aria-expanded="false" aria-controls="Produkty">Produkty</a>
-            <div class="panel panel-default collapse fade" id="Produkty">
+            
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'orders'%}active{%endif%}" href="index.php?site=admin&action=shop">Zamówienia</a>
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'users'%}active{%endif%}" href="index.php?site=admin&action=shop&act=users">Użytkownicy</a>
+            
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'products'%}active{%endif%}" role="button" data-toggle="collapse" href="#Produkty" aria-expanded="false" aria-controls="Produkty">Produkty</a>
+            <div class="panel panel-default collapse fade " id="Produkty">
             <ul class="nav nav-pills nav-stacked ">
-              <li><a href="index.php?site=admin&action=shop&act=products">Produkty</a></li>
-              <li><a href="index.php?site=admin&action=shop&act=products">Dodaj produkt</a></li>
+              <li><a class="{% if shopMenu == 'products'%}active{%endif%}" href="index.php?site=admin&action=shop&act=products">Produkty</a></li>
+              <li><a class="{% if shopMenu == 'products'%}active{%endif%}"href="index.php?site=admin&action=shop&act=products">Dodaj produkt</a></li>
             </ul>
             </div>
-            <a class="btn btn-default width-full text-left-important" href="index.php?site=admin&action=shop&act=categories">Kategorie</a>
-            <a class="btn btn-default width-full text-left-important" href="index.php?site=admin&action=shop&act=raports">Raporty</a>
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'categories'%}active{%endif%}" href="index.php?site=admin&action=shop&act=categories">Kategorie</a>
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'raporty'%}active{%endif%}" href="index.php?site=admin&action=shop&act=raports">Raporty</a>
 </div>

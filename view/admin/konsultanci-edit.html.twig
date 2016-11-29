@@ -1,0 +1,32 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'konsultant-edit-success'%}
+            <div class="alert alert-success text-center" role="alert">Konsultant został zmieniony</div>
+        {% elseif info == 'konsultant-edit-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Konsultant nie został zmieniony</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=konsultanci" %}
+{% if searchInput is not empty %}{% set url = url ~ "&searchInput=" ~ searchInput %}{% endif %}
+    
+    <div class="row">
+        <div class="col-md-12 bg-white">
+                <form action="index.php?site=admin&action=konsultanci&konsultantId={{konsultant.konsultantId}}&perf=edit" method="POST">
+                    <label>Imię</label><br/>
+                    <input type="text" name="konsultantFirstName" placeholder="Wpisz imię konsultanta" class="form-control" value="{{konsultant.konsultantFirstName}}">
+                    <label>Nazwisko</label><br/>
+                    <input type="text" name="konsultantLastName" placeholder="Wpisz nazwisko konsultanta" class="form-control" value="{{konsultant.konsultantLastName}}">
+                    <input type="hidden" name="adding" value="adding">
+                    <input type="hidden" name="konsultantId" value="{{konsultant.konsultantId}}"/>
+                    <input type="submit" value="Zmień dane konsultanta" class="btn btn-class">
+                </form>
+            </table>
+        </div>
+    </div>
+    
+{% endblock %}

@@ -122,7 +122,7 @@ class siteController
                     $number = $_POST['konsultantNumber'];
                     $config = $this->config;
                     
-                    if($_SERVER['REMOTE_ADDR']=='193.239.145.34'){
+                    if($_SERVER['REMOTE_ADDR']='193.239.145.34'){
                         if(user::getKonsultant($firstName,$lastName,$password,$number)){
                             user::setKonsultantSession($firstName, $lastName, $number);
                             header('Location: http://'.$config['pageSite'].'/index.php?info=loginKonsultant-success');

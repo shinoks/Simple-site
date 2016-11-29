@@ -321,7 +321,8 @@ class sites_shopController
                         
                        $orderTax = $totalFinal-$total;
                        $orderUserInfoId = time().'.'.bin2hex(openssl_random_pseudo_bytes(8));
-                       $adord = shop::addOrder($user['id'],1,$orderUserInfoId,$_POST['userInfoId'],$totalFinal,$total,$orderTax,'',0,'PLN','P',0,0,0,'',$_POST['paymentMethodId'],$_POST['customerNote'],$_SERVER['REMOTE_ADDR']);
+                        $konsultant = $_SESSION['kN'];
+                       $adord = shop::addOrder($user['id'],1,$orderUserInfoId,$_POST['userInfoId'],$totalFinal,$total,$orderTax,'',0,'PLN','P',0,0,0,'',$_POST['paymentMethodId'],$_POST['customerNote'],$_SERVER['REMOTE_ADDR'],$konsultant);
                         if( $adord > 0){
                             foreach($items as $id =>$qty){
                                 foreach($products as $product){
@@ -333,7 +334,6 @@ class sites_shopController
                             }
                             $addPayment = shop::addPaymentMethod($adord,$_POST['paymentMethodId']);
                             $userInfo = shop::getUserInfo($_POST['userInfoId']);
-                            $konsultant = $_SESSION['kN'];
                             $orderUserInfo = shop::addOrderUserInfo($adord,$user['id'],$userInfo['address_type'],$userInfo['address_type_name'],
                             $userInfo['company'],$userInfo['title'],$userInfo['last_name'],$userInfo['first_name'],$userInfo['middle_name'],$userInfo['phone_1'],
                             $userInfo['phone_2'],$userInfo['fax'],$userInfo['address_1'],$userInfo['address_2'],$userInfo['city'],$userInfo['state'],$userInfo['country'],

@@ -2,14 +2,10 @@
 
 {% block info %}
     {% if info is defined %}
-        {% if info == 'deleteOrder-success'%}
-            <div class="alert alert-success text-center" role="alert">Zamówienie zostało usunięte</div>
-        {% elseif info == 'deleteOrder-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało usunięte</div>
-        {% elseif info == 'updateOrderStatus-success'%}
-            <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
-        {% elseif info == 'updateOrderStatus-fail'%}
-            <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% if info == 'konsultanci-delete-success'%}
+            <div class="alert alert-success text-center" role="alert">Konsultant został usunięty</div>
+        {% elseif info == 'konsultanci-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Konsultant nie został usunięty</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -32,11 +28,7 @@
     </div>
     
     <div class="row">
-
-        <div class="col-md-2">
-            {% include 'admin/shop-menu.html.twig' %}
-        </div>
-        <div class="col-md-10 bg-white">
+        <div class="col-md-12 bg-white">
             <div class="row">
                 <div class="pull-right">
                     <a class="btn btn-success" href="index.php?site=admin&action=konsultanci&perf=add">Dodaj konsultanta</a><br/>
@@ -60,10 +52,10 @@
                 <tr>
                     <td>{{ a }}</td>
                     <td>{{ konsultant.konsultantId }}</td>
-                    <td><span class="font11"><a href="index.php?site=admin&action=shop&act=users&show=userDetail&userId={{ konsultant.konsultantId }}">{{ konsultant.konsultantFirstName }}</span></td>
+                    <td><span class="font11"><a href="index.php?site=admin&action=konsultanci&konsultantId={{ konsultant.konsultantId }}&perf=edit">{{ konsultant.konsultantFirstName }}</span></td>
                     <td><span class="font11">{{ konsultant.konsultantLastName }}</td>
                     <td><span class="font11">{{ konsultant.konsultantLoginDate }}</td>
-                    <td><a href="" class="btn btn-danger">Usuń</a></td>
+                    <td><a href="index.php?site=admin&action=konsultanci&konsultantId={{ konsultant.konsultantId }}&perf=delete" class="btn btn-danger">Usuń</a></td>
                 </tr>
                 {% set a = a+1 %}
             {% endfor %}

@@ -9,6 +9,7 @@ require_once("../config/DbConnGf.php");
     use Articles\Articles;
     use Shop\Shop;
     use User\User;
+    use Validate\Validate;
     
 class adminController
 {
@@ -31,10 +32,9 @@ class adminController
     
     public function getAdminSite()
     {
-       $login = new Login($this->db);
-       $sess = $login->checkSession();
        
-        if($sess['session'] == true){
+        if(validate::checkAdminLogged()){
+            
             switch($_GET['action']){
                 
                 case 'configuration':
@@ -50,7 +50,6 @@ class adminController
                 break;
                 
                 case 'shop':
-                    require_once("../config/DbConnGf.php");
                     
                     echo $this->getAdminShop();
                 break;
@@ -64,7 +63,7 @@ class adminController
                 break;
                 
                 case 'logout':
-                    $login->logout();
+                    login::logout();
                     $info = 'logout';
                     return $this->twig->render("admin/login.html.twig", 
                         array(
@@ -85,15 +84,11 @@ class adminController
                     )
                 );
             }
-
         }else {
-            
            switch ($_GET['action']){
                case 'login':
-                    
-                   $login = login::loginJoomla($_POST['username'],$_POST['password']);
+                   $login = login::loginJoomlaAdministrator($_POST['username'],$_POST['password']);
                    $sess = login::checkSession();
-
                     if($login == true && $sess['session'] == true){
                         
                         return $this->twig->render("admin/start.html.twig", 
@@ -332,7 +327,7 @@ class adminController
    {
        if(isset($_GET['perf'])){
            switch($_GET['perf']){
-               case 'add':
+                case 'add':
                     if($_POST['adding']=='adding'){
                         (user::addKonsultant($_POST['firstName'], $_POST['lastName'], $_POST['password']))?$info = 'konsultant-add-success':$info = 'konsultant-add-fail';
                     }
@@ -344,7 +339,39 @@ class adminController
                             'config'=>$this->config
                         )
                     );
-               break;
+                break;
+                case 'delete':
+                    $del = user::deleteKonsultant($_GET['konsultantId']);
+                    ($del == true)?$info='konsultanci-delete-success':$info='konsultanci-delete-fail';
+                    
+                    $konsultanci = user::getKonsultanci();
+                    return $this->twig->render("admin/konsultanci.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'konsultanci'=>$konsultanci,
+                            'config'=>$this->config
+                        )
+                    );
+                break;
+                case 'edit':
+                    if(!empty($_POST['konsultantFirstName'])&&!empty($_POST['konsultantLastName'])&&!empty($_POST['konsultantId'])){
+                        (user::updateKonsultant($_POST['konsultantFirstName'], $_POST['konsultantLastName'], $_POST['konsultantId']))?$info='konsultant-edit-success':$info='konsultant-edit-fail';
+                    }
+                    
+                    $konsultant = user::getKonsultantById($_GET['konsultantId']);
+                    
+                    return $this->twig->render("admin/konsultanci-edit.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'konsultant'=>$konsultant,
+                            'config'=>$this->config
+                        )
+                    );
+                break;
                 
                 default :
                     $konsultanci = user::getKonsultanci();
@@ -516,6 +543,7 @@ class adminController
         
         switch($_GET['act']){
             case 'orderDetail':
+                $shopMenu='orderDetail';
                 $order = shop::getOrderById($_GET['orderId']);
                 
                 if(isset($_GET['perf'])){
@@ -587,6 +615,7 @@ class adminController
                                 'menu'=>$this->adminMenu,
                                 'menuChild'=>$this->adminMenuChild,
                                 'config'=>$this->config,
+                                'shopMenu'=>$shopMenu,
                                 'order'=>$order,
                                 'info'=>$info,
                                 'orderProducts'=>$orderProducts,
@@ -602,6 +631,7 @@ class adminController
             break;
             case 'users':
                 
+                $shopMenu='users';
                 if(isset($_GET['show'])){
                         switch($_GET['show']){
                             case 'userDetail':
@@ -649,6 +679,7 @@ class adminController
                                         'menu'=>$this->adminMenu,
                                         'menuChild'=>$this->adminMenuChild,
                                         'config'=>$this->config,
+                                        'shopMenu'=>$shopMenu,
                                         'searchInput'=>$this->searchInput,
                                         'activePage'=>$activePage,
                                         'user'=>$user,
@@ -666,6 +697,7 @@ class adminController
                                         'menu'=>$this->adminMenu,
                                         'menuChild'=>$this->adminMenuChild,
                                         'config'=>$this->config,
+                                        'shopMenu'=>$shopMenu,
                                         'pagin'=>$pagin,
                                         'searchInput'=>$this->searchInput,
                                         'activePage'=>$activePage,
@@ -683,6 +715,7 @@ class adminController
                                         'menu'=>$this->adminMenu,
                                         'menuChild'=>$this->adminMenuChild,
                                         'config'=>$this->config,
+                                        'shopMenu'=>$shopMenu,
                                         'pagin'=>$pagin,
                                         'searchInput'=>$this->searchInput,
                                         'activePage'=>$activePage,
@@ -695,6 +728,7 @@ class adminController
                 
             break;
             case 'products':
+                $shopMenu='products';
                 $products = shop::getAllProducts();
                 if(isset($_GET['perf'])){
                         switch($_GET['perf']){
@@ -717,6 +751,7 @@ class adminController
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,
                                     'config'=>$this->config,
+                                    'shopMenu'=>$shopMenu,
                                     'searchInput'=>$this->searchInput,
                                     'activePage'=>$activePage,
                                     'info'=>$info,
@@ -730,6 +765,7 @@ class adminController
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,
                                     'config'=>$this->config,
+                                    'shopMenu'=>$shopMenu,
                                     'searchInput'=>$this->searchInput,
                                     'activePage'=>$activePage,
                                     'info'=>$info,
@@ -743,6 +779,7 @@ class adminController
                                             'menu'=>$this->adminMenu,
                                             'menuChild'=>$this->adminMenuChild,
                                             'config'=>$this->config,
+                                            'shopMenu'=>$shopMenu,
                                             'searchInput'=>$this->searchInput,
                                             'activePage'=>$activePage,
                                             'info'=>$info,
@@ -753,6 +790,7 @@ class adminController
             break;
             
             case 'categories':
+                $shopMenu='categories';
                 $categories = shop::getCategories();
                 if(isset($_GET['perf'])){
                         switch($_GET['perf']){
@@ -789,6 +827,7 @@ class adminController
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,
                                     'config'=>$this->config,
+                                    'shopMenu'=>$shopMenu,
                                     'searchInput'=>$this->searchInput,
                                     'activePage'=>$activePage,
                                     'info'=>$info,
@@ -802,6 +841,7 @@ class adminController
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,
                                     'config'=>$this->config,
+                                    'shopMenu'=>$shopMenu,
                                     'searchInput'=>$this->searchInput,
                                     'activePage'=>$activePage,
                                     'info'=>$info
@@ -815,6 +855,7 @@ class adminController
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,
                                     'config'=>$this->config,
+                                    'shopMenu'=>$shopMenu,
                                     'searchInput'=>$this->searchInput,
                                     'activePage'=>$activePage,
                                     'info'=>$info,
@@ -828,6 +869,7 @@ class adminController
                                     'menu'=>$this->adminMenu,
                                     'menuChild'=>$this->adminMenuChild,
                                     'config'=>$this->config,
+                                    'shopMenu'=>$shopMenu,
                                     'searchInput'=>$this->searchInput,
                                     'activePage'=>$activePage,
                                     'info'=>$info,
@@ -841,6 +883,7 @@ class adminController
                                             'menu'=>$this->adminMenu,
                                             'menuChild'=>$this->adminMenuChild,
                                             'config'=>$this->config,
+                                            'shopMenu'=>$shopMenu,
                                             'searchInput'=>$this->searchInput,
                                             'activePage'=>$activePage,
                                             'info'=>$info,
@@ -850,6 +893,8 @@ class adminController
                 }
             break;
             default:
+                
+                $shopMenu='orders';
                 if(isset($_GET['perf'])){
                         switch($_GET['perf']){
                             case 'deleteOrder':
@@ -870,12 +915,13 @@ class adminController
                 }
                 
                 $pagin = shop::getPagination($activePage);
-                echo $info;
+                
                 return $this->twig->render("admin/shop.html.twig", 
                             array(
                                 'menu'=>$this->adminMenu,
                                 'menuChild'=>$this->adminMenuChild,
                                 'config'=>$this->config,
+                                'shopMenu'=>$shopMenu,
                                 'pagin'=>$pagin,
                                 'searchInput'=>$this->searchInput,
                                 'activePage'=>$activePage,

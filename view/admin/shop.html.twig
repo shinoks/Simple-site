@@ -50,10 +50,10 @@
                 <tr>
                     <td>{{ a }}</td>
                     <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
-                    <td>{{ order.cdate|date("d-m-Y",false) }}</a></td>
+                    <td>{{ order.cdate|date("d-m-Y H:i:s",false) }}</a></td>
                     <td><span class="font11"><a href="index.php?site=admin&action=shop&act=users&show=userDetail&userId={{ order.user_id }}">{{ order.name }} {{ order.company[0:100] }} </span></td>
                     <td>{{ order.extra_field_1 }}</td>
-                    <td><span class="font11">{{ order.extra_field_2 }}</span></td>
+                    <td><span class="font11">{{ order.konsultantFirstName }} {{ order.konsultantLastName }} {{ order.extra_field_2 }}</span></td>
                     <td>{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
                     <td>
                     <form method="POST" class="form-inline" action="index.php?site=admin&action=shop&perf=updateOrderStatus&orderId={{ order.order_id }}">

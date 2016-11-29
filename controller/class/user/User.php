@@ -69,18 +69,15 @@ class User {
         return $stmt->fetchAll();
     }
     
-    public function addKonsultant($firstName, $lastName, $password)
+    public function getKonsultantById($konsultantId)
     {
-        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $this->dbGf->prepare(" INSERT INTO `konsultanci`(`konsultantFirstName`, `konsultantLastName`, `konsultantPassword`, `konsultantLoginDate`)
-        VALUES (:firstName,:lastName,:password,:loginDate)");
-        $stmt->bindParam(':firstName',$firstName);
-        $stmt->bindParam(':lastName',$lastName);
-        $stmt->bindParam(':password',$passwordHash);
-        $stmt->bindParam(':loginDate',date('Y-m-d H:i:s'));
-
-        return $stmt->execute();
+        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate FROM konsultanci WHERE konsultantId = :konsultantId");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->execute();
+        
+        return $stmt->fetch();
     }
+    
         public function getKonsultantLog()
     {
         $stmt = $this->dbGf->prepare("SELECT `konsultantId` FROM konsultanci 
@@ -97,6 +94,39 @@ class User {
         
         return $ile;
 
+    }
+    
+    public function addKonsultant($firstName, $lastName, $password)
+    {
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $this->dbGf->prepare(" INSERT INTO `konsultanci`(`konsultantFirstName`, `konsultantLastName`, `konsultantPassword`, `konsultantLoginDate`)
+        VALUES (:firstName,:lastName,:password,:loginDate)");
+        $stmt->bindParam(':firstName',$firstName);
+        $stmt->bindParam(':lastName',$lastName);
+        $stmt->bindParam(':password',$passwordHash);
+        $stmt->bindParam(':loginDate',date('Y-m-d H:i:s'));
+
+        return $stmt->execute();
+    }
+    
+    public function updateKonsultant($firstName, $lastName, $konsultantId)
+    {
+        $stmt = $this->dbGf->prepare("UPDATE konsultanci SET konsultantFirstName = :konsultantFirstName, konsultantLastName = :konsultantLastName WHERE konsultantId = :konsultantId");
+        $stmt->bindParam("konsultantFirstName",$firstName);
+        $stmt->bindParam("konsultantLastName",$lastName);
+        $stmt->bindParam("konsultantId",$konsultantId);
+        
+        return $stmt->execute();
+    }
+    
+    public function deleteKonsultant($konsultantId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM `konsultanci` WHERE konsultantId = :konsultantId ");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->execute();
+        ($stmt->rowCount()>0)?$in= true:$in= false;
+        
+        return $in;
     }
 }
 ?>
