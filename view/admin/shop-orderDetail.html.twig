@@ -26,6 +26,10 @@
             <div class="alert alert-success text-center" role="alert">Notatka została zmieniona</div>
         {% elseif info == 'product-updateOrderSendTo-fail'%}
             <div class="alert alert-danger text-center" role="alert">Notatka nie została zmieniona</div>
+        {% elseif info == 'product-updateOrderPayment-success '%}
+            <div class="alert alert-success text-center" role="alert">Wysyłka została zmieniona</div>
+        {% elseif info == 'product-updateOrderPayment-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Wysyłka nie została zmieniona</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -105,11 +109,11 @@
                         <table class="table table-bordered ">
                         <tr>
                             <td>E-mail:</td>
-                            <td>{{ order.email }}</td>
+                            <td>{{ order.user_email }}</td>
                         </tr>
                         <tr>
                             <td>Nazwa firmy:</td>
-                            <td>{{ order.company }}</td>
+                            <td>{{ order.company|replace({'&quot;':'"'}) }}</td>
                         </tr>
                         <tr>
                             <td>Imię i Nazwisko:</td>
@@ -141,7 +145,7 @@
                         </tr>
                         <tr>
                             <td>Konsultant:</td>
-                            <td>{{ order.konsultantId }} - {{ order.konsultantFirstName }} {{ order.konsultantLastName }}</td>
+                            <td>{{ order.extra_field_2 }} -{{ order.konsultantId }} - {{ order.konsultantFirstName }} {{ order.konsultantLastName }}</td>
                         </tr>
                         <tr>
                             <td>Zmień użytkownika:</td>
@@ -160,6 +164,10 @@
                                     <input type="submit" class="btn btn-default" value="Zmień">
                                 </form>
                             </td>
+                        </tr>
+                        <tr>
+                            <td>Zmień dane faktury</td>
+                            <td><a href="index.php?site=admin&action=shop&act=orderEdit&orderId={{ order.order_id }}" class="btn btn-default">Zmień</a></td>
                         </tr>
                          </table>
                     </div>
@@ -180,7 +188,7 @@
                                         </tr>
                                         <tr>
                                             <td>Nazwa firmy:</td>
-                                            <td>{{ userSendTo.company }}</td>
+                                            <td>{{ userSendTo.company|replace({'&quot;':'"'}) }}</td>
                                         </tr>
                                         <tr>
                                             <td>Imię i Nazwisko:</td>
@@ -212,12 +220,12 @@
                                         </tr>
                                         
                             <tr>
-                                <td>Zmień adres wysyłki: </td>
+                                <td>Zmień na gotowy adres wysyłki: </td>
                                 <td>
                                     <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateOrderSendTo" method="POST">
                                         <select name="userInfoId"class="form-control">
                                             {% for userAddres in userAddresses %}
-                                                {% if userAddres.user_info_id == order.4 %}
+                                                {% if userAddres.user_info_id == order.user_info_id %}
                                                     <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
                                                 {% else %}
                                                     <option value="{{ userAddres.user_info_id }}"> {{ userAddres.address_type_name }}</option>
@@ -226,6 +234,12 @@
                                         </select>
                                         <input type="submit" class="btn btn-default" value="Zmień">
                                     </form>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Zmień dane wysyłki:</td>
+                                <td>
+                                    <td><a href="index.php?site=admin&action=shop&act=orderSendEdit&orderId={{ order.order_id }}" class="btn btn-default">Zmień</a></td>
                                 </td>
                             </tr>
                              </table>
@@ -255,11 +269,11 @@
                         <input type="hidden" name="productAttribute" value="" />
                         <tr>
                             <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=delete&orderItemId={{ item.order_item_id }}" class="btn btn-danger">Usuń</a></td>
-                            <td><input type="hidden" name="itemId" value="{{ item.order_item_id }}"/>
-                            <input class="form-control" name="productQuantity" value="{{ item.product_quantity }}"/></td>
+                            <td><input  type="hidden" name="itemId" value="{{ item.order_item_id }}"/>
+                            <input style="width:50px" class="form-control" name="productQuantity" value="{{ item.product_quantity }}"/></td>
                             <td>{{ item.product_name }}</td>
-                            <td><input class="form-control" name="productPrice" value="{{ item.product_item_price|round(2,"common") }}"/></td>
-                            <td><input class="form-control" name="productFinalPrice" value="{{ item.product_final_price|round(2,"common") }}"/></td>
+                            <td><input style="width:150px" class="form-control" name="productPrice" value="{{ item.product_item_price|round(2,"common") }}"/></td>
+                            <td><input style="width:150px" class="form-control" name="productFinalPrice" value="{{ item.product_final_price|round(2,"common") }}"/></td>
                             <td>{{ item.tax_rate * 100 }}%</td>
                             <td>{{ item.product_quantity * item.product_final_price|round(2,"common") }}</td>
                             <td><input type="submit" value="Zapisz" class="btn btn-success"/></td>
@@ -285,6 +299,34 @@
                             </td>
                             <td>
                                 {{ order.order_total|round(2,"common") }}zł
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                            </td>
+                        
+                            <td>
+                                Koszt administracyjny:
+                            </td>
+                            <td>
+                            <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{order.order_id}}&perf=administrationFee" method="POST">
+                                <input type="text" name="administrationFee" value="{{ order.administrationFee|round(2,"common") }}" /> zł
+                            </td>
+                            <td>
+                                <input type="submit" class="btn btn-default" value="Zapisz"/>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                            </td>
+                        
+                            <td>
+                                Obrót:
+                            </td>
+                            <td>
+                            {% set ron = order.order_subtotal - order.administrationFee %}
+                                {{ ron|round(2,"common") }} zł
                             </td>
                         </tr>
                     </table>
@@ -313,19 +355,31 @@
                 <div class="well">
                     <strong>Informacje o wysyłce</strong><br/>
                     <div class="col-md-6">
-                        Metoda płatności: 
+                        Metoda płatności: {{ order.payment_method_name }}<br/>
+                        <form action='index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=paymentsMethod' method='POST'>
+                            <select name='paymentMethodId' class='form-control'>
+                                {% for payment in payments %}
+                                    <option value='{{payment.payment_method_id}}'>{{payment.payment_method_name}}</option>
+                                {% endfor %}
+                            </select>
+                            <input type='submit' value='Zmień' class='btn btn-default' />
+                        </form>
                     </div>
                     <div class="col-md-6">
                         Rodzaj wysyłki:
                         
                     </div>
                     <br/>
+                    <br/>
+                    <br/>
+                    <br/>
                 </div>
             </div>
             <div class="well">
                 <strong>Notatka klienta</strong><br/>
                 <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateCustomerNote" method="POST">
-                    <textarea class="form-control" rows="5">{{ order.customer_note }}</textarea>
+                    <textarea name="customerNote" class="form-control" rows="5">{{ order.customer_note }}</textarea>
+                    <input type="hidden" value="{{order.order_id}}" name="" >
                     <input type="submit" class="btn btn-default" value="Zapisz"/>
                 </form>
             </div>

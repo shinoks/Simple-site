@@ -11,13 +11,24 @@ switch($_GET['site']){
         $start = new siteController();
         if(!empty($_SESSION['fN'])&&!empty($_SESSION['lN'])&&!empty($_SESSION['hP'])&&!empty($_SESSION['kN'])){
             if($start->checkKonsultant()){
-                $shop = new sites_shopController();
-                echo $shop->getShopSite();
+                switch($_GET['site']){
+                    case 'shop':
+                        $shop = new sites_shopController();
+                        echo $shop->getShopSite();
+                    break;
+                    case 'myAccount':
+                        $shop = new sites_shopController();
+                        echo $shop->getMyAccountSite();
+                    break;
+                    default:
+                        $shop = new sites_shopController();
+                        echo $shop->getShopSite();
+                }
+                
             }else {
                 echo $start->getLoginKonsultantSite();
             }
         }else {
             echo $start->getLoginKonsultantSite();
         }
-        var_dump($_SESSION);
 }

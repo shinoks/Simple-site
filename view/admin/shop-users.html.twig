@@ -82,7 +82,8 @@
                 </li>
             {% endif %}
             {% set a = 1 %}
-            {% for a in 1..pagin.pages  %}
+            
+            {% for a in 1..pagin.pages+1  %}
                 {% if activePage == a%}
                     <li class="active">
                         <span>{{ a }} <span class="sr-only">(current)</span></span>

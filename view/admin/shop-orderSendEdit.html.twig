@@ -1,0 +1,56 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'updateUserInfo-edit-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane zostały zmienione</div>
+        {% elseif info == 'updateUserInfo-edit-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane nie zostały zmienione</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    
+    <div class="row">
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10">
+            <div class="well">
+                <div class="row">
+                    <div class="pull-left col-md-6">
+                    Zamówienie nr. {{ order.order_id }}<br/>
+                    Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
+                    Data modyfikacji: {{ order.mdate|date("d-m-Y H:i:s") }}<br/>
+                    Stan zamówienia: {{ order.order_status_name }}<br/>
+                    <br/>
+                    <br/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form method="POST" class="form" action="index.php?site=admin&action=shop&act=orderSendEdit&orderId={{order.order_id}}">
+                            <strong>Dane wysyłki</strong><br/>
+                                <input type="hidden" class="form-control" name="addressTypeName" value="{{order.address_type_name}}"/>
+                                Nazwa firmy: <input type="text" class="form-control" name="company" value="{{order.company}}"/>
+                                Nazwisko: <input type="text" class="form-control" name="lastName" value="{{order.last_name}}"/>
+                                Imię: <input type="text" class="form-control" name="firstName" value="{{order.first_name}}"/>
+                                Telefon: <input type="text" class="form-control" name="phone" value="{{order.phone_1}}"/>
+                                Telefon 2 :<input type="text" class="form-control" name="phone2" value="{{order.phone_2}}"/>
+                                Adres:<input type="text" class="form-control" name="address" value="{{order.address_1}}"/>
+                                Adres 2:<input type="text" class="form-control" name="address2" value="{{order.address_2}}"/>
+                                Miasto: <input type="text" class="form-control" name="city" value="{{order.city}}"/>
+                                NIP: <input type="text" class="form-control" name="extraField1" value="{{order.extra_field_1}}"/>
+                             <input type="hidden" value="{{ order.user_id }}" name="userId"/>
+                             <input type="hidden" value="{{ order.order_info_id }}" name="order_info_id"/>
+                             <input type="hidden" value="saveEdit" name="saveEdit"/>
+                             <input type="submit" class="btn btn-submit" value="Zapisz"/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

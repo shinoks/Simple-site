@@ -6,6 +6,8 @@
             <div class="alert alert-success text-center" role="alert">Konsultant został usunięty</div>
         {% elseif info == 'konsultanci-delete-fail'%}
             <div class="alert alert-danger text-center" role="alert">Konsultant nie został usunięty</div>
+        {% elseif info == 'konsultanci-delete-fail-lackpermissions'%}
+            <div class="alert alert-danger text-center" role="alert">Konsultant nie został usunięty - brak uprawnień</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -41,6 +43,8 @@
                 <td><strong>Imię</strong></td>
                 <td><strong>Nazwisko</strong></td>
                 <td><strong>Data logowania</strong></td>
+                <td><strong>Aktywny</strong></td>
+                <td><strong>Zablokuj</strong></td>
                 <td><strong>Usuń</strong></td>
             </tr>
             {% if activePage == 1%}
@@ -49,12 +53,30 @@
                 {% set a = 1 + activePage*pagin.limit %}
             {% endif %}
             {% for konsultant in konsultanci %}
-                <tr>
+                {% if konsultant.block == 0 %}
+                    <tr>
+                {% else %}
+                    <tr class="danger">
+                {% endif %}
                     <td>{{ a }}</td>
                     <td>{{ konsultant.konsultantId }}</td>
                     <td><span class="font11"><a href="index.php?site=admin&action=konsultanci&konsultantId={{ konsultant.konsultantId }}&perf=edit">{{ konsultant.konsultantFirstName }}</span></td>
                     <td><span class="font11">{{ konsultant.konsultantLastName }}</td>
                     <td><span class="font11">{{ konsultant.konsultantLoginDate }}</td>
+                    <td>
+                    {% if konsultant.block == 0 %}
+                        <p class="text-success">Tak</p>
+                    {% else %}
+                        <p class="text-danger">Nie</p>
+                    {% endif %}
+                    </td>
+                    <td>
+                        {% if konsultant.block == 0 %}
+                            <a href="index.php?site=admin&action=konsultanci&konsultantId={{ konsultant.konsultantId }}&perf=unpublish&unpublish=1" class="btn btn-danger">Wyłącz</a>
+                        {% else %}
+                            <a href="index.php?site=admin&action=konsultanci&konsultantId={{ konsultant.konsultantId }}&perf=unpublish&unpublish=2" class="btn btn-success">Włącz</a>
+                        {% endif %}
+                    </td>
                     <td><a href="index.php?site=admin&action=konsultanci&konsultantId={{ konsultant.konsultantId }}&perf=delete" class="btn btn-danger">Usuń</a></td>
                 </tr>
                 {% set a = a+1 %}

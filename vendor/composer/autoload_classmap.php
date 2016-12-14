@@ -6,4 +6,12 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'EasyPeasyICS' => $vendorDir . '/phpmailer/extras/EasyPeasyICS.php',
+    'PHPMailer' => $vendorDir . '/phpmailer/class.phpmailer.php',
+    'PHPMailerOAuth' => $vendorDir . '/phpmailer/phpmailer/class.phpmaileroauth.php',
+    'PHPMailerOAuthGoogle' => $vendorDir . '/phpmailer/class.phpmaileroauthgoogle.php',
+    'POP3' => $vendorDir . '/phpmailer/class.pop3.php',
+    'SMTP' => $vendorDir . '/phpmailer/class.smtp.php',
+    'ntlm_sasl_client_class' => $vendorDir . '/phpmailer/extras/ntlm_sasl_client.php',
+    'phpmailerException' => $vendorDir . '/phpmailer/class.phpmailer.php',
 );

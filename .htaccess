@@ -1,3 +1,8 @@
 :Location /*.php
 Use php56
 :Location
+Options FollowSymLinks
+RewriteEngine On
+
+RewriteRule ^(.+).html$ index.php?site=$1 [L]
+RewriteRule ^(.+)/(.+).html$ index.php?site=$1&action=$2 [L]

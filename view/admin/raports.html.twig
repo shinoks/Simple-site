@@ -1,0 +1,160 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'admins-delete-success'%}
+            <div class="alert alert-success text-center" role="alert">Admin został usunięty</div>
+        {% elseif info == 'admins-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty</div>
+        {% elseif info == 'admins-delete-fail-lackpermissions'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty - brak uprawnień</div>
+        {% elseif info == 'shop-updateAddon-success'%}
+            <div class="alert alert-success text-center" role="alert">Dodatek został zmieniony</div>
+        {% elseif info == 'shop-updateAddon-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dodatek nie został zmieniony</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=raports" %}
+    
+    <div class="row">
+        <div class="col-md-12 bg-white">
+            <div class="row">
+                <div class="pull-left">
+                Wybierz zakres raportu:<br/>
+
+                    <form class='form-inline' action='index.php' method='GET'/>
+                        <input type='hidden' value='admin' name='site'/>
+                        <input type='hidden' value='raports' name='action'/>
+                        <div class="form-group">
+                        <select class='form-control' name='activeYear'>
+                            {% for i in 2016..2036 %}
+                                {% if activeYear == i %}
+                                    <option  value='{{i}}' selected>{{i}}</option>
+                                {% else %}
+                                    <option value='{{i}}' >{{i}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        </div>
+                        <div class="form-group">
+                        <select class='form-control' name='activeMonth'>
+                            {% for i in 1..12 %}
+                                {% if activeMonth == i %}
+                                    <option value='{{i}}' selected>{{i}}</option>
+                                {% else %}
+                                    <option value='{{i}}' >{{i}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        </div>
+                        <input type='submit' class='btn btn-primary' value='Pokaż zakres'/>
+                    </form><br/>
+                </div>
+            </div>
+            <table class="table table-bordered">
+            <thead><tr>
+                <td><strong>Lp.</strong></td>
+                <td><strong>Id. konsultant.</strong></td>
+                <td><strong>Imię</strong></td>
+                <td><strong>Nazwisko</strong></td>
+                <td><strong>Suma netto</strong></td>
+                <td><strong>Suma netto odebranych</strong></td>
+                <td><strong>Suma zapłaconych - koszty</strong></td>
+                <td><strong>Ranking</strong></td>
+                <td><strong>Premia</strong></td>
+                <td><strong>Dodatek</strong></td>
+                <td><strong>Do wypłaty</strong></td>
+            </tr></thead>
+            {% if activePage == 1%}
+                {% set a = 1 %}
+            {% else %}
+                {% set a = 1 + activePage*pagin.limit %}
+            {% endif %}
+            {% set ordersThisMonthSumSubtotal = 0 %}
+            {% set ordersReceivedSumThisMonth = 0 %}
+            {% set ordersReceivedSumThisMonth = 0 %}
+            {% set ordersPayedSumThisMonthAdministrationFee = 0 %}
+            {% set ranking = 0 %}
+            {% set premia = 0 %}
+            {% set addon = 0 %}
+            {% set cash = 0 %}
+            
+            {% for userSum in usersSum %}
+                    {% if userSum.konsultantBlock == 0 %}
+                        <tr>
+                    {% else %}
+                        <tr class="danger">
+                    {% endif %}
+                    <td>{{ a }}</td>
+                    <td>{{ userSum.konsultantId }}</td>
+                    <td><span class="font11">{{ userSum.konsultantFirstName }}</span></td>
+                    <td><span class="font11">{{ userSum.konsultantLastName }}</td>
+                    <td><span class="font11">{{ userSum.ordersThisMonthSumSubtotal|round(2,'common') }}</td>
+                    <td><span class="font11">{{ userSum.ordersReceivedSumThisMonth|round(2,'common') }}</td>
+                    <td><span class="font11">{{ userSum.ordersPayedSumThisMonthAdministrationFee|round(2,'common') }}</td>
+                    <td><span class="font11">{{ userSum.ranking|round(2,'common') }}</td>
+                    <td><span class="font11">{{ userSum.premia|round(2,'common') }}</td>
+                    <td>
+                        <form class="form-inline" action="index.php?site=admin&action=raports&perf=updateAddon" method="POST">
+                            <input type="hidden" value="{{ activeYear }}" name="year"/>
+                            <input type="hidden" value="{{ activeMonth }}" name="month"/>
+                            <input type="hidden" value="{{ userSum.konsultantId }}" name="konsultantId"/>
+                            <input style="width:80px;" class="form-control" type="text" value="{{ userSum.addon|round(2,'common') }}" name="addon"/>
+                            <input class="btn btn-default" type="submit" value="Zapisz"/>
+                        </form>
+                    </td>
+                    <td><span class="font11">{{ userSum.addon|round(2,'common') + userSum.premia|round(2,'common') + userSum.ranking|round(2,'common') }}</td>
+                    
+                    {% set ordersThisMonthSumSubtotal = ordersThisMonthSumSubtotal + userSum.ordersThisMonthSumSubtotal|round(2,'common') %}
+                    {% set ordersReceivedSumThisMonth = ordersReceivedSumThisMonth + userSum.ordersReceivedSumThisMonth|round(2,'common') %}
+                    {% set ordersPayedSumThisMonthAdministrationFee = ordersPayedSumThisMonthAdministrationFee + userSum.ordersPayedSumThisMonthAdministrationFee|round(2,'common') %}
+                    {% set ranking = ranking + userSum.ranking|round(2,'common') %}
+                    {% set premia = premia + userSum.premia|round(2,'common') %}
+                    {% set addon = addon + userSum.addon|round(2,'common') %}
+                    {% set cash = cash + userSum.addon|round(2,'common') + userSum.premia|round(2,'common') + userSum.ranking|round(2,'common') %}
+                    
+                </tr>
+                {% set a = a+1 %}
+            {% endfor %}
+                <tfoot>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            <b>SUMY:</b>
+                        </td>
+                        <td>
+                            <b>{{ ordersThisMonthSumSubtotal }}</b>
+                        </td>
+                        <td>
+                            <b>{{ ordersReceivedSumThisMonth }}</b>
+                        </td>
+                        <td>
+                            <b>{{ ordersPayedSumThisMonthAdministrationFee }}</b>
+                        </td>
+                        <td>
+                            <b>{{ ranking }}</b>
+                        </td>
+                        <td>
+                            <b>{{ premia }}</b>
+                        </td>
+                        <td>
+                            <b>{{ addon }}</b>
+                        </td>
+                        <td>
+                            <b>{{ cash }}</b>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    
+{% endblock %}

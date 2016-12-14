@@ -15,5 +15,11 @@
             </ul>
             </div>
             <a class="btn btn-default width-full text-left-important {% if shopMenu == 'categories'%}active{%endif%}" href="index.php?site=admin&action=shop&act=categories">Kategorie</a>
-            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'raporty'%}active{%endif%}" href="index.php?site=admin&action=shop&act=raports">Raporty</a>
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'raports'%}active{%endif%}" role="button" data-toggle="collapse" href="#Raporty" aria-expanded="false" aria-controls="Raporty">Raporty</a>
+            <div class="panel panel-default collapse fade " id="Raporty">
+                <ul class="nav nav-pills nav-stacked ">
+                  <li><a class="{% if shopMenu == 'raporty'%}active{%endif%}" href="index.php?site=admin&action=shop&act=raports&pref=daily">Raport dzienny</a></li>
+                  <li><a class="{% if shopMenu == 'raporty'%}active{%endif%}" href="index.php?site=admin&action=shop&act=raports&pref=products">Raport produktów</a></li>
+                </ul>
+            </div>
 </div>

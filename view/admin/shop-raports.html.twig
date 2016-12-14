@@ -1,0 +1,41 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'admins-delete-success'%}
+            <div class="alert alert-success text-center" role="alert">Admin został usunięty</div>
+        {% elseif info == 'admins-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty</div>
+        {% elseif info == 'admins-delete-fail-lackpermissions'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty - brak uprawnień</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=admins" %}
+    
+    <div class="row">
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10 bg-white">
+            <h3>Raport Dzienny:</h3>
+            <table class="table table-bordered">
+            <tr>
+                <td><strong>Obrót dzienny</strong></td>
+                <td><strong>Ilość zamówień</strong></td>
+                <td><strong>Średnia wartość zamówienia</strong></td>
+                <td><strong>Suma w miesiącu</strong></td>
+            </tr>
+                <tr>
+                    <td>{{ raports.daySum|round(2, 'common') }}</td>
+                    <td>{{ raports.dayCount|round(2, 'common') }}</td>
+                    <td>{{ raports.dayAverage|round(2, 'common') }}</td>
+                    <td>{{ raports.monthSum|round(2, 'common') }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+{% endblock %}

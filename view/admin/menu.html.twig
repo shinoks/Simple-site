@@ -20,13 +20,14 @@
             <tr>
                 <td class="buton"><b>Lp.</b></td>
                 <td><b>Nazwa</b></td>
+                <td class="buton"><b>Dostęp.</b></td>
                 <td class="buton"><b>Id pozycji.</b></td>
                 <td class="buton"><b>Edytuj</b></td>
                 <td class="buton"><b>Usuń</b></td>
             </tr>
         </thead>
         {% set a = 1 %}
-            {% for menuItem in userMenu %}
+            {% for menuItem in menu %}
                 <tr>
                    {% if menuItem.parent == 1 %}
                     <td class="buton">{{ a }}</td>
@@ -34,7 +35,7 @@
                     <td class="buton">{{ menuItem.menuId }}</td>
                     <td class="buton"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=edit&id={{menuItem.menuId}}">Edytuj</a></td>
                     <td class="buton"><a class="btn btn-danger" href="index.php?site=admin&action=menu&act=delete&id={{menuItem.menuId}}">Usuń</a></td>
-                        {% for childItems in userMenuChild %}
+                        {% for childItems in menuChild %}
                             {% if childItems.parentId == menuItem.menuId %}
                                 </tr><tr>
                                 <td class="buton">---</td>
@@ -48,6 +49,13 @@
                     {% elseif menuItem.parentId == 0 %}
                         <td class="buton">{{ a }}</td>
                         <td><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ menuItem.menuName|e }} </a></td>
+                        <td class="buton">
+                        {% if menuItem.permissions == 24 %}
+                            Administrator
+                        {% elseif menuItem.permissions == 25%}
+                            Główny administrator
+                        {% endif %}
+                        </td>
                         <td class="buton">{{ menuItem.menuId }}</td>
                         <td class="buton"><a  class="btn btn-success" href="index.php?site=admin&action=menu&act=edit&id={{menuItem.menuId}}">Edytuj</a></td>
                         <td class="buton"><a class="btn btn-danger" href="index.php?site=admin&action=menu&act=delete&id={{menuItem.menuId}}">Usuń</a></td>

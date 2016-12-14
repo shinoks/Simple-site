@@ -53,7 +53,7 @@
                                                 Email
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control" name="email" value="{{ user.email }}"/>
+                                                <input type="text" class="form-control" name="email" value="{{ user.user_email }}"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -61,7 +61,7 @@
                                                 Telefon
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control" name="phone1" value="{{ user.phone_1 }}"/>
+                                                <input type="text" class="form-control" name="phone" value="{{ user.phone_1 }}"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -77,7 +77,7 @@
                                                 Ulica
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control" name="address1" value="{{ user.address_1 }}"/>
+                                                <input type="text" class="form-control" name="address" value="{{ user.address_1 }}"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -114,7 +114,6 @@
                                                 Nazwa: <input type="text" class="form-control" name="name" value="{{user.name}}"/>
                                                 Nazwa użytkownika: <input type="text" class="form-control" name="username" value="{{user.username}}"/>
                                                 Email: <input type="text" class="form-control" name="email" value="{{user.email}}"/>
-                                                Hasło: <input type="password" class="form-control" name="password" placeholder="Wpisz nowe hasło"/>
                                                 
                                                 <input type="submit" class="btn btn-success" value="Zapisz zmiany"/>
                                             </form>
@@ -122,9 +121,6 @@
                                         <div class="well">
                                             <strong>Wysyłki:</strong>
                                             {% for userAddres in userAddresses %}
-                                                {% if userAddresses|length == 1 %}
-                                                    <br/>Brak dodatkowych adresów wysyłki
-                                                {% endif %}
                                                 {% if userAddres.address_type == "BT" %}
                                                 {% else %}
                                                 <div class="row">
@@ -134,17 +130,17 @@
                                                     <a href="{{url}}&perf=deleteUserInfo&userInfoId={{userAddres.user_info_id}}" class="btn btn-danger">Usuń</a>
                                                     <div class="collapse" id="{{userAddres.user_info_id}}">
                                                       <div class="well bg-grey">
-                                                        <form action="{{url}}&perf=updateUserInfo" method="POST">
+                                                        <form action="{{url}}&perf=updateUserInfoId" method="POST">
                                                             <input type="hidden" class="form-control" name="addressTypeName" value="{{userAddres.address_type_name}}"/>
                                                             Nazwa firmy: <input type="text" class="form-control" name="company" value="{{userAddres.company}}"/>
                                                             Nazwisko: <input type="text" class="form-control" name="lastName" value="{{userAddres.last_name}}"/>
                                                             Imię: <input type="text" class="form-control" name="firstName" value="{{userAddres.first_name}}"/>
-                                                            Telefon: <input type="text" class="form-control" name="phone1" value="{{userAddres.phone_1}}"/>
+                                                            Telefon: <input type="text" class="form-control" name="phone" value="{{userAddres.phone_1}}"/>
                                                             Telefon 2 :<input type="text" class="form-control" name="phone2" value="{{userAddres.phone_2}}"/>
-                                                            Adres:<input type="text" class="form-control" name="address1" value="{{userAddres.address_1}}"/>
-                                                            Adres 2:<input type="text" class="form-control" name="address2" value="{{userAddres.address_2}}"/>
+                                                            Adres:<input type="text" class="form-control" name="address" value="{{userAddres.address_1}}"/>
                                                             Miasto: <input type="text" class="form-control" name="city" value="{{userAddres.city}}"/>
                                                             NIP: <input type="text" class="form-control" name="extraField1" value="{{userAddres.extra_field_1}}"/>
+                                                            <input type="hidden" name="orderUserInfo" value="{{userAddres.user_info_id}}"/>
                                                             <input type="submit" class="btn btn-success" value="Zapisz zmiany"/>
                                                         </form>
                                                       </div>
@@ -166,8 +162,7 @@
                                                             Imię: <input type="text" class="form-control" name="firstName"/>
                                                             Telefon: <input type="text" class="form-control" name="phone1"/>
                                                             Telefon 2 :<input type="text" class="form-control" name="phone2"/>
-                                                            Adres:<input type="text" class="form-control" name="address1"/>
-                                                            Adres 2:<input type="text" class="form-control" name="address2" />
+                                                            Adres:<input type="text" class="form-control" name="address"/>
                                                             Miasto: <input type="text" class="form-control" name="city" />
                                                             Kod pocztowy: <input type="text" class="form-control" name="zip" />
                                                             NIP: <input type="text" class="form-control" name="extraField1" />

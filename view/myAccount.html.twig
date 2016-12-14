@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% set url = "index.php?site=shop" %}
+    <div class="container width-full">
+        <div class="well">
+            <div class="row">
+                <div class="row">
+                    <div class="col-md-3 bg-info">
+                    </div>
+                    <div class="col-md-9">
+                        <div class="well table-responsive">
+                            <h3>Wykaz zamówień z tego miesiąca:</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <span><strong>Suma netto zamówień zapłaconych - koszty administracyjne:</strong><br/> </span><h3> {{ordersInfo.ordersReceivedSumThisMonth|round(2,'common') - ordersInfo.ordersThisMonthSumAdministrationFee|round(2,'common')}} zł</h3><br/><br/><br/>
+                                </div>
+                                <div class="col-md-6">
+                                    <span><strong>Premia naliczona:</strong><br/> <h3>{{ordersInfo.premia}} zł</h3></span>
+                                    <span><strong>do następnego progu brakuje Ci jedynie<br/><h5> {{ordersInfo.premiaBrak }} zł</h5></strong><br/> <strong class="text-danger">Postaraj się! Dasz radę! :)</strong></span>
+                                </div>
+                            </div>
+                            <span>Suma netto zamówień zapłaconych: </span> {{ordersInfo.ordersReceivedSumThisMonth|round(2,'common')}}<br/>
+                            <span>Suma netto zamówień: </span> {{ordersInfo.ordersThisMonthSumSubtotal|round(2,'common')}}<br/><br/>
+                            
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <td><strong>Lp.</strong></td>
+                                        <td><strong>Nr zamówienia.</strong></td>
+                                        <td><strong>Data zamówienia.</strong></td>
+                                        <td><strong>Cena Netto</strong></td>
+                                        <td><strong>Cena Brutto</strong></td>
+                                        <td><strong>Koszty administracyjne</strong></td>
+                                        <td><strong>Status zamówienia</strong></td>
+                                    </tr>
+                                </thead>
+                                    {% set a = 1 %}
+                                    
+                                    {% for order in ordersInfo.ordersThisMonth %}
+                                        <tr class="font11 {% if order.order_status_code == 'X'%}danger{% elseif order.order_status_code == '!'%}info{% elseif order.order_status_code == 'Z'%}success{% elseif order.order_status_code == '@'%}warning{%endif%}">
+                                            <td>
+                                                {{a}}
+                                            </td>
+                                            <td>
+                                                {{order.order_id}}
+                                            </td>
+                                            <td>
+                                                {{order.cdate|date('d-m-Y H:i:s')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_subtotal|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_total|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.administrationFee|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_status_name}}
+                                            </td>
+                                        </tr>
+                                        {% set a = a +1 %}
+                                    {% endfor %}
+                            </table>
+                        </div>
+                        <div class="well table-responsive">
+                            Wykaz zamówień z poprzedniego miesiąca:<br/>
+                            <span>Suma brutto zamówień: </span> {{ordersInfo.ordersLastMonthSumTotal|round(2,'common')}}<br/>
+                            <span>Suma netto zamówień: </span> {{ordersInfo.ordersLastMonthSumSubtotal|round(2,'common')}}<br/><br/>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <td><strong>Lp.</strong></td>
+                                        <td><strong>Nr zamówienia.</strong></td>
+                                        <td><strong>Cena Netto</strong></td>
+                                        <td><strong>Cena Brutto</strong></td>
+                                        <td><strong>Koszty administracyjne</strong></td>
+                                        <td><strong>Status zamówienia</strong></td>
+                                    </tr>
+                                </thead>
+                                    {% set a = 1 %}
+                                    {% for order in ordersInfo.ordersLastMonth %}
+                                        <tr class="font11 {% if order.order_status_code == 'X'%}danger{% elseif order.order_status_code == '!'%}success{% elseif order.order_status_code == '@'%}warning{%endif%}">
+                                            <td>
+                                                {{a}}
+                                            </td>
+                                            <td>
+                                                {{order.order_id}}
+                                            </td>
+                                            <td>
+                                                {{order.order_subtotal|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_total|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.administrationFee|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_status_name}}
+                                            </td>
+                                        </tr>
+                                        {% set a = a +1 %}
+                                    {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock%}

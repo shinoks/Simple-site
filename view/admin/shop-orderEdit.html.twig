@@ -1,0 +1,103 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'updateUserInfo-edit-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane zostały zmienione</div>
+        {% elseif info == 'updateUserInfo-edit-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane nie zostały zmienione</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    
+    <div class="row">
+        <div class="col-md-2">
+            {% include 'admin/shop-menu.html.twig' %}
+        </div>
+        <div class="col-md-10">
+            <div class="well">
+                <div class="row">
+                    <div class="pull-left col-md-6">
+                    Zamówienie nr. {{ order.order_id }}<br/>
+                    Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
+                    Data modyfikacji: {{ order.mdate|date("d-m-Y H:i:s") }}<br/>
+                    Stan zamówienia: {{ order.order_status_name }}<br/>
+                    <br/>
+                    <br/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form method="POST" class="form" action="index.php?site=admin&action=shop&act=orderEdit&orderId={{order.order_id}}">
+                            <strong>Rachunek</strong><br/>  
+                            <table class="table table-bordered ">
+                            <tr>
+                                <td>E-mail:</td>
+                                <td><input class="form-control" type="text" name="email" value="{{ order.user_email }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Nazwa firmy:</td>
+                                <td><input class="form-control" type="text" name="company" value="{{ order.company }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Imię:</td>
+                                <td><input class="form-control" type="text" name="firstName" value="{{ order.first_name }}"/></a></td>
+                            </tr>
+                            <tr>
+                                <td>Nazwisko:</td>
+                                <td><input class="form-control" type="text" name="lastName" value="{{ order.last_name }}"/> </a></td>
+                            </tr>
+                            <tr>
+                                <td>Ulica:</td>
+                                <td><input class="form-control" type="text" name="address" value="{{ order.address_1 }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Miasto:</td>
+                                <td><input class="form-control" type="text" name="city" value="{{ order.city }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Kod pocztowy:</td>
+                                <td><input class="form-control" type="text" name="zip" value="{{ order.zip }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Telefon:</td>
+                                <td><input class="form-control" type="text" name="phone" value="{{ order.phone_1 }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Telefon kom.:</td>
+                                <td><input class="form-control" type="text" name="phone2" value="{{ order.phone_2 }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Numer NIP:</td>
+                                <td><input class="form-control" type="text" name="extra_field_1" value="{{ order.extra_field_1 }}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Konsultant:</td>
+                                <td>
+                                <select class="form-control" name="konsultant">
+                                    {% for konsultant in konsultanci %}
+                                        {% if konsultant.konsultantId == order.extra_field_2 %}
+                                            <option selected value="{{konsultant.konsultantId}}" >{{ konsultant.konsultantFirstName }} {{ konsultant.konsultantLastName }}</option>
+                                        {% else %}
+                                            <option value="{{konsultant.konsultantId}}">{{ konsultant.konsultantFirstName }} {{ konsultant.konsultantLastName }}</option>
+                                        {% endif %}
+                                        
+                                    {% endfor %}
+                                </select>
+                                </td>
+                            </tr>
+                             </table>
+                             <input type="hidden" value="{{ order.user_id }}" name="userId"/>
+                             <input type="hidden" value="{{ order.order_info_id }}" name="order_info_id"/>
+                             <input type="hidden" value="saveEdit" name="saveEdit"/>
+                             <input type="submit" class="btn btn-submit" value="Zapisz"/>
+                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}

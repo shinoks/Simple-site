@@ -33,31 +33,33 @@
             {% include 'admin/shop-menu.html.twig' %}
         </div>
         <div class="col-md-10 bg-white table-responsive">
-            <table class="table table-bordered">
+            <table class="table table-hover">
             <tr>
-                <td><strong>Lp.</strong></td>
-                <td><strong>Id zam.</strong></td>
-                <td><strong>Data zam.</strong></td>
-                <td><strong>Nazwa - Firma</strong></td>
-                <td><strong>NIP</strong></td>
-                <td><strong>Konsultant</strong></td>
-                <td><strong>Kwota Netto/Brutto</strong></td>
-                <td><strong>Status</strong></td>
-                <td><strong>Usuń</strong></td>
+                <td><strong><span class="font11">Lp.</span></strong></td>
+                <td><strong><span class="font11">Id zam.</span></strong></td>
+                <td><strong><span class="font11">Data zam.</span></strong></td>
+                <td><strong><span class="font11">Nazwa - Firma</span></strong></td>
+                <td><strong><span class="font11">NIP</span></strong></td>
+                <td><strong><span class="font11">Konsultant</span></strong></td>
+                <td><strong><span class="font11">Kwota Netto/Brutto</span></strong></td>
+                <td><strong><span class="font11">Status</span></strong></td>
+                <td><strong><span class="font11">Drukuj</span></strong></td>
             </tr>
             {% set a = 1 %}
             {% for order in pagin.orders %}
                 <tr>
                     <td>{{ a }}</td>
                     <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}">{{ order.order_id }}</a></td>
-                    <td>{{ order.cdate|date("d-m-Y H:i:s",false) }}</a></td>
-                    <td><span class="font11"><a href="index.php?site=admin&action=shop&act=users&show=userDetail&userId={{ order.user_id }}">{{ order.name }} {{ order.company[0:100] }} </span></td>
+                    <td style="width:110px"><span class="font11">{{ order.cdate|date("d-m-Y H:i:s",false) }}</span></td>
+                    <td><span class="font12"><a href="index.php?site=admin&action=shop&act=users&show=userDetail&userId={{ order.user_id }}">{{ order.name }} {{ order.company[0:100]|replace({'&quot;':'"'}) }} </a></span><br/>
+                    <span class="font9">{{order.companySend|replace({'&quot;':'"'}) }}</span>
+                    </td>
                     <td>{{ order.extra_field_1 }}</td>
                     <td><span class="font11">{{ order.konsultantFirstName }} {{ order.konsultantLastName }} {{ order.extra_field_2 }}</span></td>
-                    <td>{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
-                    <td>
+                    <td style="width:110px">{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
+                    <td style="width:180px">
                     <form method="POST" class="form-inline" action="index.php?site=admin&action=shop&perf=updateOrderStatus&orderId={{ order.order_id }}">
-                        <select class="form-control" name="inputStatus">
+                        <select style="width:100px;" class="form-control" name="inputStatus">
                         {% for orderStatus in orderStatuses %}
                             {% if order.order_status_name == orderStatus.order_status_name  %}
                                 <option selected value="{{ orderStatus.order_status_code }}" >{{ orderStatus.order_status_name }}</option>
@@ -66,10 +68,12 @@
                             {% endif %}
                         {% endfor %}
                         </select>
-                        <input type="submit" class="btn btn-default" value="Zapisz"/>
+                        <input style="width:50px;padding:2px" type="submit" class="btn btn-default" value="Zapisz"/>
                     </form>
                     </td>
-                    <td><a href="index.php?site=admin&action=shop&perf=deleteOrder&orderId={{ order.order_id }}" class="btn btn-danger">Usuń</a></td>
+                    <td>
+                        <a target="_blank" href="index.php?site=admin&action=shop&act=orderPdf&orderId={{ order.order_id }}"><img src="web/images/print.png"/></a>
+                    </td>
                 </tr>
                 {% set a = a+1 %}
             {% endfor %}

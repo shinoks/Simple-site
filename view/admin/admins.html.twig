@@ -1,0 +1,79 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'admins-delete-success'%}
+            <div class="alert alert-success text-center" role="alert">Admin został usunięty</div>
+        {% elseif info == 'admins-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty</div>
+        {% elseif info == 'admins-delete-fail-lackpermissions'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty - brak uprawnień</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=admins" %}
+    
+    <div class="row">
+        <div class="col-md-12 bg-white">
+            <div class="row">
+                <div class="pull-right">
+                    <a class="btn btn-success" href="index.php?site=admin&action=admins&perf=add">Dodaj admina</a><br/>
+                </div>
+            </div>
+            <table class="table table-bordered">
+            <tr>
+                <td><strong>Lp.</strong></td>
+                <td><strong>Id. admina.</strong></td>
+                <td><strong>Nazwa</strong></td>
+                <td><strong>Login</strong></td>
+                <td><strong>Grupa</strong></td>
+                <td><strong>Email</strong></td>
+                <td><strong>Data rejestracji</strong></td>
+                <td><strong>Odblokowany</strong></td>
+                <td><strong>Zablokuj</strong></td>
+                <td><strong>Usuń</strong></td>
+            </tr>
+            {% if activePage == 1%}
+                {% set a = 1 %}
+            {% else %}
+                {% set a = 1 + activePage*pagin.limit %}
+            {% endif %}
+            {% for admin in admins %}
+                {% if admin.block == 0 %}
+                    <tr>
+                {% else %}
+                    <tr class="danger">
+                {% endif %}
+                    <td>{{ a }}</td>
+                    <td>{{ admin.id }}</td>
+                    <td><span class="font11">{{ admin.name }}</span></td>
+                    <td><span class="font11">{{ admin.username }}</td>
+                    <td><span class="font11">{{ admin.gid }}</td>
+                    <td><span class="font11">{{ admin.email }}</td>
+                    <td><span class="font11">{{ admin.registerDate|date('d-m-Y H:i:s') }}</td>
+                    <td>
+                    {% if admin.block == 0 %}
+                        <p class="text-success">Tak</p>
+                    {% else %}
+                        <p class="text-danger">Nie</p>
+                    {% endif %}
+                    </td>
+                    <td>
+                        {% if admin.block == 0 %}
+                            <a href="index.php?site=admin&action=admins&adminId={{ admin.id }}&perf=unpublish&unpublish=1" class="btn btn-danger">Wyłącz</a>
+                        {% else %}
+                            <a href="index.php?site=admin&action=admins&adminId={{ admin.id }}&perf=unpublish&unpublish=2" class="btn btn-success">Włącz</a>
+                        {% endif %}
+                    </td>
+                    <td><a href="index.php?site=admin&action=admins&adminId={{ admin.id }}&perf=delete" class="btn btn-danger">Usuń</a></td>
+                </tr>
+                {% set a = a+1 %}
+            {% endfor %}
+
+            </table>
+        </div>
+    </div>
+    
+{% endblock %}

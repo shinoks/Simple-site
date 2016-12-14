@@ -9,7 +9,7 @@ class User {
     
     public function getUserLoggedByUsername($username)
     {
-        $stmt=$this->dbGf->prepare("SELECT id, name, username, email FROM jos_users WHERE username = :username");
+        $stmt=$this->dbGf->prepare("SELECT id, name, username, email, gid FROM jos_users WHERE username = :username");
         $stmt->bindParam(":username",$username);
         $stmt->execute();
         
@@ -21,7 +21,7 @@ class User {
         $stmt = $this->dbGf->prepare("SELECT `konsultantPassword` FROM konsultanci 
         WHERE konsultantFirstName = :konsultantFirstName and 
         konsultantLastName = :konsultantLastName and 
-        konsultantId = :konsultantNumber");
+        konsultantId = :konsultantNumber and block = 0");
         $stmt->bindParam(':konsultantFirstName',$firstName);
         $stmt->bindParam(':konsultantLastName',$lastName);
         $stmt->bindParam(':konsultantNumber',$konsultantNumber, $this->dbGf->PARAM_INT);
@@ -61,9 +61,17 @@ class User {
         session_destroy();
     }
     
+    public function getAdmins()
+    {
+        $stmt = $this->dbGf->prepare("SELECT id,name, username, gid, email, registerDate, block FROM jos_users WHERE gid > 18");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
     public function getKonsultanci()
     {
-        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate FROM konsultanci");
+        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate, block FROM konsultanci");
         $stmt->execute();
         
         return $stmt->fetchAll();
@@ -119,10 +127,41 @@ class User {
         return $stmt->execute();
     }
     
+    public function updateKonsultantBlock($konsultantId,$block)
+    {   if($block==2){
+            $block = '0';
+        }
+        $stmt = $this->dbGf->prepare("UPDATE konsultanci SET block = :block WHERE konsultantId = :konsultantId");
+        $stmt->bindParam("block",$block);
+        $stmt->bindParam("konsultantId",$konsultantId);
+        
+        return $stmt->execute();
+    }
+    
+    public function updateAdminBlock($adminId,$block)
+    {   if($block==2){
+            $block = '0';
+        }
+        $stmt = $this->dbGf->prepare("UPDATE jos_users SET block = :block WHERE id = :adminId");
+        $stmt->bindParam("block",$block);
+        $stmt->bindParam("adminId",$adminId);
+        
+        return $stmt->execute();
+    }
+    
     public function deleteKonsultant($konsultantId)
     {
         $stmt = $this->dbGf->prepare("DELETE FROM `konsultanci` WHERE konsultantId = :konsultantId ");
         $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->execute();
+        ($stmt->rowCount()>0)?$in= true:$in= false;
+        
+        return $in;
+    }
+    public function deleteAdmin($adminId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM `jos_users` WHERE id = :adminId ");
+        $stmt->bindParam(":adminId",$adminId);
         $stmt->execute();
         ($stmt->rowCount()>0)?$in= true:$in= false;
         

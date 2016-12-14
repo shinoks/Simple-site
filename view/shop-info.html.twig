@@ -52,6 +52,10 @@
             <div class="alert alert-success text-center" role="alert">Użytkownik został utworzony. Zaloguj się.</div>
         {% elseif info == 'shop-addNewUser-fail'%}
             <div class="alert alert-danger text-center" role="alert">Użytkownik nie został utworzony.</div>
+        {% elseif info == 'shop-updateSendInfo-success'%}
+            <div class="alert alert-success text-center" role="alert">Dane do wysyłki zmienione.</div>
+        {% elseif info == 'shop-updateSendInfo-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dane do wysyłki nie zostały zmienione</div>
         {% endif %}
     {% endif %}
     

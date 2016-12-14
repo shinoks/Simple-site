@@ -20,40 +20,43 @@ class Shop {
         
         return $stmt->fetchAll();
     }
+    
     public function getOrdersOnPage($start = 0,$end = 50)
     {
         $query = "SELECT konsultantFirstName, konsultantLastName, jos_vm_orders.order_id, jos_vm_orders.cdate, jos_vm_orders.user_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, name, jos_vm_order_user_info.company, 
-        jos_vm_order_user_info.extra_field_1,  jos_vm_order_user_info.extra_field_2, order_status_name, COUNT(*) as `count`
+        jos_vm_order_user_info.extra_field_1, jos_vm_order_user_info.extra_field_2, jos_vm_order_user_info.company as companySend, order_status_name, COUNT(*) as `count`
             FROM jos_vm_orders
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
             LEFT JOIN jos_vm_order_user_info ON jos_vm_orders.order_id = jos_vm_order_user_info.order_id
             LEFT JOIN konsultanci ON konsultanci.konsultantId = jos_vm_order_user_info.extra_field_2
             ";
+            
         if(isset($this->searchInput)){
-            $query .= " WHERE jos_vm_orders.order_id = :order_id OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName OR extra_field_1 LIKE :extraField1";
+            $query .= " WHERE jos_vm_orders.order_id = :order_id OR company LIKE :company OR last_name LIKE :lastName OR first_name LIKE :firstName OR replace(jos_vm_order_user_info.extra_field_1,' ','') LIKE :extraField1 
+            OR replace(jos_vm_order_user_info.extra_field_1,'-','') LIKE :extraField1";
         }
         $query .=" GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc 
             LIMIT :start, :end ";
-
         $stmt = $this->dbGf->prepare($query);
         $stmt->bindParam(':start', $start, $this->dbGf->PARAM_INT);
         $stmt->bindParam(':end', $end, $this->dbGf->PARAM_INT);
         
         if(isset($this->searchInput)){
             $search = '%'.$this->searchInput.'%';
-            $stmt->bindParam(':order_id', $search);
+            $searchNip = str_replace('-','',$search);
+            $stmt->bindParam(':order_id', $this->searchInput);
             $stmt->bindParam(':company', $search);
             $stmt->bindParam(':lastName', $search);
             $stmt->bindParam(':firstName', $search);
-            $stmt->bindParam(':extraField1', $search);
+            $stmt->bindParam(':extraField1', $searchNip);
         }
         
         $stmt->execute();
         
         return $stmt->fetchAll();
-    }    
+    }
     
     public function getCountOrdersOnSearch()
     {
@@ -84,8 +87,8 @@ class Shop {
     
     public function getOrderById($orderId)
     {
-        $stmt = $this->dbGf->prepare("SELECT konsultantFirstName, konsultantLastName, konsultanci.konsultantId, jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
-        jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, address_type_name, 
+        $stmt = $this->dbGf->prepare("SELECT administrationFee, order_info_id, konsultantFirstName, konsultantLastName, konsultanci.konsultantId, jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
+        jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, order_status_code, address_type_name, 
         company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
             LEFT JOIN jos_vm_order_payment USING(order_id) 
@@ -94,7 +97,7 @@ class Shop {
             LEFT JOIN jos_vm_order_status ON jos_vm_orders.order_status = jos_vm_order_status.order_status_code
             LEFT JOIN jos_vm_order_user_info ON jos_vm_orders.order_id = jos_vm_order_user_info.order_id
             LEFT JOIN konsultanci ON konsultanci.konsultantId = jos_vm_order_user_info.extra_field_2
-            WHERE jos_vm_orders.order_id = :orderId
+            WHERE jos_vm_orders.order_id = :orderId and jos_vm_order_user_info.address_type = 'BT'
             GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc
             ");
@@ -375,6 +378,19 @@ FROM jos_vm_orders
         return $stmt->fetchAll();
     }
     
+    public function getUserSendAddress($userId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT *
+        FROM jos_vm_user_info
+        WHERE user_id =:userId and address_type = 'ST'
+        ORDER BY cdate
+        ");
+        $stmt->bindParam(':userId', $userId);
+        $stmt->execute();
+    
+        return $stmt->fetchAll();
+    }
+    
     public function getPagination($activePage)
     {
         $limit = shop::getItemsOnSite();
@@ -451,12 +467,29 @@ FROM jos_vm_orders
     
     public function getOrderUserInfo($orderId)
     {
-        $stmt = $this->dbGf->prepare("SELECT `order_info_id`, `order_id`, `user_id`, `address_type`, `address_type_name`, `company`, `title`, `last_name`, `first_name`, `middle_name`, `phone_1`, `phone_2`, `fax`, `address_1`, `address_2`, `city`, `state`, `country`, `zip`, `user_email`, `extra_field_1`, `extra_field_2`, `extra_field_3`, `extra_field_4`, `extra_field_5`, `bank_account_nr`, `bank_name`, `bank_sort_code`, `bank_iban`, `bank_account_holder`, `bank_account_type` FROM `jos_vm_order_user_info` 
+        $stmt = $this->dbGf->prepare("SELECT `order_info_id`, `order_id`, `user_id`, `address_type`, `address_type_name`, `company`, `title`, `last_name`, `first_name`, 
+        `middle_name`, `phone_1`, `phone_2`, `fax`, `address_1`, `address_2`, `city`, `state`, `country`, `zip`, `user_email`, `extra_field_1`, `extra_field_2`, `extra_field_3`,
+        `extra_field_4`, `extra_field_5`, `bank_account_nr`, `bank_name`, `bank_sort_code`, `bank_iban`, `bank_account_holder`, `bank_account_type` 
+        FROM `jos_vm_order_user_info` 
         WHERE order_id = :orderId");
         $stmt ->bindParam(":orderId", $orderId);
         $stmt->execute();
         
         return $stmt->fetchAll();
+    }
+    
+    public function getOrderUserSend($orderId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT `order_info_id`, `order_id`, `user_id`, `address_type`, `address_type_name`, `company`, `title`, `last_name`, `first_name`, 
+        `middle_name`, `phone_1`, `phone_2`, `fax`, `address_1`, `address_2`, `city`, `state`, `country`, `zip`, `user_email`, `extra_field_1`, `extra_field_2`, `extra_field_3`,
+        `extra_field_4`, `extra_field_5`, `bank_account_nr`, `bank_name`, `bank_sort_code`, `bank_iban`, `bank_account_holder`, `bank_account_type` 
+        FROM `jos_vm_order_user_info` 
+        WHERE order_id = :orderId and address_type='ST'
+        ");
+        $stmt ->bindParam(":orderId", $orderId);
+        $stmt->execute();
+        
+        return $stmt->fetch();
     }
     
     public function getUserInfo($userInfoId)
@@ -474,15 +507,195 @@ FROM jos_vm_orders
         return $stmt->fetch();
     }
     
-    private function addHistoryItem($orderId,$statusCode,$comments = NULL,$notified = 0)
+    
+    
+    public function getOrdersByKonsultantId($konsultantId,$startDate,$endDate, $status='%%')
+    {
+        $stmt = $this->dbGf->prepare("SELECT administrationFee, order_id, company, order_total, order_subtotal, cdate, konsultanci.konsultantId, order_status_name , order_status_code 
+        FROM jos_vm_orders 
+        LEFT JOIN konsultanci USING(konsultantId) 
+        LEFT JOIN jos_vm_order_status ON jos_vm_order_status.order_status_code = jos_vm_orders.order_status 
+        LEFT JOIN jos_vm_order_user_info USING(order_id) 
+        WHERE konsultantId = :konsultantId and order_status_code LIKE :status
+        AND cdate BETWEEN :startDate AND :endDate GROUP BY order_id
+        ");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getOrdersByKonsultantIdWithoutStatus($konsultantId,$startDate,$endDate,$status)
+    {
+        $stmt = $this->dbGf->prepare("SELECT administrationFee, order_id, company, order_total, order_subtotal, cdate, konsultanci.konsultantId, order_status_name , order_status_code 
+        FROM jos_vm_orders 
+        LEFT JOIN konsultanci USING(konsultantId) 
+        LEFT JOIN jos_vm_order_status ON jos_vm_order_status.order_status_code = jos_vm_orders.order_status 
+        LEFT JOIN jos_vm_order_user_info USING(order_id) 
+        WHERE konsultantId = :konsultantId and order_status_code <> :status
+        AND cdate BETWEEN :startDate AND :endDate GROUP BY order_id
+        ");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getSumOrdersByKonsultantId($konsultantId,$startDate,$endDate, $status='%%', $status2='%%')
+    {
+        $stmt = $this->dbGf->prepare("SELECT SUM(order_subtotal) as sum
+        FROM jos_vm_orders 
+        LEFT JOIN konsultanci USING(konsultantId) 
+        LEFT JOIN jos_vm_order_status ON jos_vm_order_status.order_status_code = jos_vm_orders.order_status 
+        LEFT JOIN jos_vm_order_user_info USING(order_id) 
+        WHERE konsultantId = :konsultantId and  address_type='BT' and (order_status_code = :status or order_status_code = :status2)
+        AND cdate BETWEEN :startDate AND :endDate
+        ");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->bindParam(":status2",$status2);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }    
+    
+    public function getSumOrdersByDates($startDate,$endDate, $status='X')
+    {
+        $stmt = $this->dbGf->prepare("SELECT SUM(order_subtotal) as sum
+        FROM jos_vm_orders 
+        WHERE order_status <> :status
+        AND cdate BETWEEN :startDate AND :endDate
+        ");
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
+    public function getCountOrdersByDates($startDate,$endDate, $status='X')
+    {
+        $stmt = $this->dbGf->prepare("SELECT COUNT(*) as count
+        FROM jos_vm_orders 
+        WHERE order_status <> :status
+        AND cdate BETWEEN :startDate AND :endDate
+        ");
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->execute();
+        
+        return $stmt->fetch();
+    }
+    
+    public function getCountProductsByDates($startDate,$endDate, $status='X')
+    {
+        $stmt = $this->dbGf->prepare("SELECT COUNT(*) as count, order_item_name
+        FROM jos_vm_orders 
+        LEFT JOIN jos_vm_order_item USING(order_id)
+        WHERE jos_vm_orders.order_status <> :status
+        AND jos_vm_orders.cdate BETWEEN :startDate  AND :endDate 
+        GROUP BY product_id 
+        ORDER BY count desc
+        ");
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getPremia($sum)
+    {
+        if($sum>10300){
+            $premia = $sum*0.1;
+        }elseif($sum>9300){
+            $premia = $sum*0.09;
+        }elseif($sum>8300){
+            $premia = $sum*0.08;
+        }elseif($sum>7300){
+            $premia = $sum*0.07;
+        }elseif($sum>6350){
+            $premia = $sum*0.05;
+        }elseif($sum>5800){
+            $premia = $sum*0.04;
+        }else{
+            $premia = 0;
+        }
+            
+        return $premia;
+    }
+    
+    public function getPremiaBrak($sum)
+    {
+        if($sum>10300){
+            $premiaBrak = 'MAX';
+        }elseif($sum>9300){
+            $premiaBrak = 10300-$sum;
+        }elseif($sum>8300){
+            $premiaBrak = 9300-$sum;
+        }elseif($sum>7300){
+            $premiaBrak = 8300-$sum;
+        }elseif($sum>6350){
+            $premiaBrak = 7300-$sum;
+        }elseif($sum>5800){
+            $premiaBrak = 6350-$sum;
+        }else{
+            $premiaBrak = 5800-$sum;
+        }
+            
+        return $premiaBrak;
+    }
+    
+    public function getRanking($konsultantId, $startDate, $endDate, $status='Z')
+    {
+        $stmt = $this->dbGf->prepare("SELECT SUM(ranking) FROM jos_vm_orders WHERE cdate BETWEEN :startDate AND :endDate AND konsultantId = :konsultantId");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->execute();
+        $ranking = $stmt->fetch();
+        
+        return $ranking['ranking'];
+    }
+    
+    
+    public function getDodatkiByKonsultantId($year, $month, $konsultantId)
+    {
+        $year = (int) $year;
+        $month = (int) $month;
+        $konsultantId = (int) $konsultantId;
+        $stmt = $this->dbGf->prepare("SELECT * FROM konsultantDodatek WHERE year=:year and month=:month and konsultantId=:konsultantId");
+        $stmt->bindParam(':year',$year, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':month',$month, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':konsultantId',$konsultantId, $this->dbGf->PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch();
+        
+        return $row['addon'];
+    }
+    
+    
+    public function addHistoryItem($orderId,$statusCode,$comments = NULL,$notified = 0, $userId=NULL)
     {
         $time = date("Y-m-d H:i:s",time());
-        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_order_history`(`order_id`, `order_status_code`, `date_added`, `customer_notified`, `comments`) VALUES (:orderId,:statusCode,:time,:notified,:comments)");
+        $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_order_history`(`order_id`, `order_status_code`, `date_added`, `customer_notified`, `comments`, `userId`) VALUES (:orderId,:statusCode,:time,:notified,:comments,:userId)");
         $stmt->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
         $stmt->bindParam(':statusCode',$statusCode);
         $stmt->bindParam(':time',$time);
         $stmt->bindParam(':notified',$notified,$this->dbGf->PARAM_INT);
         $stmt->bindParam(':comments',$comments);
+        $stmt->bindParam(':userId',$userId);
         
         return $stmt->execute();
     }
@@ -522,16 +735,16 @@ FROM jos_vm_orders
         
     }
     
-    public function addUserInfo($userId,$addressTypeName='',$company='',$lastName='',$firstName='',$phone='',$phone2='',$address='',$address2='',$city='',$zip=' ',$extraField1='',$extraField2='',$addressType = 'ST')
+    public function addUserInfo($userId,$addressTypeName='',$company='',$lastName='',$firstName='',$phone='',$phone2='',$address='',$address2='',$city='',$zip=' ',$extraField1='',$extraField2='',$addressType = 'ST', $userEmail = '')
     {
         $stmt = $this->dbGf->prepare("INSERT INTO `jos_vm_user_info`
         (`user_info_id`, `user_id`, `address_type`, `address_type_name`,
         `company`, `last_name`, `first_name`, 
         `phone_1`, `phone_2`, `address_1`, `address_2`, `city`, `zip`,
-        `extra_field_1`, `extra_field_2`, `cdate`) 
+        `extra_field_1`, `extra_field_2`, `cdate`, `user_email`) 
         VALUES (UUID(),:userId,:addressType,:addressTypeName,:company,
         :lastName,:firstName,:phone,:phone2,:address,:address2,
-        :city,:zip,:extraField1,:extraField2,:cdate)");
+        :city,:zip,:extraField1,:extraField2,:cdate, :userEmail)");
         
         $stmt->bindParam(":userId",$userId);
         $stmt->bindParam(":addressType",$addressType);
@@ -548,6 +761,7 @@ FROM jos_vm_orders
         $stmt->bindParam(":extraField1",$extraField1);
         $stmt->bindParam(":extraField2",$extraField2);
         $stmt->bindParam(":cdate",time());
+        $stmt->bindParam(":userEmail",$userEmail);
         
         return $stmt->execute();
     }
@@ -686,6 +900,45 @@ FROM jos_vm_orders
         return $stmt->execute();
     }
     
+    private function addAddon($year,$month,$konsultantId,$addon)
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `konsultantDodatek`(`konsultantId`, `year`, `month`, `addon`) 
+        VALUES (:konsultantId,:year,:month,:addon)");
+        $stmt->bindParam(':konsultantId',$konsultantId);
+        $stmt->bindParam(':year',$year);
+        $stmt->bindParam(':month',$month);
+        $stmt->bindParam(':addon',$addon);
+        
+        return $stmt->execute();
+    }
+    
+    public function updateAddon($year,$month,$konsultantId,$addon)
+    {
+        $addo = shop::getDodatkiByKonsultantId($year,$month,$konsultantId,$addon);
+        if($addo == NULL){
+            $ad = shop::addAddon($year,$month,$konsultantId,$addon);
+            
+            return $ad;
+        }else {
+            $stmt = $this->dbGf->prepare("UPDATE `konsultantDodatek` SET 
+            `addon`=:addon
+            WHERE year = :year AND month = :month AND konsultantId = :konsultantId");
+            $stmt->bindParam(':year',$year);
+            $stmt->bindParam(':month',$month);
+            $stmt->bindParam(':konsultantId',$konsultantId);
+            $stmt->bindParam(':addon',$addon);        
+            $stmt->execute();
+            $count = $stmt->rowCount();
+            
+            if($count == 1 ){
+                $in = true;
+            }else {
+                $in = false;
+            }
+            return $in;
+            }
+    }
+    
     private function updateOrderPrice($orderId)
     {
         $prices = shop::getOrderPrice($orderId);
@@ -694,6 +947,22 @@ FROM jos_vm_orders
         $stmt->bindParam(':orderId',$orderId);
         $stmt->bindParam(':price',$prices['price']);
         $stmt->bindParam(':final',$prices['final']);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function updateAdministrationFee($orderId,$administrationFee,$userId='')
+    {
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `administrationFee` = :administrationFee WHERE `order_id` =:orderId;");
+        $stmt->bindParam(':orderId',$orderId, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':administrationFee',$administrationFee, $this->dbGf->PARAM_INT);
         $stmt->execute();
         $count = $stmt->rowCount();
         if($count == 1 ){
@@ -721,7 +990,6 @@ FROM jos_vm_orders
         $count = $stmt->rowCount();
         if($count == 1 ){
             $in = true;
-            shop::addHistoryItem($orderId,'-','Zmiana użytkownika');
         }else {
             $in = false;
         }
@@ -729,20 +997,39 @@ FROM jos_vm_orders
         return $in;
     }
     
-    public function updateOrderSendTo($orderId,$userInfoId)
+    private function updateOrderUserInfoId($orderId,$userId,$userInfoId)
     {
-        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `user_info_id` = :userInfoId WHERE `order_id`=:orderId");
-        $stmt->bindParam(':orderId',$orderId);
-        $stmt->bindParam(':userInfoId',$userInfoId);
+        $address = shop::getUserAddress($userId);
+        
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `user_id`=:userId,`user_info_id`=:userInfoId WHERE `order_id`=:orderId ");
+        $stmt ->bindParam(':orderId',$orderId,$this->dbGf->PARAM_INT);
+        $stmt ->bindParam(':userId',$userId,$this->dbGf->PARAM_INT);
+        $stmt ->bindParam(':userInfoId',$userInfoId);
         $stmt->execute();
         $count = $stmt->rowCount();
         if($count == 1 ){
             $in = true;
-            shop::addHistoryItem($orderId,'-','Zmiana adresu wysyłki');
         }else {
             $in = false;
+            
         }
         
+        return $in;
+    }
+    
+    public function updateOrderSendTo($orderId,$userInfoId)
+    {
+        shop::deleteOrderUserInfo($orderId, $addressType='ST');
+            $userInfo = shop::getUserInfo($userInfoId);
+            if(shop::addOrderUserInfo($orderId,$userInfo['user_id'],'ST',$userInfo['address_type_name'],$userInfo['company'],NULL,$userInfo['last_name'],$userInfo['first_name'],NULL,$userInfo['phone_1'],$userInfo['phone_2'],$userInfo['fax'],$userInfo['address_1'],$userInfo['address_2'],$userInfo['city'],$userInfo['state'],$userInfo['country'],$userInfo['zip'],
+        $userInfo['user_email'],$userInfo['extra_field_1'],$userInfo['extra_field_2'],NULL,NULL,NULL,'','','','','','')){
+                shop::updateOrderUserInfoId($orderId,$userInfo['user_id'],$userInfo['user_info_id']);
+                $in = true;
+                shop::addHistoryItem($orderId,'-','Zmiana adresu wysyłki',$userId,$this->dbGf->PARAM_INT);
+            }else {
+                $in = false;
+            }
+
         return $in;
     }
     
@@ -820,7 +1107,114 @@ FROM jos_vm_orders
         return $in;
     }
     
-    public function updateUserInfo($userId,$company = NULL,$firstName = NULL ,$lastName = NULL,$email =NULL,$phone=NULL,$phone2=NULL,$address=NULL,$city=NULL,$zip=NULL,$extraField1=NULL,$extraField2=NULL)
+    public function updateOrderUserInfo($order_info_id,$userId,$company = NULL,$firstName = '' ,$lastName = NULL,$email =NULL,$phone=NULL,$phone2=NULL,$address=NULL,$city=NULL,$zip=NULL,$extraField1=NULL,$extraField2=NULL)
+    {
+        $query = "UPDATE jos_vm_order_user_info SET ";
+        $a = 1;
+        
+        if(!empty($company)){
+            $a++;
+            $query .= "`company`=:company ";
+        }
+        if(!empty($firstName)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`first_name`=:firstName ";
+        }
+        if(!empty($lastName)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`last_name`=:lastName ";
+        }
+        if(!empty($email)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`user_email`=:email ";
+        }
+        if(!empty($phone)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`phone_1`=:phone ";
+        }
+        if(!empty($phone2)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`phone_2`=:phone2 ";
+        }
+        if(!empty($address)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`address_1`=:address ";
+        }
+        if(!empty($city)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`city`=:city ";
+        }
+        if(!empty($zip)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`zip`=:zip ";
+        }
+        if(!empty($extraField1)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`extra_field_1`=:extraField1 ";
+        }
+        if(!empty($extraField2)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`extra_field_2`=:extraField2 ";
+        }
+        
+        $query .= "WHERE order_info_id = :order_info_id";
+        
+        $stmt = $this->dbGf->prepare($query);
+        $stmt->bindParam(":order_info_id",$order_info_id);
+        if(!empty($company)){
+            $stmt->bindParam(":company",$company);
+        }
+        if(!empty($firstName)){
+            $stmt->bindParam(":firstName",$firstName);
+        }
+        if(!empty($lastName)){
+            $stmt->bindParam(":lastName",$lastName);
+        }
+        if(!empty($email)){
+            $stmt->bindParam(":email",$email);
+        }
+        if(!empty($phone)){
+            $stmt->bindParam(":phone",$phone);
+        }
+        if(!empty($phone2)){
+            $stmt->bindParam(":phone2",$phone2);
+        }
+        if(!empty($address)){
+            $stmt->bindParam(":address",$address);
+        }
+        if(!empty($city)){
+            $stmt->bindParam(":city",$city);
+        }
+        if(!empty($zip)){
+            $stmt->bindParam(":zip",$zip);
+        }
+        if(!empty($extraField1)){
+            $stmt->bindParam(":extraField1",$extraField1);
+        }
+        if(!empty($extraField2)){
+            $stmt->bindParam(":extraField2",$extraField2);
+        }
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = $stmt->errorInfo();
+        }
+        
+        return $in;
+    }
+    public function updateUserInfo($userId,$company = NULL,$firstName = '' ,$lastName = NULL,$email =NULL,$phone=NULL,$phone2=NULL,$address=NULL,$city=NULL,$zip=NULL,$extraField1=NULL,$extraField2=NULL)
     {
         $query = "UPDATE jos_vm_user_info SET ";
         $a = 1;
@@ -882,9 +1276,224 @@ FROM jos_vm_orders
         
         $query .= "WHERE user_id = :userId AND address_type='BT'";
         
+        $stmt = $this->dbGf->prepare($query);
+        $stmt->bindParam(":userId",$userId);
+        if(!empty($company)){
+            $stmt->bindParam(":company",$company);
+        }
+        if(!empty($firstName)){
+            $stmt->bindParam(":firstName",$firstName);
+        }
+        if(!empty($lastName)){
+            $stmt->bindParam(":lastName",$lastName);
+        }
+        if(!empty($email)){
+            $stmt->bindParam(":email",$email);
+        }
+        if(!empty($phone)){
+            $stmt->bindParam(":phone",$phone);
+        }
+        if(!empty($phone2)){
+            $stmt->bindParam(":phone2",$phone2);
+        }
+        if(!empty($address)){
+            $stmt->bindParam(":address",$address);
+        }
+        if(!empty($city)){
+            $stmt->bindParam(":city",$city);
+        }
+        if(!empty($zip)){
+            $stmt->bindParam(":zip",$zip);
+        }
+        if(!empty($extraField1)){
+            $stmt->bindParam(":extraField1",$extraField1);
+        }
+        if(!empty($extraField2)){
+            $stmt->bindParam(":extraField2",$extraField2);
+        }
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function updateUserAddressInfo($userId,$company = NULL,$firstName = '' ,$lastName = NULL,$email =NULL,$phone=NULL,$phone2=NULL,$address=NULL,$city=NULL,$zip=NULL,$extraField1=NULL,$extraField2=NULL)
+    {
+        $query = "UPDATE jos_vm_user_info SET ";
+        $a = 1;
+        
+        if(!empty($company)){
+            $a++;
+            $query .= "`company`=:company ";
+        }
+        if(!empty($firstName)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`first_name`=:firstName ";
+        }
+        if(!empty($lastName)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`last_name`=:lastName ";
+        }
+        if(!empty($email)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`user_email`=:email ";
+        }
+        if(!empty($phone)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`phone_1`=:phone ";
+        }
+        if(!empty($phone2)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`phone_2`=:phone2 ";
+        }
+        if(!empty($address)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`address_1`=:address ";
+        }
+        if(!empty($city)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`city`=:city ";
+        }
+        if(!empty($zip)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`zip`=:zip ";
+        }
+        if(!empty($extraField1)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`extra_field_1`=:extraField1 ";
+        }
+        if(!empty($extraField2)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`extra_field_2`=:extraField2 ";
+        }
+        
+        $query .= "WHERE user_id = :userId";
         
         $stmt = $this->dbGf->prepare($query);
         $stmt->bindParam(":userId",$userId);
+        if(!empty($company)){
+            $stmt->bindParam(":company",$company);
+        }
+        if(!empty($firstName)){
+            $stmt->bindParam(":firstName",$firstName);
+        }
+        if(!empty($lastName)){
+            $stmt->bindParam(":lastName",$lastName);
+        }
+        if(!empty($email)){
+            $stmt->bindParam(":email",$email);
+        }
+        if(!empty($phone)){
+            $stmt->bindParam(":phone",$phone);
+        }
+        if(!empty($phone2)){
+            $stmt->bindParam(":phone2",$phone2);
+        }
+        if(!empty($address)){
+            $stmt->bindParam(":address",$address);
+        }
+        if(!empty($city)){
+            $stmt->bindParam(":city",$city);
+        }
+        if(!empty($zip)){
+            $stmt->bindParam(":zip",$zip);
+        }
+        if(!empty($extraField1)){
+            $stmt->bindParam(":extraField1",$extraField1);
+        }
+        if(!empty($extraField2)){
+            $stmt->bindParam(":extraField2",$extraField2);
+        }
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    public function updateUserInfoId($userId,$company = NULL,$firstName = '' ,$lastName = NULL,$email =NULL,$phone=NULL,$phone2=NULL,$address=NULL,$city=NULL,$zip=NULL,$extraField1=NULL,$extraField2=NULL,$userInfoId)
+    {
+        $query = "UPDATE jos_vm_user_info SET ";
+        $a = 1;
+        
+        if(!empty($company)){
+            $a++;
+            $query .= "`company`=:company ";
+        }
+        if(!empty($firstName)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`first_name`=:firstName ";
+        }
+        if(!empty($lastName)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`last_name`=:lastName ";
+        }
+        if(!empty($email)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`user_email`=:email ";
+        }
+        if(!empty($phone)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`phone_1`=:phone ";
+        }
+        if(!empty($phone2)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`phone_2`=:phone2 ";
+        }
+        if(!empty($address)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`address_1`=:address ";
+        }
+        if(!empty($city)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`city`=:city ";
+        }
+        if(!empty($zip)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`zip`=:zip ";
+        }
+        if(!empty($extraField1)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`extra_field_1`=:extraField1 ";
+        }
+        if(!empty($extraField2)){
+            if($a>=2){ $query .= " , ";}
+            $a++;
+            $query .= "`extra_field_2`=:extraField2 ";
+        }
+        
+        $query .= "WHERE user_id = :userId and user_info_id=:userInfoId";
+        
+        $stmt = $this->dbGf->prepare($query);
+        $stmt->bindParam(":userId",$userId);
+        $stmt->bindParam(":userInfoId",$userInfoId);
         if(!empty($company)){
             $stmt->bindParam(":company",$company);
         }
@@ -1004,6 +1613,15 @@ FROM jos_vm_orders
         return $stmt->execute();
     }
     
+    public function updateOrderPaymentMethod($orderId, $paymentMethodId)
+    {
+        $stmt = $this->dbGf->prepare("UPDATE jos_vm_order_payment SET payment_method_id = :paymentMethodId WHERE order_id = :orderId");
+        $stmt->bindParam(':paymentMethodId',$paymentMethodId);
+        $stmt->bindParam(':orderId',$orderId);
+        
+        return $stmt->execute();
+    }
+    
     public function countOrders()
     {
         $query = "SELECT COUNT(*) as `count` FROM jos_vm_orders ";
@@ -1078,6 +1696,22 @@ FROM jos_vm_orders
     {
         $stmt = $this->dbGf->prepare("DELETE FROM jos_vm_user_info WHERE user_info_id = :userInfoId");
         $stmt->bindParam(":userInfoId",$userInfoId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }    
+    
+    private function deleteOrderUserInfo($orderId, $addressType='ST')
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM jos_vm_order_user_info WHERE order_id = :orderId and address_type = :addressType");
+        $stmt->bindParam(":orderId",$orderId);
+        $stmt->bindParam(":addressType",$addressType);
         $stmt->execute();
         $count = $stmt->rowCount();
         if($count == 1 ){
