@@ -549,7 +549,7 @@ FROM jos_vm_orders
     
     public function getSumOrdersByKonsultantId($konsultantId,$startDate,$endDate, $status='%%', $status2='%%')
     {
-        $stmt = $this->dbGf->prepare("SELECT SUM(order_subtotal) as sum
+        $stmt = $this->dbGf->prepare("SELECT SUM(order_subtotal) as sum, COUNT(*) as count
         FROM jos_vm_orders 
         LEFT JOIN konsultanci USING(konsultantId) 
         LEFT JOIN jos_vm_order_status ON jos_vm_order_status.order_status_code = jos_vm_orders.order_status 

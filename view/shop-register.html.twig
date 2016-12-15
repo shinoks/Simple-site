@@ -1,6 +1,51 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+<script>
+    $(document).ready(function (){
+         $("#nip").change(function () {
+
+            var nip = $("#nip").val();
+            var msgbox = $("#nip_lbl");
+
+            if (nip.length > 9) {
+                $("#nip_lbl").html('Sprawdzanie poprawności email...');
+                function validatenip(nip) {
+                    var nip_bez_kresek = nip.replace(/-/g,"");
+                    var reg = /^[0-9]{10}$/;
+                    if(reg.test(nip_bez_kresek) == false) {
+                    return false;}
+                    else
+                    {
+                        var dig = (""+nip_bez_kresek).split("");
+                        var kontrola = (6*parseInt(dig[0]) + 5*parseInt(dig[1]) + 7*parseInt(dig[2]) + 2*parseInt(dig[3]) + 3*parseInt(dig[4]) + 4*parseInt(dig[5]) + 5*parseInt(dig[6]) + 6*parseInt(dig[7]) + 7*parseInt(dig[8]))%11;
+                        if(parseInt(dig[9])==kontrola)
+                        return true;
+                        else
+                        return false;
+                    }
+                 
+                }
+                
+                if(validatenip(nip)==true) {
+                    $("#nip").removeClass("text-danger");
+                    $("#nip").addClass("text-success");
+                    $("#nip_lbl").html('<div style="float:right;margin-right:20px;"><span class="ui-icon ui-icon-check"></span> <font color="Green">Nip jest poprawny</font></div> ');
+                } else {
+                    $("#nip").removeClass("text-success");
+                    $("#nip").addClass("text-danger");
+                    $("#nip_lbl").html('<div style="float:right;margin-right:20px;"><font color="Red">Nip nie jest poprawny</font></div> ');
+                }
+                
+            }
+            else {
+                $("#nip").addClass("text-danger");
+                $("#nip_lbl").html('<div style="float:right;margin-right:20px;"><font color="Red">Za mało znaków</font></div>');
+            }
+            return false;
+        });
+    })
+</script>
     {% set url = "index.php?site=shop&view=register" %}
     <div class="container width-full">
         <div class="well">
@@ -128,22 +173,22 @@
                                             </tr>
                                             <tr>
                                                 <td>
+                                                    <label>NIP:*</label>
+                                                </td>
+                                                <td>
+                                                </td>
+                                                <td> <span id="nip_lbl"></span>
+                                                    <input id="nip" class="form-control" type="text" name="extraField1" required/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
                                                     <label>Kod pocztowy:*</label>
                                                 </td>
                                                 <td>
                                                 </td>
                                                 <td>
                                                     <input class="form-control" type="text" name="zip" required/>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <label>NIP:*</label>
-                                                </td>
-                                                <td>
-                                                </td>
-                                                <td>
-                                                    <input class="form-control" type="text" name="extraField1" required/>
                                                 </td>
                                             </tr>
                                             <tr>

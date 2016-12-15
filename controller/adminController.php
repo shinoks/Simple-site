@@ -552,15 +552,6 @@ class adminController
    
    public function getAdminRaports()
    {     
-        if(isset($_GET['perf'])){
-            switch($_GET['perf']){
-                case 'updateAddon':
-                    $addon = shop::updateAddon($_POST['year'], $_POST['month'], $_POST['konsultantId'], $_POST['addon']);
-                    ($addon)?$info='shop-updateAddon-success':$info='shop-updateAddon-fail';
-                break;
-            }
-        }
-        
         $menu = 'raports';
         $time = time();
         $day = '1';
@@ -577,55 +568,122 @@ class adminController
         $dateLastMonthEnd = strtotime($dLE);
         $dates = ['dateStart'=>$dS,'dateStart'=>$dS,'dateLastMonthStart'=>$dLS,'dateLastMonthEnd'=>$dLE];
         
-        $konsultanci = user::getKonsultanci();
-        $usersSum = [];
-        foreach($konsultanci as $konsultant){
-            $ordersThisMonth = shop::getOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd);
+        if($_GET['view']=='konsultantRaport' && !empty($_GET['konsultantId'])){
+            $ordersThisMonth = shop::getOrdersByKonsultantId($_GET['konsultantId'], $dateStart, $dateEnd);
+            $ordersLastMonth = shop::getOrdersByKonsultantId($_GET['konsultantId'], $dateLastMonthStart, $dateLastMonthEnd);
+            
             $ordersThisMonthSumSubtotal = array_sum(array_column($ordersThisMonth, 'order_subtotal')); 
             $ordersThisMonthSumTotal = array_sum(array_column($ordersThisMonth, 'order_total')); 
-            $ordersSendBack = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='R');
-            $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='!',$status='Z');
-            $ordersPayedSumThisMonth = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='Z');
-            
             $ordersThisMonthSumAdministrationFee = array_sum(array_column($ordersThisMonth, 'administrationFee')); 
-            $ordersPayedSumThisMonthAdministrationFee = round($ordersPayedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee);
-            $premia = shop::getPremia($ordersPayedSumThisMonthAdministrationFee);
-            $ranking = shop::getRanking($konsultant['konsultantId'], $dateStart, $dateEnd, $status='Z');
+            $ordersLastMonthSumSubtotal = array_sum(array_column($ordersLastMonth, 'order_subtotal')); 
+            $ordersLastMonthSumTotal = array_sum(array_column($ordersLastMonth, 'order_total')); 
+            $ordersLastMonthSumAdministrationFee = array_sum(array_column($ordersLastMonth, 'administrationFee')); 
+            $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($_GET['konsultantId'], $dateStart, $dateEnd, $status='Z');
+            
+            $ordersSendBack = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='R');
+            $ordersReceivedSumLastMonth = shop::getSumOrdersByKonsultantId($_GET['konsultantId'], $dateLastMonthStart, $dateLastMonthEnd, $status='Z');
+            $receivedSumWithoutAdministrationFee = round($ordersReceivedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee);
+            $premia = shop::getPremia($receivedSumWithoutAdministrationFee);
+            $premiaBrak = shop::getPremiaBrak($receivedSumWithoutAdministrationFee);
+            $addon = shop::getDodatkiByKonsultantId($year, $month,$_GET['konsultantId']);
+            $ranking = shop::getRanking($_GET['konsultantId'], $dateStart, $dateEnd, $status='Z');
             $cash = (int)$premia+(int)$ranking;
-            $addon = shop::getDodatkiByKonsultantId($year, $month,$konsultant['konsultantId']);
-            
-            $usersSum[] = [
-            'konsultantId'=>$konsultant['konsultantId'],
-            'konsultantBlock'=>$konsultant['block'],
-            'konsultantFirstName'=>$konsultant['konsultantFirstName'],
-            'konsultantLastName'=>$konsultant['konsultantLastName'],
+                
+            $ordersInfo = [
+            'ordersThisMonth'=>$ordersThisMonth,
+            'ordersThisMonthSumTotal'=>$ordersThisMonthSumTotal,
             'ordersThisMonthSumSubtotal'=>$ordersThisMonthSumSubtotal,
-            'ordersThisMonthSumTotal'=>$ordersThisMonthSumTotal, 
-            'ordersSendBack'=>$ordersSendBack['sum'], 
-            'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'], 
-            'ordersPayedSumThisMonthAdministrationFee'=>$ordersPayedSumThisMonthAdministrationFee, 
-            'premia'=>$premia, 
-            'ranking'=>$ranking, 
-            'addon'=>$addon, 
-            'administrationFeeSum'=>array_sum(array_column($ordersThisMonth, 'administrationFee'))
+            'ordersLastMonth'=>$ordersLastMonth,
+            'ordersLastMonthSumSubtotal'=>$ordersLastMonthSumSubtotal,
+            'ordersLastMonthSumTotal'=>$ordersLastMonthTubtotal,
+            'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'],
+            'ordersReceivedSumLastMonth'=>$ordersReceivedSumLastMonth['sum'],
+            'ordersThisMonthSumAdministrationFee'=>$ordersThisMonthSumAdministrationFee,
+            'ordersLastMonthSumAdministrationFee'=>$ordersLastMonthSumAdministrationFee,
+            'ordersSendBack'=>$ordersSendBack,
+            'premia'=>$premia,
+            'ranking'=>$ranking,
+            'cash'=>$cash,
+            'premiaBrak'=>$premiaBrak,
+            'konsultantId'=>$_GET['konsultantId'],
+            'addon'=>$addon
             ];
-        }
-        usort($usersSum, function($a, $b) {
-            return  $b['ordersReceivedSumThisMonth'] - $a['ordersReceivedSumThisMonth'];
-            });
             
-        return $this->twig->render("admin/raports.html.twig", 
-            array(
-                'menu'=>$this->adminMenu,
-                'menuChild'=>$this->adminMenuChild,
-                'info'=>$info,
-                'admins'=>$admins,
-                'config'=>$this->config,
-                'usersSum'=>$usersSum,
-                'activeMonth'=>$month,
-                'activeYear'=>$year
-            )
-        );
+            return $this->twig->render("admin/raports-konsultant.html.twig", 
+                array(
+                    'menu'=>$this->adminMenu,
+                    'menuChild'=>$this->adminMenuChild,
+                    'info'=>$info,
+                    'admins'=>$admins,
+                    'config'=>$this->config,
+                    'ordersInfo'=>$ordersInfo,
+                    'activeMonth'=>$month,
+                    'activeYear'=>$year,
+                    'dates'=>$dates
+                )
+            );
+        } else {
+            if(isset($_GET['perf'])){
+                switch($_GET['perf']){
+                    case 'updateAddon':
+                        $addon = shop::updateAddon($_POST['year'], $_POST['month'], $_POST['konsultantId'], $_POST['addon']);
+                        ($addon)?$info='shop-updateAddon-success':$info='shop-updateAddon-fail';
+                    break;
+                }
+            }
+            
+            $konsultanci = user::getKonsultanci();
+            $usersSum = [];
+            foreach($konsultanci as $konsultant){
+                $ordersThisMonth = shop::getOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd);
+                $countOrders = count($ordersThisMonth);
+                $ordersThisMonthSumSubtotal = array_sum(array_column($ordersThisMonth, 'order_subtotal')); 
+                $ordersThisMonthSumTotal = array_sum(array_column($ordersThisMonth, 'order_total')); 
+                $ordersSendBack = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='R');
+                $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='!',$status='Z');
+                $ordersPayedSumThisMonth = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='Z');
+                
+                $ordersThisMonthSumAdministrationFee = array_sum(array_column($ordersThisMonth, 'administrationFee')); 
+                $ordersPayedSumThisMonthAdministrationFee = $ordersPayedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee;
+                $premia = shop::getPremia($ordersPayedSumThisMonthAdministrationFee);
+                $ranking = shop::getRanking($konsultant['konsultantId'], $dateStart, $dateEnd, $status='Z');
+                $cash = (int)$premia+(int)$ranking;
+                $addon = shop::getDodatkiByKonsultantId($year, $month,$konsultant['konsultantId']);
+                
+                $usersSum[] = [
+                'konsultantId'=>$konsultant['konsultantId'],
+                'konsultantBlock'=>$konsultant['block'],
+                'konsultantFirstName'=>$konsultant['konsultantFirstName'],
+                'konsultantLastName'=>$konsultant['konsultantLastName'],
+                'ordersThisMonthSumSubtotal'=>$ordersThisMonthSumSubtotal,
+                'ordersThisMonthSumTotal'=>$ordersThisMonthSumTotal, 
+                'ordersSendBack'=>$ordersSendBack['sum'], 
+                'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'], 
+                'ordersPayedSumThisMonthAdministrationFee'=>$ordersPayedSumThisMonthAdministrationFee, 
+                'premia'=>$premia, 
+                'ranking'=>$ranking, 
+                'addon'=>$addon, 
+                'countOrders'=>$countOrders, 
+                'administrationFeeSum'=>array_sum(array_column($ordersThisMonth, 'administrationFee'))
+                ];
+            }
+            usort($usersSum, function($a, $b) {
+                return  $b['ordersReceivedSumThisMonth'] - $a['ordersReceivedSumThisMonth'];
+                });
+                
+            return $this->twig->render("admin/raports.html.twig", 
+                array(
+                    'menu'=>$this->adminMenu,
+                    'menuChild'=>$this->adminMenuChild,
+                    'info'=>$info,
+                    'admins'=>$admins,
+                    'config'=>$this->config,
+                    'usersSum'=>$usersSum,
+                    'activeMonth'=>$month,
+                    'activeYear'=>$year
+                )
+            );
+        }
    }
    
    public function getAdminMenu()

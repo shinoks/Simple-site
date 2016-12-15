@@ -1,0 +1,119 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'admins-delete-success'%}
+            <div class="alert alert-success text-center" role="alert">Admin został usunięty</div>
+        {% elseif info == 'admins-delete-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty</div>
+        {% elseif info == 'admins-delete-fail-lackpermissions'%}
+            <div class="alert alert-danger text-center" role="alert">Admin nie został usunięty - brak uprawnień</div>
+        {% elseif info == 'shop-updateAddon-success'%}
+            <div class="alert alert-success text-center" role="alert">Dodatek został zmieniony</div>
+        {% elseif info == 'shop-updateAddon-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Dodatek nie został zmieniony</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+{% set url = "index.php?site=admin&action=raports" %}
+    
+    <div class="row">
+        <div class="col-md-12 bg-white">
+            <div class="row">
+                <div class="pull-left">
+                Wybierz zakres raportu:<br/>
+
+                    <form class='form-inline' action='index.php' method='GET'/>
+                        <input type='hidden' value='admin' name='site'/>
+                        <input type='hidden' value='raports' name='action'/>
+                        <input type='hidden' value='konsultantRaport' name='view'/>
+                        <input type='hidden' value='{{ordersInfo.konsultantId}}' name='konsultantId'/>
+                        <div class="form-group">
+                        <select class='form-control' name='activeYear'>
+                            {% for i in 2016..2036 %}
+                                {% if activeYear == i %}
+                                    <option  value='{{i}}' selected>{{i}}</option>
+                                {% else %}
+                                    <option value='{{i}}' >{{i}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        </div>
+                        <div class="form-group">
+                        <select class='form-control' name='activeMonth'>
+                            {% for i in 1..12 %}
+                                {% if activeMonth == i %}
+                                    <option value='{{i}}' selected>{{i}}</option>
+                                {% else %}
+                                    <option value='{{i}}' >{{i}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        </div>
+                        <input type='submit' class='btn btn-primary' value='Pokaż zakres'/>
+                    </form><br/>
+                </div>
+            </div>
+            
+            
+            <div class="well table-responsive">
+                            <h3>Wykaz zamówień z {{dates.dateStart|date('d-m-Y')}} do {{dates.dateEnd|date('d-m-Y')}}:</h3>
+                            
+                            <span>Suma netto zamówień zapłaconych - koszty administracyjne: {{ordersInfo.ordersReceivedSumThisMonth|round(2,'common') - ordersInfo.ordersThisMonthSumAdministrationFee|round(2,'common')}} zł<br/></span>
+                            <span>Premia naliczona: {{ordersInfo.premia}} zł<br/></span>
+                            <span>do następnego progu brakuje: {{ordersInfo.premiaBrak }} zł<br/></span>
+                            <span>Ranking:  {{ordersInfo.ranking }} zł<br/></span>
+                            <span>Dodatek:  {{ordersInfo.addon }} zł<br/></span>
+                            <span>Do wypłaty:  {{ordersInfo.cash }} zł<br/></span>
+                            <span>Suma netto zamówień zapłaconych: </span> {{ordersInfo.ordersReceivedSumThisMonth|round(2,'common')}}<br/>
+                            <span>Suma netto zamówień: </span> {{ordersInfo.ordersThisMonthSumSubtotal|round(2,'common')}}<br/><br/>
+                            <span>Suma zwrotów: </span> {{ordersInfo.sendBack|round(2,'common')}}<br/><br/>
+                            
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <td><strong>Lp.</strong></td>
+                                        <td><strong>Nr zamówienia.</strong></td>
+                                        <td><strong>Data zamówienia.</strong></td>
+                                        <td><strong>Cena Netto</strong></td>
+                                        <td><strong>Cena Brutto</strong></td>
+                                        <td><strong>Koszty administracyjne</strong></td>
+                                        <td><strong>Status zamówienia</strong></td>
+                                    </tr>
+                                </thead>
+                                    {% set a = 1 %}
+                                    
+                                    {% for order in ordersInfo.ordersThisMonth %}
+                                        <tr class="font11 {% if order.order_status_code == 'X'%}danger{% elseif order.order_status_code == '!'%}info{% elseif order.order_status_code == 'Z'%}success{% elseif order.order_status_code == '@'%}warning{%endif%}">
+                                            <td>
+                                                {{a}}
+                                            </td>
+                                            <td>
+                                                {{order.order_id}}
+                                            </td>
+                                            <td>
+                                                {{order.cdate|date('d-m-Y H:i:s')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_subtotal|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_total|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.administrationFee|round(2,'common')}}
+                                            </td>
+                                            <td>
+                                                {{order.order_status_name}}
+                                            </td>
+                                        </tr>
+                                        {% set a = a +1 %}
+                                    {% endfor %}
+                            </table>
+                        </div>
+        </div>
+    </div>
+    
+{% endblock %}

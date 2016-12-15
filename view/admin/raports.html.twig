@@ -60,7 +60,9 @@
                 <td><strong>Id. konsultant.</strong></td>
                 <td><strong>Imię</strong></td>
                 <td><strong>Nazwisko</strong></td>
+                <td><strong>Liczba zam.</strong></td>
                 <td><strong>Suma netto</strong></td>
+                <td><strong>Suma zwrotów</strong></td>
                 <td><strong>Suma netto odebranych</strong></td>
                 <td><strong>Suma zapłaconych - koszty</strong></td>
                 <td><strong>Ranking</strong></td>
@@ -75,7 +77,7 @@
             {% endif %}
             {% set ordersThisMonthSumSubtotal = 0 %}
             {% set ordersReceivedSumThisMonth = 0 %}
-            {% set ordersReceivedSumThisMonth = 0 %}
+            {% set ordersSendBack = 0 %}
             {% set ordersPayedSumThisMonthAdministrationFee = 0 %}
             {% set ranking = 0 %}
             {% set premia = 0 %}
@@ -90,9 +92,11 @@
                     {% endif %}
                     <td>{{ a }}</td>
                     <td>{{ userSum.konsultantId }}</td>
-                    <td><span class="font11">{{ userSum.konsultantFirstName }}</span></td>
-                    <td><span class="font11">{{ userSum.konsultantLastName }}</td>
+                    <td><span class="font11"><a href="{{url}}&view=konsultantRaport&konsultantId={{ userSum.konsultantId }}">{{ userSum.konsultantFirstName }}</a></span></td>
+                    <td><span class="font11"><a href="{{url}}&view=konsultantRaport&konsultantId={{ userSum.konsultantId }}">{{ userSum.konsultantLastName }}</a></td>
+                    <td><span class="font11">{{ userSum.countOrders|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ordersThisMonthSumSubtotal|round(2,'common') }}</td>
+                    <td><span class="font11">{{ userSum.ordersSendBack|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ordersReceivedSumThisMonth|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ordersPayedSumThisMonthAdministrationFee|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ranking|round(2,'common') }}</td>
@@ -109,6 +113,7 @@
                     <td><span class="font11">{{ userSum.addon|round(2,'common') + userSum.premia|round(2,'common') + userSum.ranking|round(2,'common') }}</td>
                     
                     {% set ordersThisMonthSumSubtotal = ordersThisMonthSumSubtotal + userSum.ordersThisMonthSumSubtotal|round(2,'common') %}
+                    {% set ordersSendBack = ordersSendBack + userSum.ordersSendBack|round(2,'common') %}
                     {% set ordersReceivedSumThisMonth = ordersReceivedSumThisMonth + userSum.ordersReceivedSumThisMonth|round(2,'common') %}
                     {% set ordersPayedSumThisMonthAdministrationFee = ordersPayedSumThisMonthAdministrationFee + userSum.ordersPayedSumThisMonthAdministrationFee|round(2,'common') %}
                     {% set ranking = ranking + userSum.ranking|round(2,'common') %}

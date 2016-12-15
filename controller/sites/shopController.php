@@ -220,7 +220,7 @@ class sites_shopController
                         switch($_GET['perf']){
                             case 'addUserInfo':
                                 if(shop::addUserInfo($user['id'],$_POST['addressTypeName'],$_POST['company'] ,$_POST['lastName'],$_POST['firstName'],
-                                    $_POST['phone1'],$_POST['phone2'],$_POST['address'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_SESSION['kN'],$_POST['email'])){
+                                    $_POST['phone'],$_POST['phone2'],$_POST['address'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_SESSION['kN'],'ST',$_POST['email'])){
                                     $info = 'addUserInfo-success';
                                 } else {
                                     $info = 'addUserInfo-fail';
@@ -680,7 +680,6 @@ class sites_shopController
         
         
         $ordersReceivedSumLastMonth = shop::getSumOrdersByKonsultantId($_SESSION['kN'], $dateLastMonthStart, $dateLastMonthEnd, $status='Z');
-        var_dump($ordersReceivedSumThisMonth);
         $receivedSumWithoutAdministrationFee = round($ordersReceivedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee);
         $premia = shop::getPremia($receivedSumWithoutAdministrationFee);
         $premiaBrak = shop::getPremiaBrak($receivedSumWithoutAdministrationFee);
