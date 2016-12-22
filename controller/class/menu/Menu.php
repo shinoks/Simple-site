@@ -72,22 +72,21 @@ class Menu {
         return $menu;
     }
     
-    public function addMenu($menuName,$menuHref,$parentId = 0,$parent = 0,$published = 1,$articleId = NULL, $permissions = 25)
+    public function addUserMenu($menuName,$menuHref,$parentId = 0,$parent = 0,$published = 1,$articleId = NULL)
     {
-        $stmt = $this->db->prepare("INSERT INTO ".$this->config['dbPrefix']."adminMenu(`menuName`, `menuHref`, `parentId`, `parent`, `published`, `articleId`, `permissions`) VALUES (:menuName,:menuHref,:parentId,:parent,:published,:articleId,:permissions)");
+        $stmt = $this->db->prepare("INSERT INTO ".$this->config['dbPrefix']."menu(`menuName`, `menuHref`, `parentId`, `parent`, `published`, `articleId`) VALUES (:menuName,:menuHref,:parentId,:parent,:published,:articleId)");
         $stmt->bindParam(':menuName',$menuName);
         $stmt->bindParam(':menuHref',$menuHref);
         $stmt->bindParam(':parentId',$parentId);
         $stmt->bindParam(':parent',$parent);
         $stmt->bindParam(':published',$published);
         $stmt->bindParam(':articleId',$articleId);
-        $stmt->bindParam(':permissions',$permissions);
         $stmt->execute();
         
         return $stmt->rowCount();
     }
     
-    public function deleteMenu($menuId)
+    public function deleteUserMenu($menuId)
     {
         $stmt = $this->db->prepare("DELETE FROM ".$this->config['dbPrefix']."menu WHERE menuId = :menuId");
         $stmt->bindParam(':menuId',$menuId);

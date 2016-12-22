@@ -15,5 +15,14 @@ return array(
     'Menu\\' => array($controllerClass.'/menu'),
     'Articles\\' => array($controllerClass.'/articles'),
     'User\\' => array($controllerClass.'/user'),
-    'Validate\\' => array($controllerClass.'/validate')
+    'Validate\\' => array($controllerClass.'/validate'),
+    'Translate\\' => array($controllerClass.'/translate'),
+     'WyszukiwarkaRegon\\Tests\\' => array($vendorDir . '/freshmindpl/wyszukiwarkaregon/src/tests'),
+    'WyszukiwarkaRegon\\' => array($vendorDir . '/freshmindpl/wyszukiwarkaregon/src'),
+    'Ups\\' => array($vendorDir . '/gabrielbull/ups-api/src'),
+    'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
+    'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
+    'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),
+    'GuzzleHttp\\Promise\\' => array($vendorDir . '/guzzlehttp/promises/src'),
+    'GuzzleHttp\\' => array($vendorDir . '/guzzlehttp/guzzle/src'),
 );

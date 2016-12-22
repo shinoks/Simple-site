@@ -7,12 +7,14 @@ use Config\Config;
 
 class Login {
     
+    
     function __construct($db)
     {
         $this->db = $db;
         $this->config = config::getConfig();
         
     }
+
     
     public function login($username, $password)
     {
@@ -115,6 +117,7 @@ class Login {
             return false;
         }
     }
+    
     
     public function loginJoomlaAdministrator($username, $password)
     {

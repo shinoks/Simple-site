@@ -30,6 +30,18 @@
             <div class="alert alert-success text-center" role="alert">Wysyłka została zmieniona</div>
         {% elseif info == 'product-updateOrderPayment-fail'%}
             <div class="alert alert-danger text-center" role="alert">Wysyłka nie została zmieniona</div>
+        {% elseif info == 'updateOrderRanking-success'%}
+            <div class="alert alert-success text-center" role="alert">Ranking został zmieniony</div>
+        {% elseif info == 'updateOrderRankingfail'%}
+            <div class="alert alert-danger text-center" role="alert">Ranking nie została zmieniony</div>
+        {% elseif info == 'addDivideOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie zostało podzielone</div>
+        {% elseif info == 'addDivideOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie nie zostało podzielone</div>
+        {% elseif info == 'deleteDivideOrder-success'%}
+            <div class="alert alert-success text-center" role="alert">Zamówienie podzielone zostało usunięte</div>
+        {% elseif info == 'deleteDivideOrder-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Zamówienie podzielone nie zostało usunięte</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -56,6 +68,14 @@
                     Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
                     Data modyfikacji: {{ order.mdate|date("d-m-Y H:i:s") }}<br/>
                     Stan zamówienia: {{ order.order_status_name }}<br/>
+                    Stan zamówienia UPS: 
+                    {% if warning is not empty %}
+                        Wystąpił błąd lub brak listu przewozowego
+                    {% else %}
+                        {{ ups.date|date("d-m-Y H:i:s") }} - {{ ups.description }} - {{ ups.signedForByName }} - {{ ups.city }}<br/>
+                        {% if return == 1 %}<span style="text-danger">Możliwy zwrot do nadawcy!</span>{%endif%}
+                    {% endif %}
+                    <br/>
                     <br/>
                     <br/>
                     </div>
@@ -63,6 +83,7 @@
                          <!-- Nav tabs -->
                         <ul class="nav nav-tabs" role="tablist">
                             <li role="presentation"><a href="#historia" aria-controls="historia" role="tab" data-toggle="tab">Historia</a></li>
+                            <li role="presentation"><a href="#historiaUps" aria-controls="historiaUps" role="tab" data-toggle="tab">Historia UPS</a></li>
                             <li role="presentation"><a href="#status" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
                         </ul>
                          <div class="tab-content">
@@ -80,6 +101,24 @@
                                             <td>{% if history.customer_notified == 1 %}Tak{% else %}Nie{% endif %}</td>
                                             <td>{{history.order_status_name}}</td>
                                             <td>{{history.comments}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                </table>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade" id="historiaUps">
+                                <table class="table table-condensed">
+                                    <tr>
+                                        <td>Data</td>
+                                        <td>Status</td>
+                                        <td>Miejsce</td>
+                                        <td>Odebrał/a</td>
+                                    </tr>
+                                        {% for upsActivity in upsAllActivity %}
+                                        <tr>
+                                            <td>{{ upsActivity.date|date("d-m-Y H:i:s") }} </td>
+                                            <td>{{ upsActivity.description }} </td>
+                                            <td>{{ upsActivity.city }} </td>
+                                            <td>{{ upsActivity.signedForByName }}</td>
                                             </tr>
                                         {% endfor %}
                                 </table>
@@ -322,10 +361,37 @@
                             </td>
                         
                             <td>
+                               Ranking:
+                            </td>
+                            <td>
+                            <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{order.order_id}}&perf=ranking" method="POST">
+                                <input type="text" name="ranking" value="{{ order.ranking|round(2,"common") }}" /> zł
+                            </td>
+                            <td>
+                                <input type="submit" class="btn btn-default" value="Zapisz"/>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                            </td>
+                        
+                            <td>
+                               Dzielone zamówienie:
+                            </td>
+                            <td>
+                                {{dividedSum}} zł
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                            </td>
+                        
+                            <td>
                                 Obrót:
                             </td>
                             <td>
-                            {% set ron = order.order_subtotal - order.administrationFee %}
+                            {% set ron = order.order_subtotal - order.administrationFee - dividedSum %}
                                 {{ ron|round(2,"common") }} zł
                             </td>
                         </tr>

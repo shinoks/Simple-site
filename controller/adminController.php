@@ -10,6 +10,7 @@ require_once("../config/DbConnGf.php");
     use Shop\Shop;
     use User\User;
     use Validate\Validate;
+    use Translate\Translate;
     
 class adminController
 {
@@ -632,21 +633,55 @@ class adminController
                 }
             }
             
+            
             $konsultanci = user::getKonsultanci();
             $usersSum = [];
             foreach($konsultanci as $konsultant){
                 $ordersThisMonth = shop::getOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd);
+                $received = [];
+                $anulated = [];
+                $sentBack = [];
+                $sent = [];
+                $warehouse = [];
+                $paid = [];
+                $debt = [];
+                $paidAfter = [];
+                $paidDividedOrder = [];
+                
+                foreach($ordersThisMonth as $order){
+                    if($order['order_status_code']=='!'){
+                        $received[] = $order;
+                    }elseif($order['order_status_code']=='X'){
+                        $anulated[] = $order;
+                    }elseif($order['order_status_code']=='R'){
+                        $sentBack[] = $order;
+                    }elseif($order['order_status_code']=='S'){
+                        $sent[] = $order;
+                    }elseif($order['order_status_code']=='@'){
+                        $warehouse[] = $order;
+                    }elseif($order['order_status_code']=='Z'){
+                        $paid[] = $order;
+                    }elseif($order['order_status_code']=='W'){
+                        $debt[] = $order;
+                    }elseif($order['order_status_code']=='$'){
+                        $paidAfter[] = $order;
+                    }
+                }
+                
                 $countOrders = count($ordersThisMonth);
+                $paidDividedOrders = shop::getPaidDividedOrders($dateStart, $dateEnd, $konsultant['konsultantId']);
+                $paidSumDividedOrders = array_sum(array_column($paidDividedOrders, 'sumDi'));
+                
                 $ordersThisMonthSumSubtotal = array_sum(array_column($ordersThisMonth, 'order_subtotal')); 
                 $ordersThisMonthSumTotal = array_sum(array_column($ordersThisMonth, 'order_total')); 
-                $ordersSendBack = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='R');
-                $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='!',$status='Z');
-                $ordersPayedSumThisMonth = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='Z');
+                $ordersSendBack =  array_sum(array_column($sentBack, 'order_subtotal'));
+                $ordersReceivedSumThisMonth =  array_sum(array_column($received, 'order_subtotal')) + array_sum(array_column($paid, 'order_subtotal'));
+                $ordersPayedSumThisMonth = array_sum(array_column($paid, 'order_subtotal'))-$paidSumDividedOrders;
                 
                 $ordersThisMonthSumAdministrationFee = array_sum(array_column($ordersThisMonth, 'administrationFee')); 
-                $ordersPayedSumThisMonthAdministrationFee = $ordersPayedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee;
+                $ordersPayedSumThisMonthAdministrationFee = $ordersPayedSumThisMonth - $ordersThisMonthSumAdministrationFee;
                 $premia = shop::getPremia($ordersPayedSumThisMonthAdministrationFee);
-                $ranking = shop::getRanking($konsultant['konsultantId'], $dateStart, $dateEnd, $status='Z');
+                $ranking =  array_sum(array_column($paid, 'ranking'));
                 $cash = (int)$premia+(int)$ranking;
                 $addon = shop::getDodatkiByKonsultantId($year, $month,$konsultant['konsultantId']);
                 
@@ -657,18 +692,21 @@ class adminController
                 'konsultantLastName'=>$konsultant['konsultantLastName'],
                 'ordersThisMonthSumSubtotal'=>$ordersThisMonthSumSubtotal,
                 'ordersThisMonthSumTotal'=>$ordersThisMonthSumTotal, 
-                'ordersSendBack'=>$ordersSendBack['sum'], 
-                'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'], 
+                'ordersSendBack'=>$ordersSendBack, 
+                'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth, 
                 'ordersPayedSumThisMonthAdministrationFee'=>$ordersPayedSumThisMonthAdministrationFee, 
                 'premia'=>$premia, 
                 'ranking'=>$ranking, 
                 'addon'=>$addon, 
                 'countOrders'=>$countOrders, 
+                'paidSumDividedOrders'=>$paidSumDividedOrders,
                 'administrationFeeSum'=>array_sum(array_column($ordersThisMonth, 'administrationFee'))
                 ];
             }
+                
+            
             usort($usersSum, function($a, $b) {
-                return  $b['ordersReceivedSumThisMonth'] - $a['ordersReceivedSumThisMonth'];
+                return  $b['ordersPayedSumThisMonthAdministrationFee'] - $a['ordersPayedSumThisMonthAdministrationFee'];
                 });
                 
             return $this->twig->render("admin/raports.html.twig", 
@@ -818,6 +856,9 @@ class adminController
         if(isset($_GET['searchInput'])){
             $this->searchInput = $_GET['searchInput'];
         }
+        if(isset($_GET['searchStatus'])){
+            $this->searchStatus = $_GET['searchStatus'];
+        }
         if(!isset($_GET['page'])){
             $activePage = 1;
         }else{
@@ -960,8 +1001,82 @@ class adminController
                                 $info = 'updateOrderPayment-fail';
                             }
                         break;
+                        case 'ranking':
+                            if(shop::updateOrderRanking($_GET['orderId'], $_POST['ranking'])){
+                                $info = 'updateOrderRanking-success';
+                                shop::addHistoryItem($_GET['orderId'],'-','Zmiana rankingu zamówienia',$notified = 0, $this->loggedUser['id']);
+                            } else {
+                                $info = 'updateOrderRanking-fail';
+                            }
+                        break;
+                        case 'divideOrder':
+                            if(shop::addDivideOrder($_GET['orderId'], $_POST['konsultantId'], $_POST['sum'], $order['cdate'])){
+                                $info = 'addDivideOrder-success';
+                                shop::addHistoryItem($_GET['orderId'],'-','Zamówienie podzielone '.$_POST['sum'].' do '.$_POST['konsultantId'] ,$notified = 0, $this->loggedUser['id']);
+                            } else {
+                                $info = 'addDivideOrder-fail';
+                            }
+                        break;
+                        case 'divideOrderDelete':
+                            if(shop::deleteDivideOrder($_GET['orderId'], $_GET['konsultantId'])){
+                                $info = 'deleteDivideOrder-success';
+                                shop::addHistoryItem($_GET['orderId'],'-','Zamówienie podzielone do '.$_GET['konsultantId'].' usunięte' ,$notified = 0, $this->loggedUser['id']);
+                            } else {
+                                $info = 'deleteDivideOrder-fail';
+                            }
+                        break;
                     }
                     $order = shop::getOrderById($_GET['orderId']);
+                }
+                $conf = $this->config;
+                $accessKey = $conf['upsAccessKey'];
+                $userId=$conf['upsUserId'];
+                $password=$conf['upsPassword'];
+                
+                $tracking = new Ups\Tracking($accessKey, $userId, $password);
+                $beginDate = new \DateTime(date('Y-m-d',time()-63072000));
+                $endDate = new \DateTime(date('Y-m-d',time()));
+
+                $tracking->setShipperNumber($conf['upsAccount']);
+                $tracking->setBeginDate($beginDate);
+                $tracking->setEndDate($endDate);
+                
+                $ups=[];
+                try {
+                    $shipment = $tracking->trackByReference($_GET['orderId']);
+                    $activity = $shipment->Package->Activity;
+                    
+                    $date = date_create($activity[0]->Date.' '.$activity[0]->Time);
+                    $description = translate::upsDescription($activity[0]->Status->StatusType->Description);
+                    
+                    $ups = ['city'=>$activity[0]->ActivityLocation->Address->City,
+                                'zip'=>$activity[0]->ActivityLocation->Address->PostalCode,
+                                'code'=>$activity[0]->ActivityLocation->Code,
+                                'descriptionPlace'=>$activity[0]->ActivityLocation->Description,
+                                'signedForByName'=>$activity[0]->ActivityLocation->SignedForByName,
+                                'description'=>$description,
+                                'date'=>date_format($date, 'Y-m-d H:i:s')
+                    ];
+                    $i = 0;
+                    $upsAllActivity=[];
+                    
+                    foreach($shipment->Package->Activity as $activity) {
+                        $date = date_create($activity->Date.' '.$activity->Time);
+                        $description = translate::upsDescription($activity->Status->StatusType->Description);
+                        ($description == 'Odbiorca odmówił przesyłki. Paczka zostanie zwrócona do nadawcy')?$return = '1':'';
+                        
+                        $upsAllActivity[] = ['city'=>$activity->ActivityLocation->Address->City,
+                                    'zip'=>$activity->ActivityLocation->Address->PostalCode,
+                                    'code'=>$activity->ActivityLocation->Code,
+                                    'descriptionPlace'=>$activity->ActivityLocation->Description,
+                                    'signedForByName'=>$activity->ActivityLocation->SignedForByName,
+                                    'description'=>$description,
+                                    'date'=>date_format($date, 'Y-m-d H:i:s')
+                        ];
+                        $i++;
+                    }
+                } catch (Exception $e) {
+                    $warning= $e;
                 }
                 
                 $orderProducts = shop::getOrderProducts($_GET['orderId']);
@@ -971,6 +1086,8 @@ class adminController
                 $userAddresses = shop::getUserAddress($order['user_id']);
                 $orderSendAddress = shop::getOrderUserInfo($_GET['orderId']);
                 $payments = shop::getPaymentsMethod();
+                $dividedOrders = shop::getDividedOrders($_GET['orderId']);
+                $konsultanci = user::getKonsultanci();
                 
                 return $this->twig->render("admin/shop-orderDetail.html.twig", 
                             array(
@@ -988,7 +1105,13 @@ class adminController
                                 'orderStatuses'=>$orderStatuses,
                                 'orderHistory'=>$orderHistory,
                                 'orderSendAddress'=>$orderSendAddress,
-                                'payments'=>$payments
+                                'payments'=>$payments,
+                                'dividedOrders'=>$dividedOrders,
+                                'konsultanci'=>$konsultanci,
+                                'ups'=>$ups,
+                                'warning'=>$warning,
+                                'upsAllActivity'=>$upsAllActivity,
+                                'return'=>$return
                             )
                         );
             break;
@@ -1204,12 +1327,18 @@ class adminController
             break;
             case 'raports':
                 $shopMenu='raports';
+                $time = time();
+                (!empty($_GET['activeDay']))?$day=$_GET['activeDay']:$day = date('d',$time);
+                (!empty($_GET['activeMonth']))?$month=$_GET['activeMonth']:$month = date('m',$time);
+                (!empty($_GET['activeYear']))?$year=$_GET['activeYear']:$year = date('Y',$time);
+                
                 switch($_GET['pref']){
                     case 'daily':
-                        $start_date = mktime(0,0,0,date("m"),date("j"),date("Y"));
-                        $end_date = mktime(23,59,59,date("m"),date("j"),date("Y"));
-                        $start_date_month = mktime(0,0,0,date("m"),1,date("Y"));
-                        $end_date_month = mktime(0,0,0,date("m")+1,1,date("Y"));
+                    
+                        $start_date = mktime(0,0,0,$month,$day,$year);
+                        $end_date = mktime(23,59,59,$month,$day,$year);
+                        $start_date_month = mktime(0,0,0,$month,1,$year);
+                        $end_date_month = mktime(0,0,0,$month+1,1,$year);
                         
                         $daySum = shop::getSumOrdersByDates($start_date,$end_date);
                         $dayCount = shop::getCountOrdersByDates($start_date,$end_date);
@@ -1228,13 +1357,16 @@ class adminController
                                                     'searchInput'=>$this->searchInput,
                                                     'activePage'=>$activePage,
                                                     'info'=>$info,
-                                                    'raports'=>$raports
+                                                    'raports'=>$raports,
+                                                    'activeDay'=>$day,
+                                                    'activeMonth'=>$month,
+                                                    'activeYear'=>$year
                                                 )
                                             );
                     break;
                     case 'products':
-                        $start_date_month = mktime(0,0,0,date("m"),1,date("Y"));
-                        $end_date_month = mktime(0,0,0,date("m")+1,1,date("Y"));
+                        $start_date_month = mktime(0,0,0,$month,1,$year);
+                        $end_date_month = mktime(0,0,0,$month+1,1,$year);
                         
                         $productsCount = shop::getCountProductsByDates($start_date_month,$end_date_month);
                         $productSum = array_sum(array_column($productsCount, 'count')); 
@@ -1249,15 +1381,19 @@ class adminController
                                                     'searchInput'=>$this->searchInput,
                                                     'activePage'=>$activePage,
                                                     'info'=>$info,
-                                                    'raports'=>$raports
+                                                    'raports'=>$raports,
+                                                    'activeDay'=>$day,
+                                                    'activeMonth'=>$month,
+                                                    'activeYear'=>$year
                                                 )
                                             );
                     break;
-                     default:
-                        $start_date = mktime(0,0,0,date("m"),date("j"),date("Y"));
-                        $end_date = mktime(23,59,59,date("m"),date("j"),date("Y"));
-                        $start_date_month = mktime(0,0,0,date("m"),1,date("Y"));
-                        $end_date_month = mktime(0,0,0,date("m")+1,1,date("Y"));
+                    default:
+                    
+                        $start_date = mktime(0,0,0,$month,$day,$year);
+                        $end_date = mktime(23,59,59,$month,$day,$year);
+                        $start_date_month = mktime(0,0,0,$month,1,$year);
+                        $end_date_month = mktime(0,0,0,$month+1,1,$year);
                         
                         $daySum = shop::getSumOrdersByDates($start_date,$end_date);
                         $dayCount = shop::getCountOrdersByDates($start_date,$end_date);
@@ -1276,7 +1412,10 @@ class adminController
                                                     'searchInput'=>$this->searchInput,
                                                     'activePage'=>$activePage,
                                                     'info'=>$info,
-                                                    'raports'=>$raports
+                                                    'raports'=>$raports,
+                                                    'activeDay'=>$day,
+                                                    'activeMonth'=>$month,
+                                                    'activeYear'=>$year
                                                 )
                                             );
                 }
@@ -1419,7 +1558,8 @@ class adminController
                                 'searchInput'=>$this->searchInput,
                                 'activePage'=>$activePage,
                                 'orderStatuses'=>$orderStatuses,
-                                'info'=>$info
+                                'info'=>$info,
+                                'orderStatuses'=>$orderStatuses
                             )
                         );
         }

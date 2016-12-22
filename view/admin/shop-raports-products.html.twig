@@ -21,6 +21,32 @@
         </div>
         <div class="col-md-10 bg-white">
             <h3>Raport sprzedanych produktów:</h3>
+            <form class="form-inline" action="{{url}}" method="GET">
+                <input type='hidden' name='site' value='admin'/>
+                <input type='hidden' name='action' value='shop'/>
+                <input type='hidden' name='act' value='raports'/>
+                <input type='hidden' name='pref' value='products'/>
+                <select class='form-control' name='activeYear'>
+                    {% for i in 2016..2036 %}
+                        {% if activeYear == i %}
+                            <option  value='{{i}}' selected>{{i}}</option>
+                        {% else %}
+                            <option value='{{i}}' >{{i}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <select class='form-control' name='activeMonth'>
+                    {% for i in 1..12 %}
+                        {% if activeMonth == i %}
+                            <option value='{{i}}' selected>{{i}}</option>
+                        {% else %}
+                            <option value='{{i}}' >{{i}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <input class="btn btn-primary" type="submit" value="Sprawdź"/>
+            </form><br/>
+            
             Suma sprzedanych produktów w tym miesiącu: {{raports.productSum}} 
             <table class="table table-bordered">
             <tr>

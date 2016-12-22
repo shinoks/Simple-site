@@ -48,5 +48,6 @@ Temporary Items
 
 
 config/DbConn.php
+config/Config.php
 config/DbConnGf.php
 config/**

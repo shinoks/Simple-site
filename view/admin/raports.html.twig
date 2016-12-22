@@ -57,14 +57,14 @@
             <table class="table table-bordered">
             <thead><tr>
                 <td><strong>Lp.</strong></td>
-                <td><strong>Id. konsultant.</strong></td>
+                <td><strong>Id.</strong></td>
                 <td><strong>Imię</strong></td>
                 <td><strong>Nazwisko</strong></td>
                 <td><strong>Liczba zam.</strong></td>
-                <td><strong>Suma netto</strong></td>
-                <td><strong>Suma zwrotów</strong></td>
-                <td><strong>Suma netto odebranych</strong></td>
-                <td><strong>Suma zapłaconych - koszty</strong></td>
+                <td><strong>Netto</strong></td>
+                <td><strong>Zwroty</strong></td>
+                <td><strong>Netto odebrane</strong></td>
+                <td><strong>Zapłacone - koszty </strong></td>
                 <td><strong>Ranking</strong></td>
                 <td><strong>Premia</strong></td>
                 <td><strong>Dodatek</strong></td>
@@ -133,13 +133,20 @@
                         <td>
                         </td>
                         <td>
+                        </td>
+                        <td>
                             <b>SUMY:</b>
                         </td>
                         <td>
                             <b>{{ ordersThisMonthSumSubtotal }}</b>
                         </td>
                         <td>
+                            <b>{{ ordersSendBack }}</b>
+                        </td>
+                        <td>
                             <b>{{ ordersReceivedSumThisMonth }}</b>
+                        </td>
+                        <td>
                         </td>
                         <td>
                             <b>{{ ordersPayedSumThisMonthAdministrationFee }}</b>

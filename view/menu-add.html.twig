@@ -1,0 +1,85 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+    {% if info is defined %}
+        {% if info == 'addUserMenu-success'%}
+            <div class="alert alert-success text-center" role="alert">Menu zostało dodane</div>
+        {% elseif info == 'addUserMenu-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Menu nie zostało dodane</div>
+        {% endif %}
+    {% endif %}
+
+    <div class="row">
+        <div class="pull-right">
+        <a class="btn btn-success" href="index.php?site=admin&action=menu&act=add">Dodaj</a>
+        </div>
+        <br/>
+    </div>
+    {% if article.articleId is defined %}
+        <form method="POST" action="index.php?site=admin&action=menu&act=edit&id={{ userMenu.menuId }}">
+    {% else %}
+        <form method="POST" action="index.php?site=admin&action=menu&act=add">
+    {% endif %}
+        <div class="row">
+                <div class="col-md-8">
+                    <button type="submit" class="btn btn-primary">Zapisz</button> 
+                    <a href="index.php?site=admin&action=menu&act=add" class="btn btn-danger">Anuluj</a><br/>
+                    <div class="form-group">
+                        <label for="menuName">Nazwa pozycji:</label>
+                        <input name="menuName" type="text" class="form-control" id="menuName" placeholder="Wpisz tytuł artykułu" value="{{ userMenu.menuName|e }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Wybierz artykuł:</label>
+                        <select name="articleId">
+                            {% for article in articles%}
+                                <option value="{{ article.articleId }}">{{ article.articleName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            {% if userMenu.parent == 1%}
+                                <input type="radio" name="parent" value="1" checked="checked"> Posiada pod kategorie ?<br>
+                                <input type="radio" name="parent" value="0"> Nie posiada pod kategorii ?
+                            {% else %}
+                                <input type="radio" name="parent" value="1" > Posiada pod kategorie ?<br>
+                                <input type="radio" name="parent" value="0" checked="checked"> Nie posiada pod kategorii ?
+                            {% endif %}
+                        </label>
+                      </div>
+                    <div class="form-group">
+                        <label for="text">Wybierz kategorię główną:</label>
+                        <select name="parentId">
+                            {% for men in menuParents %}
+                                <option value="{{ men.menuId }}">{{ men.menuName }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="text">Wyświetlanie dla grup powyżej:</label>
+                        <select name="permissions">
+                                <option value="24">Administrator</option>
+                                <option value="25">Administrator główny</option>
+                        </select>
+                    </div>
+                      <div class="checkbox">
+                        <label>
+                            {% if userMenu.published == 1%}
+                                <input type="radio" name="published" value="1" checked="checked"> Włączony<br>
+                                <input type="radio" name="published" value="0"> Wyłączony
+                            {% else %}
+                                <input type="radio" name="published" value="1"> Włączony<br>
+                                <input type="radio" name="published" value="0" checked="checked"> Wyłączony
+                            {% endif %}
+                        </label>
+                      </div>
+                </div>
+                
+                <div class="col-md-4">
+                    
+                    
+                </div>
+                <input type="hidden" value="save" name="operation"/>
+            </div>
+            </form>
+{% endblock %}

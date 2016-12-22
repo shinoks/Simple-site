@@ -44,6 +44,48 @@
             }
             return false;
         });
+        
+         $("#gusNip").change(function () {
+
+            var nip = $("#gusNip").val();
+            var msgbox = $("#gusNip_lbl");
+
+            if (nip.length > 9) {
+                $("#gusNip_lbl").html('Sprawdzanie poprawności email...');
+                function validatenip(nip) {
+                    var nip_bez_kresek = nip.replace(/-/g,"");
+                    var reg = /^[0-9]{10}$/;
+                    if(reg.test(nip_bez_kresek) == false) {
+                    return false;}
+                    else
+                    {
+                        var dig = (""+nip_bez_kresek).split("");
+                        var kontrola = (6*parseInt(dig[0]) + 5*parseInt(dig[1]) + 7*parseInt(dig[2]) + 2*parseInt(dig[3]) + 3*parseInt(dig[4]) + 4*parseInt(dig[5]) + 5*parseInt(dig[6]) + 6*parseInt(dig[7]) + 7*parseInt(dig[8]))%11;
+                        if(parseInt(dig[9])==kontrola)
+                        return true;
+                        else
+                        return false;
+                    }
+                 
+                }
+                
+                if(validatenip(nip)==true) {
+                    $("#gusNip").removeClass("text-danger");
+                    $("#gusNip").addClass("text-success");
+                    $("#gusNip_lbl").html('<div style="margin-left:10px;"><span class="ui-icon ui-icon-check"></span> <font color="Green">Nip jest poprawny</font></div> ');
+                } else {
+                    $("#gusNip").removeClass("text-success");
+                    $("#gusNip").addClass("text-danger");
+                    $("#gusNip_lbl").html('<div style="margin-left:10px;"><font color="Red">Nip nie jest poprawny</font></div> ');
+                }
+                
+            }
+            else {
+                $("#gusNip").addClass("text-danger");
+                $("#gusNip_lbl").html('<div style="margin-left:10px;"><font color="Red">Za mało znaków</font></div>');
+            }
+            return false;
+        });
     })
 </script>
     {% set url = "index.php?site=shop&view=register" %}
@@ -58,6 +100,13 @@
                         <div class="well responsive">
                             <div class="row">
                                 {% if user is empty %}
+                                    <form class="form-inline" action="{{url}}&perf=gus" method="POST">
+                                        <input class="form-control" type="text" id="gusNip" name="gusNip" value="{{ gus.nip }}"/>
+                                        <input type="submit" value="Pobierz dane z gus" class="btn btn-primary"/><br/><span id="gusNip_lbl"></span>
+                                    </form><br/>
+                                    {%if gus is not empty%}
+                                        <div class="alert alert-success text-center"> Dane poprawnie pobrane </div>
+                                    {%endif%}
                                     <form class="form-inline" action="{{url}}&perf=register" method="POST">
                                         <table class="table-responsive">
                                             
@@ -68,7 +117,7 @@
                                                 <td style="width:10px;">  
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="name" placeholder="nazwa konta" required/>
+                                                    <input style="width:600px;" class="form-control" type="text" name="name" placeholder="nazwa konta" value="{%if gus is not empty %}{{gus.nazwa}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -78,7 +127,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="username" placeholder="login" required/>
+                                                    <input class="form-control" type="text" name="username" placeholder="login" value="{%if gus is not empty %}{{gus.nip}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -88,7 +137,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="password" name="password" placeholder="hasło" required/>
+                                                    <input class="form-control" type="password" name="password" placeholder="hasło" value="nmnmnm" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -108,7 +157,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="company" placeholder="firma" required/>
+                                                    <input style="width:600px;" class="form-control" type="text" name="company" placeholder="firma" value="{%if gus is not empty %}{{gus.nazwa}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -118,7 +167,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="firstName" placeholder="wpisz swoje imię" required/>
+                                                    <input class="form-control" type="text" name="firstName" placeholder="wpisz imię" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -128,7 +177,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="lastName" placeholder="wpisz swoje nazwisko" required/>
+                                                    <input class="form-control" type="text" name="lastName" placeholder="wpisz nazwisko" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -158,7 +207,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="address1" required/>
+                                                    <input class="form-control" type="text" name="address1"  value="{%if gus is not empty %}{{gus.ulica}} {{gus.nr}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -168,7 +217,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="city" required/>
+                                                    <input class="form-control" type="text" name="city" value="{%if gus is not empty %}{{gus.miasto}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -178,7 +227,7 @@
                                                 <td>
                                                 </td>
                                                 <td> <span id="nip_lbl"></span>
-                                                    <input id="nip" class="form-control" type="text" name="extraField1" required/>
+                                                    <input id="nip" class="form-control" type="text" name="extraField1"  value="{%if gus is not empty %}{{gus.nip}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -188,7 +237,7 @@
                                                 <td>
                                                 </td>
                                                 <td>
-                                                    <input class="form-control" type="text" name="zip" required/>
+                                                    <input class="form-control" type="text" name="zip"  value="{%if gus is not empty %}{{gus.zip}}{%endif%}" required/>
                                                 </td>
                                             </tr>
                                             <tr>

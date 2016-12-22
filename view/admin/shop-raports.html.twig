@@ -11,9 +11,15 @@
         {% endif %}
     {% endif %}
 {% endblock %}
-
+{% block head %}
+      <script>
+        $( function() {
+          $( "#datepicker" ).datepicker();
+        } );
+    </script>
+{% endblock %}
 {% block body %}
-{% set url = "index.php?site=admin&action=admins" %}
+{% set url = "index.php?site=admin&action=raports" %}
     
     <div class="row">
         <div class="col-md-2">
@@ -21,6 +27,40 @@
         </div>
         <div class="col-md-10 bg-white">
             <h3>Raport Dzienny:</h3>
+            <form class="form-inline" action="{{url}}" method="GET">
+                <input type='hidden' name='site' value='admin'/>
+                <input type='hidden' name='action' value='shop'/>
+                <input type='hidden' name='act' value='raports'/>
+                <input type='hidden' name='pref' value='daily'/>
+                <select class='form-control' name='activeYear'>
+                    {% for i in 2016..2036 %}
+                        {% if activeYear == i %}
+                            <option  value='{{i}}' selected>{{i}}</option>
+                        {% else %}
+                            <option value='{{i}}' >{{i}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <select class='form-control' name='activeMonth'>
+                    {% for i in 1..12 %}
+                        {% if activeMonth == i %}
+                            <option value='{{i}}' selected>{{i}}</option>
+                        {% else %}
+                            <option value='{{i}}' >{{i}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <select class='form-control' name='activeDay'>
+                    {% for i in 1..31 %}
+                        {% if activeDay == i %}
+                            <option value='{{i}}' selected>{{i}}</option>
+                        {% else %}
+                            <option value='{{i}}' >{{i}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <input class="btn btn-primary" type="submit" value="Sprawdź"/>
+            </form><br/>
             <table class="table table-bordered">
             <tr>
                 <td><strong>Obrót dzienny</strong></td>

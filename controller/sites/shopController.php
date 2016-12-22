@@ -10,6 +10,9 @@ require_once("../config/DbConnGf.php");
     use Login\Login;
     use User\User;
     use Validate\Validate;
+    use WyszukiwarkaRegon\Client;
+    use WyszukiwarkaRegon\Exception\RegonException;
+    use WyszukiwarkaRegon\Exception\SearchException;
     
 class sites_shopController 
 {
@@ -271,23 +274,98 @@ class sites_shopController
                             case 'register':
                                 if(isset($_POST['register'])){
                                     $error = validate::checkRegisterAction();
-                                    if($error == true){
-                                        $usAct = login::addNewJoomlaUser($_POST['name'],$_POST['username'],$_POST['email'],$_POST['password']);
-                                        if($usAct>0){
-                                            $usAd = shop::addUserInfo($usAct,"Adres faktury",$_POST['company'] ,$_POST['lastName'],$_POST['firstName'],
-                                            $_POST['phone1'],$_POST['phone2'],$_POST['address1'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_SESSION['kN'],'BT',$_POST['email']);
-                                            if($usAd == true){
-                                                $info = 'shop-addNewUser-success';
+                                    $usse = count(shop::getUserByUsername($_POST['username']));
+                                    if($usse==0){
+                                        if($error == true ){
+                                            $usAct = login::addNewJoomlaUser($_POST['name'],$_POST['username'],$_POST['email'],$_POST['password']);
+                                            if($usAct>0){
+                                                $usAd = shop::addUserInfo($usAct,"Adres faktury",$_POST['company'] ,$_POST['lastName'],$_POST['firstName'],
+                                                $_POST['phone1'],$_POST['phone2'],$_POST['address1'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_SESSION['kN'],'BT',$_POST['email']);
+                                                if($usAd == true){
+                                                    $info = 'shop-addNewUser-success';
+                                                } else {
+                                                    $info = 'shop-addNewUser-fail';
+                                                }
                                             } else {
                                                 $info = 'shop-addNewUser-fail';
                                             }
                                         } else {
                                             $info = 'shop-addNewUser-fail';
+                                            $error;
                                         }
                                     } else {
-                                        $info = 'shop-addNewUser-fail';
+                                        $info = 'shop-addNewUser-fail-loginExists';
                                         $error;
                                     }
+                                }
+                            break;
+                            case 'gus':
+                                            
+                                if(isset($_POST['gusNip'])){
+                                    $client = new Client([
+                                        'key' => 'eb831d754eef4238a45c'
+                                    ]);
+
+                                    //Enable sandbox mode for development environment
+                                    if (defined('DEVELOPMENT') && DEVELOPMENT) {
+                                        $client->sandbox();
+                                    }
+
+                                    //Check if we have saved session id
+                                    $session_id = $_SESSION['gus_session_id'];
+
+                                    if (!$session_id) {
+                                        try {
+                                            $session_id = $client->login();
+                                        } catch (RegonException $e) {
+                                            echo "There was an error.\n";
+                                            exit;
+                                        }
+
+                                        //Save session_id for later use
+                                        $_SESSION['gus_session_id']= $session_id; 
+                                    } else {
+
+                                        //Set current session
+                                        $client->setSession($session_id);
+                                    }
+
+                                    //Try to get data
+                                    try {
+
+                                        //Get basic data
+                                        $data = $client->search(['Nip' => $_POST['gusNip']]);
+
+                                        //Get full comapny report
+                                        switch($data[0]['Typ']) {
+                                            case 'P':
+                                            case 'LP':
+                                                $full = $client->report($data[0]['Regon'], 'PublDaneRaportPrawna');
+                                            break;
+
+                                            case 'F':
+                                            case 'LF':
+                                                $full = $client->report($data[0]['Regon'], 'PublDaneRaportDzialalnoscFizycznejCeidg');
+                                            break;
+                                        }
+                                    } catch (SearchException $e) {
+                                        switch($e->getCode()) {
+                                            default:
+                                            $info = $e;
+                                        }
+                                    } catch (RegonException $e) {
+                                        echo "There was an error.\n";
+                                        exit;
+                                    }
+                                    
+                                    $gus = [
+                                        'nip'=>$full[0]['praw_nip'],
+                                        'nazwa'=>$full[0]['praw_nazwa'],
+                                        'miasto'=>$full[0]['praw_adSiedzMiejscowosc_Nazwa'],
+                                        'ulica'=>$full[0]['praw_adSiedzUlica_Nazwa'],
+                                        'nr'=>$full[0]['praw_adSiedzNumerNieruchomosci'],
+                                        'zip'=>$full[0]['praw_adSiedzKodPocztowy']
+                                    ];
                                 }
                             break;
                         }
@@ -303,7 +381,8 @@ class sites_shopController
                         'id'=>$id,
                         'info'=>$info,
                         'user'=>$user,
-                        'error'=>$error
+                        'error'=>$error,
+                        'gus'=>$gus
                         )
                     );
                 break;
@@ -342,7 +421,7 @@ class sites_shopController
                                 }
                                 $addPayment = shop::addPaymentMethod($adord,$_POST['paymentMethodId']);
                                 $userInfo = shop::getUserInfo($_POST['userInfoId']);
-                                $orderUserInfo = shop::addOrderUserInfo($adord,$user['id'],'BT',$userInfo['address_type_name'],
+                                $orderUserInfo = shop::addOrderUserInfo($adord,$user['id'],$userInfo['address_type'],$userInfo['address_type_name'],
                                 $userInfo['company'],$userInfo['title'],$userInfo['last_name'],$userInfo['first_name'],$userInfo['middle_name'],$userInfo['phone_1'],
                                 $userInfo['phone_2'],$userInfo['fax'],$userInfo['address_1'],$userInfo['address_2'],$userInfo['city'],$userInfo['state'],$userInfo['country'],
                                 $userInfo['zip'],$userInfo['user_email'],$userInfo['extra_field_1'],$konsultant,$userInfo['extra_field_3'],$userInfo['extra_field_4'],
@@ -353,7 +432,7 @@ class sites_shopController
                                     $user = shop::getUserById($user['id']);
                                     $userInfo = shop::getUserInfo($user['user_info_id']);
                                     
-                                    $orderUserInfo = shop::addOrderUserInfo($adord,$user['id'],'ST',$userInfo['address_type_name'],
+                                    $orderUserInfo = shop::addOrderUserInfo($adord,$user['id'],'BT',$userInfo['address_type_name'],
                                         $userInfo['company'],$userInfo['title'],$userInfo['last_name'],$userInfo['first_name'],$userInfo['middle_name'],$userInfo['phone_1'],
                                         $userInfo['phone_2'],$userInfo['fax'],$userInfo['address_1'],$userInfo['address_2'],$userInfo['city'],$userInfo['state'],$userInfo['country'],
                                         $userInfo['zip'],$userInfo['user_email'],$userInfo['extra_field_1'],$konsultant,$userInfo['extra_field_3'],$userInfo['extra_field_4'],
@@ -363,7 +442,6 @@ class sites_shopController
                                 
                                 $info = "shop-doOrder-success-addOrder";
                                 $cart->clear();
-                                
                                 
                                 $orderProducts = shop::getOrderProductsFromUser($adord,$user['id']);
                                 $order = shop::getOrderByIdFromUser($adord,$user['id']);
@@ -400,9 +478,9 @@ class sites_shopController
                                 $mail = new PHPMailer;
                                 
                                 $mail->setFrom($config['email']);
-                                $mail->addAddress($user['email']);     // Add a recipient
+                                $mail->addAddress($config['siteEmail']);     // Add a recipient
                                 $mail->addReplyTo($config['siteEmail'], $config['pageName']);
-                                $mail->addBCC($config['siteEmail']);
+                                //$mail->addBCC($config['siteEmail']);
                                 
                                 $mail->isHTML(true);                                  // Set email format to HTML
                                 
