@@ -1045,18 +1045,19 @@ class adminController
                 try {
                     $shipment = $tracking->trackByReference($_GET['orderId']);
                     $activity = $shipment->Package->Activity;
-                    
-                    $date = date_create($activity[0]->Date.' '.$activity[0]->Time);
-                    $description = translate::upsDescription($activity[0]->Status->StatusType->Description);
-                    
-                    $ups = ['city'=>$activity[0]->ActivityLocation->Address->City,
-                                'zip'=>$activity[0]->ActivityLocation->Address->PostalCode,
-                                'code'=>$activity[0]->ActivityLocation->Code,
-                                'descriptionPlace'=>$activity[0]->ActivityLocation->Description,
-                                'signedForByName'=>$activity[0]->ActivityLocation->SignedForByName,
-                                'description'=>$description,
-                                'date'=>date_format($date, 'Y-m-d H:i:s')
-                    ];
+                    if(count($activity)>1){
+                        $date = date_create($activity[0]->Date.' '.$activity[0]->Time);
+                        $description = translate::upsDescription($activity[0]->Status->StatusType->Description);
+                        
+                        $ups = ['city'=>$activity[0]->ActivityLocation->Address->City,
+                                    'zip'=>$activity[0]->ActivityLocation->Address->PostalCode,
+                                    'code'=>$activity[0]->ActivityLocation->Code,
+                                    'descriptionPlace'=>$activity[0]->ActivityLocation->Description,
+                                    'signedForByName'=>$activity[0]->ActivityLocation->SignedForByName,
+                                    'description'=>$description,
+                                    'date'=>date_format($date, 'Y-m-d H:i:s')
+                        ];
+                    }
                     $i = 0;
                     $upsAllActivity=[];
                     

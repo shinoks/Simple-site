@@ -272,12 +272,15 @@ class sites_shopController
                     if(isset($_GET['perf'])){
                         switch($_GET['perf']){
                             case 'register':
+                                $conf = $this->config;
                                 if(isset($_POST['register'])){
                                     $error = validate::checkRegisterAction();
                                     $usse = count(shop::getUserByUsername($_POST['username']));
                                     if($usse==0){
                                         if($error == true ){
-                                            $usAct = login::addNewJoomlaUser($_POST['name'],$_POST['username'],$_POST['email'],$_POST['password']);
+                                            
+                                            $usAct = login::addNewJoomlaUser($_POST['name'],$_POST['username'],$_POST['email'],$conf['customerPassword']);
+                                            
                                             if($usAct>0){
                                                 $usAd = shop::addUserInfo($usAct,"Adres faktury",$_POST['company'] ,$_POST['lastName'],$_POST['firstName'],
                                                 $_POST['phone1'],$_POST['phone2'],$_POST['address1'],$_POST['address2'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_SESSION['kN'],'BT',$_POST['email']);

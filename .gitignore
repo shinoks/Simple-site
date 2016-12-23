@@ -51,3 +51,4 @@ config/DbConn.php
 config/Config.php
 config/DbConnGf.php
 config/**
+config/Config.php
