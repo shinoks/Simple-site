@@ -66,6 +66,11 @@ class Config
             'email'=>$this->email,
             'siteEmail'=>$this->siteEmail,
             'emailPassword'=>$this->emailPassword,
+            'upsUserId'=>'grupaformat',
+            'upsAccount'=>'E96629',
+            'upsPassword'=>'stefan100%',
+            'upsAccessKey'=>'9D1D266E73546938',
+            'customerPassword'=>'nmnmnm'
         );
 
         return $config;

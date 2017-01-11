@@ -1,0 +1,75 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block info %}
+    {% if info is defined %}
+        {% if info == 'deleteUserMenu-success'%}
+            <div class="alert alert-success text-center" role="alert">Menu zostało usunięte</div>
+        {% elseif info == 'deleteUserMenu-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Menu nie zostało usunięte</div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+{% block head %}
+    <script type = "text/javascript" language = "javascript">
+        $(document).ready(function(){
+             $('.pobierz').click(function() {
+                var cid = $( this ).attr('id');
+                $.ajax({
+                    type:"GET",
+                    url:"index.php", 
+                    contentType:"application/json; charset=utf-8",
+                    data: "api=api&action=checkUpsLastStatus&orderId="+cid,
+                    dataType:'json', 
+                     
+                        success: function(json) {
+                            for (var klucz in json)
+                                {
+                                    var wiersz = json[klucz];
+                                    var id = wiersz[0];
+                                    var nazwakraju = wiersz[1];
+                                     
+                                    $("<tr><td>id: "+id+"</td><td> cos: "+nazwakraju+"</td></tr>")
+                                    .appendTo('#wykazAdmin')
+                                } 
+                             
+                            $( this ).attr("disabled", true);
+                            setTimeout(function(){
+                                $("#pobierz").attr("disabled", false); 
+                            }, 10000);
+                            
+                            $("#pob2").html(json);
+                        },
+                        error: function(blad) {
+                            alert( "Wystąpił błąd");
+                            console.log(blad); 
+                        }
+                });
+            });
+        })
+    </script>
+{% endblock %}
+
+
+{% block body %}
+    <div class="row">
+        <div class="pull-right"><a class="btn btn-success" href="index.php?site=admin&action=menu&act=add">Dodaj</a></div>
+        <br/>
+    </div>
+    <input type="text" id="pob" /><span id='pob2'></span>
+    <button class="pobierz" id='5'>Pobierz</button>
+    <button class="pobierz" id='12'>Pobierz</button>
+    <table id="wykazAdmin" class="table table-bordered">
+        <thead>
+            <tr>
+                <td class="buton"><b>Lp.</b></td>
+                <td><b>Nazwa</b></td>
+                <td class="buton"><b>Dostęp.</b></td>
+                <td class="buton"><b>Id pozycji.</b></td>
+                <td class="buton"><b>Edytuj</b></td>
+                <td class="buton"><b>Usuń</b></td>
+            </tr>
+        </thead>
+       
+        
+    </table>
+{% endblock %}

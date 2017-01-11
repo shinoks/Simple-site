@@ -17,7 +17,7 @@
 {% block head %}
     <script type = "text/javascript" language = "javascript">
         $(document).ready(function(){
-             $('.pobierzUPS.btn.btn-info').click(function() {
+             $('.pobierzUPS').click(function() {
                 var cid = $( this ).attr('id');
                 $( '#stat-'+cid ).html('Pobieranie statusu');
                 $.ajax({
@@ -45,7 +45,7 @@
     
     <script type = "text/javascript" language = "javascript">
         $(document).ready(function(){
-             $('.start.btn.btn-success').click(function() {
+             $('.start.btn.btn-default').click(function() {
                 var cid = $( this ).attr('id');
                 var form = $('#updateOrderStatus-'+cid).serialize();
                 
@@ -56,15 +56,15 @@
                     data: form,
                         success: function(response){
                             if(response==1){
-                                $( '#alertInfo' ).attr('style', 'position:fixed; top:0px; width:90%; z-index:20').attr('class','alert alert-success text-center').html(' Status został zmieniony ').fadeIn(400).delay(1500).fadeOut(400);
+                                $( '#alertInfo' ).attr('style', 'position:fixed; top:0px; width:90%; z-index:20').attr('class','alert alert-success text-center').html(' Status został zmieniony ').fadeIn(400).delay(1000).fadeOut(400);
                             }else {
-                                $( '#alertInfo' ).attr('style',' position:fixed; top:0px; width:90%; z-index:20').attr('class','alert alert-danger text-center').html(' Status nie został zmieniony ').fadeIn(400).delay(1500).fadeOut(400);
+                                $( '#alertInfo' ).attr('style',' position:fixed; top:0px; width:90%; z-index:20').attr('class','alert alert-danger text-center').html(' Status nie został zmieniony ').fadeIn(400).delay(1000).fadeOut(400);
                             }
                         },
                         error: function(blad) {
                             alert( "Wystąpił błąd");
                             console.log(blad); 
-                            $( '#alertInfo' ).attr('style','position:fixed; top:0px; width:90%; z-index:20').html(' Status nie został zmieniony ').fadeIn(400).delay(1500);
+                            $( '#alertInfo' ).attr('style','position:fixed; top:0px; width:90%; z-index:20').html(' Status nie został zmieniony ').fadeIn(400).delay(1000);
                         }
                 });
             });
@@ -127,6 +127,20 @@
                     <td><span class="font11">{{ order.konsultantFirstName }} {{ order.konsultantLastName }} {{ order.extra_field_2 }}</span></td>
                     <td style="width:110px">{{ order.order_subtotal|round(2,'common') }}zł / {{ order.order_total|round(2,'common') }}zł</td>
                     <td style="width:180px">
+                    <form method="POST" class="form-inline" action="index.php?site=admin&action=shop&perf=updateOrderStatus&orderId={{ order.order_id }}">
+                        <select style="width:100px;" class="form-control" name="inputStatus">
+                        {% for orderStatus in orderStatuses %}
+                            {% if order.order_status_name == orderStatus.order_status_name  %}
+                                <option selected value="{{ orderStatus.order_status_code }}" >{{ orderStatus.order_status_name }}</option>
+                            {% else %}
+                                <option value="{{ orderStatus.order_status_code }}" >{{ orderStatus.order_status_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                        </select>
+                        <input style="width:50px;padding:2px" type="submit" class="btn btn-default" value="Zapisz"/>
+                    </form>
+                    
+                    
                     
                     <div class="row">
                         <div class="col-md-8" style="padding:0px">
@@ -146,13 +160,13 @@
                             </form>
                         </div>
                         <div class="col-md-4"  style="padding:0px">
-                            <button id="{{ order.order_id }}" style="width:50px;padding:2px" class="start btn btn-success">Zapisz</button>
+                            <button id="{{ order.order_id }}" style="width:50px;padding:2px" class="start btn btn-default">Zapisz</button>
                         </div>
                     </div>
                         
                     
                     
-                    <span id="stat-{{ order.order_id }}"><button style="width:150px;padding:1px" class="pobierzUPS btn btn-info" id="{{ order.order_id }}"><span class="font11">UPS - status:</span></button></span>
+                    <span id="stat-{{ order.order_id }}" class="font11"><button class="pobierzUPS" id="{{ order.order_id }}">UPS - status:</button></span>
                     </td>
                     <td>
                         <a target="_blank" href="index.php?site=admin&action=shop&act=orderPdf&orderId={{ order.order_id }}"><img src="web/images/print.png"/></a>

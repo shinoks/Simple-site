@@ -75,6 +75,41 @@
                     <td>{{ raports.monthSum|round(2, 'common') }}</td>
                 </tr>
             </table>
+            {% if config.klasy == 1 %}
+                <h3>Obrót dla OCHRONY</h3>
+                <br/>
+                <table class="table table-bordered">
+                <tr>
+                    <td><strong>Obrót dzienny zapłacone</strong></td>
+                    <td><strong>Obrót dzienny odebrane</strong></td>
+                    <td><strong>Obrót w miesiącu zapłacone</strong></td>
+                    <td><strong>Obrót w miesiącu odebrane</strong></td>
+                </tr>
+                    <tr>
+                        <td>{{ raports.dayPayedSumOther|round(2, 'common') }}</td>
+                        <td>{{ raports.dayReceivedSumOther|round(2, 'common') }}</td>
+                        <td>{{ raports.monthPayedSumOther|round(2, 'common') }}</td>
+                        <td>{{ raports.monthReceivedSumOther|round(2, 'common') }}</td>
+                    </tr>
+                </table>
+                
+                <h3>Obrót dla BHP</h3>
+                <br/>
+                <table class="table table-bordered">
+                <tr>
+                    <td><strong>Obrót dzienny zapłacone</strong></td>
+                    <td><strong>Obrót dzienny odebrane</strong></td>
+                    <td><strong>Obrót w miesiącu zapłacone</strong></td>
+                    <td><strong>Obrót w miesiącu odebrane</strong></td>
+                </tr>
+                    <tr>
+                        <td>{{ raports.dayPayedSumBhp|round(2, 'common') }}</td>
+                        <td>{{ raports.dayReceivedSumBhp|round(2, 'common') }}</td>
+                        <td>{{ raports.monthPayedSumBhp|round(2, 'common') }}</td>
+                        <td>{{ raports.monthReceivedSumBhp|round(2, 'common') }}</td>
+                    </tr>
+                </table>
+            {% endif %}
         </div>
     </div>
     

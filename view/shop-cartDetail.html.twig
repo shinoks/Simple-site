@@ -28,12 +28,12 @@
                                     {% set total = 0 %}
                                     {% set totalFinal = 0 %}
                                     {% for id, qty in items %}
-                                        {% for product in products if product.product_id == id %}                                
+                                        {% for product in products if product.product_id == id %}
                                             {% if product.final_price|round(2,"common") == '0' %}
                                                 {% set productFinalPrice = product.product_price|round(2,"common") %}
                                             {% else %}
                                                 {% set productFinalPrice = product.final_price|round(2,"common") %}
-                                            {% endif %}                                
+                                            {% endif %}
                                         <tr>
                                             <td>{{ product.product_name }}</td>
                                             <td>{{ product.product_price|round(2,"common") }}zł</td>
@@ -139,15 +139,14 @@
                                             <div class="well bg-grey">
                                                 <form action="{{url}}&perf=addUserInfo" method="POST">
                                                     Nazwa adresu: <input type="text" class="form-control" name="addressTypeName" required/>
-                                                    Nazwa firmy: <input type="text" class="form-control" name="company"/>
+                                                    Nazwa firmy: <input type="text" class="form-control" name="company" required/>
                                                     Nazwisko: <input type="text" class="form-control" name="lastName" />
                                                     Imię: <input type="text" class="form-control" name="firstName"/>
                                                     Telefon: <input type="text" class="form-control" name="phone"/>
                                                     Telefon 2 :<input type="text" class="form-control" name="phone2"/>
-                                                    Adres:<input type="text" class="form-control" name="address"/>
-                                                    Adres 2:<input type="text" class="form-control" name="address2" />
-                                                    Miasto: <input type="text" class="form-control" name="city" />
-                                                    Kod pocztowy: <input type="text" class="form-control" name="zip" />
+                                                    Adres:<input type="text" class="form-control" name="address"required/>
+                                                    Miasto: <input type="text" class="form-control" name="city" required/>
+                                                    Kod pocztowy: <input type="text" class="form-control" name="zip" required/>
                                                     NIP: <input type="text" class="form-control" name="extraField1" />
                                                     <input type="submit" class="btn btn-success" value="Zapisz nowy adres"/>
                                                 </form>

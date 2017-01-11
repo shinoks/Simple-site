@@ -45,7 +45,9 @@
         {% endif %}
     {% endif %}
 {% endblock %}
-
+{% block head %}
+    
+{% endblock %}
 {% block body %}
     
     <div class="row">
@@ -67,6 +69,7 @@
                     Zamówienie nr. {{ order.order_id }}<br/>
                     Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
                     Data modyfikacji: {{ order.mdate|date("d-m-Y H:i:s") }}<br/>
+                    Drukuj zamówienie <a target="_blank" href="index.php?site=admin&action=shop&act=orderPdf&orderId={{ order.order_id }}"><img src="web/images/print.png"/></a><br/>
                     Stan zamówienia: {{ order.order_status_name }}<br/>
                     Stan zamówienia UPS: 
                     {% if warning is not empty %}
@@ -85,6 +88,7 @@
                             <li role="presentation"><a href="#historia" aria-controls="historia" role="tab" data-toggle="tab">Historia</a></li>
                             <li role="presentation"><a href="#historiaUps" aria-controls="historiaUps" role="tab" data-toggle="tab">Historia UPS</a></li>
                             <li role="presentation"><a href="#status" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
+                            <li role="presentation"><a href="#historiaFaktur" aria-controls="historiaFaktur" role="tab" data-toggle="tab">Historia Faktur do umów</a></li>
                         </ul>
                          <div class="tab-content">
                             <div role="tabpanel" class="tab-pane fade" id="historia">
@@ -138,6 +142,38 @@
                                     <textarea class="form-control" name="comments"></textarea>
                                     <input type="submit" class="btn btn-default" value="Zapisz"/>
                                 </form>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade" id="historiaFaktur">
+                                <form class="form-inline" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=addAgrementsHistory" method="POST">
+                                    <input class="form-control" type="text" name="fvNumber" placeholder="nr faktury" />
+                                    <input class="form-control" style="width:70px" type="text" name="day" placeholder="dzień fv" />
+                                    <input class="form-control" style="width:70px" type="text" name="month" placeholder="miesiąc fv" />
+                                    <input class="form-control" style="width:70px" type="text" name="year" placeholder="rok fv" />
+                                    <input class="form-control" type="text" name="subtotal" placeholder="kwota netto faktury" />
+                                    <select class="form-control" name="payed">
+                                        <option value="0">Nie</option>
+                                        <option value="1">Tak</option>
+                                    </select>
+                                    <input type="submit" class="btn btn-success" value="Dodaj"/>
+                                </form>
+                                <table class="table table-condensed">
+                                    <tr>
+                                        <td>Id</td>
+                                        <td>Nr faktury</td>
+                                        <td>Data wystawienia</td>
+                                        <td>Kwota netto</td>
+                                        <td>Zapłacone/a</td>
+                                    </tr>
+                                        {% for orderAgrementHistory in orderAgrementsHistory %}
+                                        <tr class="{% if orderAgrementHistory.agPayed == 1 %}success{% elseif orderAgrementHistory.agPayed == 0 %}danger{%endif%}">
+                                            <td>{{ orderAgrementHistory.agId }} </td>
+                                            <td>{{ orderAgrementHistory.agFvNumber }} </td>
+                                            <td>{{ orderAgrementHistory.agDate|date("d-m-Y") }} </td>
+                                            <td>{{ orderAgrementHistory.agSubtotal }} </td>
+                                            <td>{% if orderAgrementHistory.agPayed == 1 %}<a class="btn btn-default" href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateAgrementsHistoryStatus&agId={{ orderAgrementHistory.agId }}&stat=0">Tak</a>{% else %}<a class="btn btn-default" href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateAgrementsHistoryStatus&agId={{ orderAgrementHistory.agId }}&stat=1">Nie</a>{% endif %}</td>
+                                            </tr>
+                                        {% endfor %}
+                                </table>
                             </div>
                           </div>
                     </div>
@@ -446,6 +482,14 @@
                 <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateCustomerNote" method="POST">
                     <textarea name="customerNote" class="form-control" rows="5">{{ order.customer_note }}</textarea>
                     <input type="hidden" value="{{order.order_id}}" name="" >
+                    <input type="submit" class="btn btn-default" value="Zapisz"/>
+                </form>
+            </div>
+            <div class="well">
+                <strong>Krótka notka:</strong><br/>
+                <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateLittleNote" method="POST">
+                    <input type="text" name="littleNote" class="form-control" value="{{ order.littleNote }}"/>
+                    <input type="hidden" value="{{order.order_id}}" name="orderId">
                     <input type="submit" class="btn btn-default" value="Zapisz"/>
                 </form>
             </div>

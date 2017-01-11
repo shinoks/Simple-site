@@ -23,7 +23,7 @@ class Shop {
     
     public function getOrdersOnPage($start = 0,$end = 50)
     {
-        $query = "SELECT konsultantFirstName, konsultantLastName, jos_vm_orders.order_id, jos_vm_orders.cdate, jos_vm_orders.user_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, name, jos_vm_order_user_info.company, 
+        $query = "SELECT littleNote,konsultantFirstName, konsultantLastName, jos_vm_orders.order_id, jos_vm_orders.cdate, jos_vm_orders.user_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, name, jos_vm_order_user_info.company, 
         jos_vm_order_user_info.extra_field_1, jos_vm_order_user_info.extra_field_2, jos_vm_order_user_info.company as companySend, order_status_name, COUNT(*) as `count`
             FROM jos_vm_orders
             LEFT JOIN jos_users ON jos_vm_orders.user_id = jos_users.id
@@ -37,7 +37,7 @@ class Shop {
             OR replace(jos_vm_order_user_info.extra_field_1,'-','') LIKE :extraField1";
         }
         if(isset($this->searchStatus)){
-            $query .= "order_status_code = :statusCode ";
+            $query .= " and order_status_code = :statusCode ";
         }
         $query .=" GROUP BY jos_vm_orders.order_id
             ORDER BY jos_vm_orders.order_id desc 
@@ -92,7 +92,7 @@ class Shop {
     
     public function getOrderById($orderId)
     {
-        $stmt = $this->dbGf->prepare("SELECT ranking, administrationFee, order_info_id, konsultantFirstName, konsultantLastName, konsultanci.konsultantId, jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
+        $stmt = $this->dbGf->prepare("SELECT littleNote,ranking, administrationFee, order_info_id, konsultantFirstName, konsultantLastName, konsultanci.konsultantId, jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, jos_vm_orders.order_subtotal, jos_vm_orders.order_status, 
         jos_vm_orders.cdate,jos_vm_orders.mdate, jos_vm_orders.customer_note, name, username, email, registerDate, order_status_name, order_status_code, address_type_name, 
         company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
@@ -115,7 +115,7 @@ class Shop {
     
     public function getOrderByIdFromUser($orderId,$userId)
     {
-        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, 
+        $stmt = $this->dbGf->prepare("SELECT littleNote, jos_vm_orders.order_id, jos_vm_orders.user_id, jos_vm_orders.user_info_id, jos_vm_orders.order_total, 
         jos_vm_orders.order_subtotal, jos_vm_orders.order_status, jos_vm_orders.cdate, jos_vm_orders.customer_note, name, username, email, registerDate, 
         order_status_name, address_type_name, company, last_name, first_name, phone_1, phone_2, address_1, address_2, city, country, zip, user_email, extra_field_1, extra_field_2, payment_method_name
             FROM jos_vm_orders
@@ -258,7 +258,7 @@ class Shop {
     
     public function getProductById($productId)
     {
-        $stmt = $this->dbGf->prepare("SELECT jos_vm_product.product_id,
+        $stmt = $this->dbGf->prepare("SELECT tax_rate, jos_vm_product.product_id,
         jos_vm_product.product_sku, jos_vm_product.product_desc, 
         jos_vm_product.product_thumb_image, jos_vm_product.product_full_image,
         jos_vm_product.product_publish, jos_vm_product.cdate,
@@ -479,6 +479,15 @@ FROM jos_vm_orders
         return $stmt->fetchAll();
     }
     
+    public function getOrderAgrementHistory($orderId)
+    {
+        $stmt = $this->dbGf->prepare("SELECT agId, agOrderId, agFvNumber, agSubtotal, agPayed FROM agreementsHistory WHERE agOrderId = :orderId");
+        $stmt->bindParam(":orderId", $orderId, $this->dbGf->PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
     public function getOrderUserInfo($orderId)
     {
         $stmt = $this->dbGf->prepare("SELECT `order_info_id`, `order_id`, `user_id`, `address_type`, `address_type_name`, `company`, `title`, `last_name`, `first_name`, 
@@ -595,6 +604,25 @@ FROM jos_vm_orders
         $stmt->execute();
         
         return $stmt->fetch();
+    }
+    
+    public function getSumOrdersByDatesAndStatusAndKlasa($startDate,$endDate, $status, $klasa)
+    {
+        $klasa = (int)$klasa;
+        $stmt = $this->dbGf->prepare("SELECT SUM(order_subtotal) as sum
+        FROM jos_vm_orders 
+        LEFT JOIN konsultanci USING(konsultantId)
+        WHERE order_status = :status
+        AND cdate BETWEEN :startDate AND :endDate AND klasa = :klasa
+        ");
+        $stmt->bindParam(":startDate",$startDate);
+        $stmt->bindParam(":endDate",$endDate);
+        $stmt->bindParam(":status",$status);
+        $stmt->bindParam(":klasa",$klasa,$this->dbGf->PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch();
+        
+        return $row['sum'];
     }
     
     public function getCountOrdersByDates($startDate,$endDate, $status='X')
@@ -735,6 +763,48 @@ FROM jos_vm_orders
         return $stmt->fetchAll();
     }
     
+    public function getAgrementsHistoryOrder()
+    {
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.cdate, order_status_name, order_id, user_id, order_subtotal,  `agOrderId`, `agFvNumber`, `agSubtotal`, `agPayed`, `agDate`  
+        FROM `jos_vm_orders` 
+        LEFT JOIN jos_vm_order_item USING(order_id) 
+        LEFT JOIN jos_vm_order_status ON jos_vm_order_status.order_status_code = jos_vm_orders.order_status 
+        LEFT JOIN konsultanci USING(konsultantId) 
+        RIGHT JOIN agreementsHistory ON agreementsHistory.agOrderId = jos_vm_orders.order_id 
+        GROUP BY agId
+        ORDER BY jos_vm_orders.cdate desc");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getAgrementsOrders()
+    {
+        $stmt = $this->dbGf->prepare("SELECT jos_vm_orders.cdate, order_status_name, order_id, user_id, order_subtotal 
+        FROM `jos_vm_orders` 
+        LEFT JOIN jos_vm_order_item USING(order_id) 
+        LEFT JOIN jos_vm_order_status ON jos_vm_order_status.order_status_code = jos_vm_orders.order_status 
+        WHERE product_id = 83
+        GROUP BY order_id
+        ORDER BY jos_vm_orders.cdate desc");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    
+    public function addAgrementsHistory($orderId,$fvNumber,$date, $subtotal, $payed)
+    {
+        $stmt = $this->dbGf->prepare("INSERT INTO `agreementsHistory` (`agOrderId`, `agFvNumber`, `agSubtotal`, `agPayed`, `agDate`) VALUES (:orderId,:fvNumber,:subtotal,:payed,:date)");
+        $stmt->bindParam(':orderId',$orderId, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':fvNumber',$fvNumber);
+        $stmt->bindParam(':subtotal',$subtotal, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':payed',$payed, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':date',$date);
+        
+        return $stmt->execute();
+    }
+    
     public function addDivideOrder($orderId, $konsultantId, $sum, $cdate){
         $stmt = $this->dbGf->prepare("INSERT INTO `dividedOrders`(`orderIdDi`, `konsultantIdDi`, `sumDi`, `cdateDi`) VALUES (:orderId,:konsultantId,:sum,:cdate)");
         $stmt->bindParam(':orderId',$orderId);
@@ -763,7 +833,7 @@ FROM jos_vm_orders
     {
         $time = time();
         $product = shop::getProductById($orderItemId);
-
+        
         $finalPrice = $product['product_price']+$product['product_price']*$product['tax_rate'];
         $orderStatus = 'P';
         $currency = 'PLN';
@@ -971,6 +1041,23 @@ FROM jos_vm_orders
         return $stmt->execute();
     }
     
+    public function updateAgrementsHistoryStatus($agId,$payed)
+    {
+        $stmt = $this->dbGf->prepare("UPDATE agreemetsHistory SET agPayed = :payed WHERE agId = :agId");
+        $stmt->bindParam(':agId',$agId, $this->dbGf->PARAM_INT);
+        $stmt->bindParam(':payed',$payed, $this->dbGf->PARAM_INT);
+        
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        
+        if($count == 1 ){
+            $in = true;
+        }else {
+            $in = false;
+        }
+        return $in;
+    }
+    
     public function updateOrderRanking($orderId, $ranking)
     {
         $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET 
@@ -1121,8 +1208,6 @@ FROM jos_vm_orders
             $price=$product['product_item_price'];
             if(round($finalPrice,2)!=round($product['product_final_price'],2)){
                  $price = $finalPrice/(1+$product['tax_rate']);
-            }else {
-                $finalPrice = $product['product_final_price'];
             }
         }
 
@@ -1158,7 +1243,22 @@ FROM jos_vm_orders
         $count = $stmt->rowCount();
         if($count == 1 ){
             $in = true;
-            shop::addHistoryItem($orderId,'-','Zmiana notatki');
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    
+    public function updateLittleNote($orderId,$littleNote)
+    {
+        $stmt = $this->dbGf->prepare("UPDATE `jos_vm_orders` SET `littleNote` = :littleNote WHERE `order_id`=:orderId");
+        $stmt->bindParam(':orderId', $orderId);
+        $stmt->bindParam(':littleNote', $littleNote);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $in = true;
         }else {
             $in = false;
         }
@@ -1764,6 +1864,32 @@ FROM jos_vm_orders
         }else {
             $in = false;
         }
+        
+        return $in;
+    }
+    
+    public function deleteUser($userId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM `jos_users` WHERE `id`=:userId");
+        $stmt->bindParam(":userId",$userId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        if($count == 1 ){
+            $del = shop::deleteAllUserInfo($userId);
+            ($del == true )?$in = true: $in = false;
+        }else {
+            $in = false;
+        }
+        
+        return $in;
+    }
+    private function deleteAllUserInfo($userId)
+    {
+        $stmt = $this->dbGf->prepare("DELETE FROM `jos_vm_user_info` WHERE user_id = :userId");
+        $stmt->bindParam(':userId',$userId);
+        $stmt->execute();
+        $count = $stmt->rowCount();
+        ($count == 1)?$in=true:$in=false;
         
         return $in;
     }

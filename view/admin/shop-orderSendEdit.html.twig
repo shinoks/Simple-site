@@ -17,6 +17,7 @@
             {% include 'admin/shop-menu.html.twig' %}
         </div>
         <div class="col-md-10">
+            <a class="btn btn-default" href="index.php?site=admin&action=shop&act=orderDetail&orderId={{order.order_id}}"><<< Wstecz</a>
             <div class="well">
                 <div class="row">
                     <div class="pull-left col-md-6">
@@ -39,7 +40,7 @@
                                 Telefon: <input type="text" class="form-control" name="phone" value="{{order.phone_1}}"/>
                                 Telefon 2 :<input type="text" class="form-control" name="phone2" value="{{order.phone_2}}"/>
                                 Adres:<input type="text" class="form-control" name="address" value="{{order.address_1}}"/>
-                                Adres 2:<input type="text" class="form-control" name="address2" value="{{order.address_2}}"/>
+                                Kod pocztowy :<input type="text" class="form-control" name="zip" value="{{order.zip}}"/>
                                 Miasto: <input type="text" class="form-control" name="city" value="{{order.city}}"/>
                                 NIP: <input type="text" class="form-control" name="extraField1" value="{{order.extra_field_1}}"/>
                              <input type="hidden" value="{{ order.user_id }}" name="userId"/>

@@ -26,6 +26,12 @@
             <div class="alert alert-success text-center" role="alert">Adres wysyłki został usunięty</div>
         {% elseif info == 'deleteUserInfo-fail'%}
             <div class="alert alert-danger text-center" role="alert">Adres wysyłki nie został usunięty</div>
+        {% elseif info == 'deleteUser-success'%}
+            <div class="alert alert-success text-center" role="alert">Użytkownik został usunięty</div>
+        {% elseif info == 'deleteUser-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Użytkownik nie został usunięty</div>
+        {% elseif info == 'deleteUser-fail-haveOrders'%}
+            <div class="alert alert-danger text-center" role="alert">Użytkownik posiada zamówienia nie może zostać usunięty</div>
         {% endif %}
     {% endif %}
 {% endblock %}

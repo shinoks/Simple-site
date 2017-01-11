@@ -10,6 +10,12 @@
             <div class="alert alert-success text-center" role="alert">Status zamówienia został zmieniony</div>
         {% elseif info == 'updateOrderStatus-fail'%}
             <div class="alert alert-danger text-center" role="alert">Status zamówienia nie został zmieniony</div>
+        {% elseif info == 'deleteUser-success'%}
+            <div class="alert alert-success text-center" role="alert">Użytkownik został usunięty</div>
+        {% elseif info == 'deleteUser-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Użytkownik nie został usunięty</div>
+        {% elseif info == 'deleteUser-fail-haveOrders'%}
+            <div class="alert alert-danger text-center" role="alert">Użytkownik posiada zamówienia nie może zostać usunięty</div>
         {% endif %}
     {% endif %}
 {% endblock %}
