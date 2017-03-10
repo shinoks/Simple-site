@@ -674,6 +674,11 @@ class sites_shopController
                                 
                                 
                                 $items = $cart->getItems();
+                                $text = 'Suma :'.round($order['order_total'],2).' 
+Firma: '.$order['company'].' 
+Konsultant id: '.$_SESSION['kN'];
+                                $title = 'Nowe zamówienie nr '.$adord;
+                                shop::addNewEvent($text,$title);
                             }else {
                                 $info = "shop-doOrder-fail-addOrder";
                             }
@@ -739,11 +744,11 @@ class sites_shopController
         $year = date('Y');
         
         $dS = date('d-m-Y H:i:s',mktime(0, 0, 0, $month, $day, $year));
-        $dE = date('t-m-Y H:i:s',mktime(0, 0, 0, $month, $day, $year));
+        $dE = date('t-m-Y H:i:s',mktime(23, 59, 59, $month, $day, $year));
         $dateStart = strtotime($dS);
         $dateEnd = strtotime($dE);
         $dLS = date('d-m-Y H:i:s',mktime(0, 0, 0, $month-1, $day, $year));
-        $dLE = date('t-m-Y H:i:s',mktime(0, 0, 0, $month-1, $day, $year));
+        $dLE = date('t-m-Y H:i:s',mktime(23, 59, 59, $month-1, $day, $year));
         $dateLastMonthStart = strtotime($dLS);
         $dateLastMonthEnd = strtotime($dLE);
         
@@ -754,30 +759,44 @@ class sites_shopController
         $ordersThisMonthSumSubtotal = array_sum(array_column($ordersThisMonth, 'order_subtotal')); 
         $ordersThisMonthSumTotal = array_sum(array_column($ordersThisMonth, 'order_total')); 
         $ordersThisMonthSumAdministrationFee = array_sum(array_column($ordersThisMonth, 'administrationFee')); 
+        $dividedOrdersSumAdd = shop::getDividedOrdersSumByKonsultant($konsultant['konsultantId'], $dateStart, $dateEnd);
+        $dividedOrdersSumRemove = array_sum(array_column($ordersThisMonth,'sumDi'));
+        $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($_SESSION['kN'], $dateStart, $dateEnd, $status='Z');
+        $receivedSumWithoutAdministrationFee = round($ordersReceivedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee );
+        $premia = shop::getPremia($receivedSumWithoutAdministrationFee);
+        $premiaBrak = shop::getPremiaBrak($receivedSumWithoutAdministrationFee);
+        
         $ordersLastMonthSumSubtotal = array_sum(array_column($ordersLastMonth, 'order_subtotal')); 
         $ordersLastMonthSumTotal = array_sum(array_column($ordersLastMonth, 'order_total')); 
         $ordersLastMonthSumAdministrationFee = array_sum(array_column($ordersLastMonth, 'administrationFee')); 
-        $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($_SESSION['kN'], $dateStart, $dateEnd, $status='Z');
-        
-        
+        $dividedOrdersSumAddLastMonth = shop::getDividedOrdersSumByKonsultant($konsultant['konsultantId'], $dateLastMonthStart, $dateLastMonthEnd);
+        $dividedOrdersSumRemoveLastMonth = array_sum(array_column($ordersLastMonth,'sumDi'));
         $ordersReceivedSumLastMonth = shop::getSumOrdersByKonsultantId($_SESSION['kN'], $dateLastMonthStart, $dateLastMonthEnd, $status='Z');
-        $receivedSumWithoutAdministrationFee = round($ordersReceivedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee);
-        $premia = shop::getPremia($receivedSumWithoutAdministrationFee);
-        $premiaBrak = shop::getPremiaBrak($receivedSumWithoutAdministrationFee);
+        $receivedSumWithoutAdministrationFeeLastMonth = round($ordersReceivedSumLastMonth['sum'] - $ordersLastMonthSumAdministrationFee  );
+        $premiaLastMonth = shop::getPremia($receivedSumWithoutAdministrationFeeLastMonth);
+        $premiaBrakLastMonth = shop::getPremiaBrak($receivedSumWithoutAdministrationFeeLastMonth);
         
         $ordersInfo = [
         'ordersThisMonth'=>$ordersThisMonth,
         'ordersThisMonthSumTotal'=>$ordersThisMonthSumTotal,
         'ordersThisMonthSumSubtotal'=>$ordersThisMonthSumSubtotal,
+        'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'],
+        'ordersThisMonthSumAdministrationFee'=>$ordersThisMonthSumAdministrationFee,
+        'receivedSumWithoutAdministrationFee'=>$receivedSumWithoutAdministrationFee,
+        'dividedOrdersSumRemove'=>$dividedOrdersSumRemove,
+        'dividedOrdersSumAdd'=>$dividedOrdersSumAdd,
+        'premia'=>$premia,
+        'premiaBrak'=>$premiaBrak,
         'ordersLastMonth'=>$ordersLastMonth,
         'ordersLastMonthSumSubtotal'=>$ordersLastMonthSumSubtotal,
         'ordersLastMonthSumTotal'=>$ordersLastMonthTubtotal,
-        'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'],
         'ordersReceivedSumLastMonth'=>$ordersReceivedSumLastMonth['sum'],
-        'ordersThisMonthSumAdministrationFee'=>$ordersThisMonthSumAdministrationFee,
         'ordersLastMonthSumAdministrationFee'=>$ordersLastMonthSumAdministrationFee,
-        'premia'=>$premia,
-        'premiaBrak'=>$premiaBrak
+        'dividedOrdersSumAddLastMonth'=>$dividedOrdersSumAddLastMonth,
+        'dividedOrdersSumRemoveLastMonth'=>$dividedOrdersSumRemoveLastMonth,
+        'receivedSumWithoutAdministrationFeeLastMonth'=>$receivedSumWithoutAdministrationFeeLastMonth,
+        'premiaLastMonth'=>$premiaLastMonth,
+        'premiaBrakLastMonth'=>$premiaBrakLastMonth
         ];
         
         return $this->twig->render("myAccount.html.twig", array(

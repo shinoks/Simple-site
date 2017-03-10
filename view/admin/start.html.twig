@@ -2,6 +2,16 @@
 
 
         {% block body %}
-            testtttt
+            <div class="row">
+                <div class="col-md-7">
+                    <h3>Aktualności z Grupy Format</h3>
+                    <table class="table table-bordered">
+                        {% for newsItem in news %}
+                            <td> {{newsItem.date|date('d-m-Y H:i:s')}} <br/><b>{{newsItem.title}} </b></td>
+                            <td> {{newsItem.text|raw}} </td>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
         {% endblock %}
   

@@ -1,0 +1,9 @@
+{% if shopMenu is not defined %}
+    {{shopMenu == 'orders'}}
+{% endif %}
+
+<div class="well">
+            
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'orders'%}active{%endif%}" href="index.php?site=admin&action=konsultanci">Konsultanci</a>
+            <a class="btn btn-default width-full text-left-important {% if shopMenu == 'orders'%}active{%endif%}" href="index.php?site=admin&action=konsultanci&view=all">Wszyscy</a>
+</div>

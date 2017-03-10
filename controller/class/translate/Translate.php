@@ -40,6 +40,24 @@ class Translate {
             case 'LOCATION SCAN':
                 $translated = 'Wydane do doręczenia';
             break;
+            case 'THE RECEIVER DOES NOT WANT THE PRODUCT AND REFUSED THE DELIVERY. / WE\'VE CONTACTED THE SENDER.':
+                $translated = 'Odbiorca odmówił przesyłki - kontakt z nadawcą';
+            break;
+            case 'THE RECEIVER HAS MOVED. WE\'RE ATTEMPTING TO OBTAIN A NEW DELIVERY ADDRESS FOR THIS RECEIVER.':
+                $translated = 'Odbiorca przeprowadził się - Próba kontaktu z odbiorcą w celu ustalenia adresu';
+            break;
+            case 'THE DELIVERY CHANGE WAS COMPLETED. / DELIVERY WILL BE RESCHEDULED.':
+                $translated = 'Zmiana adresu została skompletowana - dostarczenie przesunięte';
+            break;
+            case 'A DELIVERY CHANGE FOR THIS PACKAGE IS IN PROGRESS. / WE\'VE RESCHEDULED THIS DELIVERY.':
+                $translated = 'Zmiana adresu dla paczki jest w toku - dostarczenie przesunięte';
+            break;
+            case 'THE RECEIVER HAS MOVED. WE\'RE ATTEMPTING TO OBTAIN A NEW DELIVERY ADDRESS FOR THIS RECEIVER. / WE\'VE CONTACTED THE RECEIVER TO REQUEST ADDITIONAL INFORMATION.':
+                $translated = 'Odbiorca się przeprowadził. Próbujemy zdobyć nowy adres wysyłki dla tej przesyłki. Skontaktowaliśmy się z odbiorcą po dodatkowe informacje.e';
+            break;
+            case 'THE DELIVERY CHANGE WAS COMPLETED. / THE PACKAGE IS BEING HELD FOR A FUTURE DELIVERY DATE.':
+                $translated = 'Zmiana adresu została skompletowana - paczka zatrzymana do późniejszego dostarczenia';
+            break;
             default:
                 $translated = $text;
         }

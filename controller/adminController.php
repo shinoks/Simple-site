@@ -2,6 +2,7 @@
     
 require_once("../config/DbConn.php");
 require_once("../config/DbConnGf.php");
+require_once("../config/DbConnInfo.php");
 
     use Config\Config;
     use Login\Login;
@@ -9,6 +10,7 @@ require_once("../config/DbConnGf.php");
     use Articles\Articles;
     use Shop\Shop;
     use User\User;
+    use News\News;
     use Validate\Validate;
     use Translate\Translate;
     
@@ -24,6 +26,7 @@ class adminController
         $this->twig->addGlobal('session', $_SESSION);
         $this->db = dbConn::getConnection();
         $this->dbGf = dbConnGf::getConnection();
+        $this->dbInfo = dbConnInfo::getConnection();
         $this->config = config::getConfig();
         $this->menuChild = menu::getChildMenuItems();
     }
@@ -96,13 +99,7 @@ class adminController
                    break;
                    
                    default:
-                    return $this->twig->render("admin/start.html.twig", 
-                        array(
-                            'menu'=>$this->adminMenu,
-                            'menuChild'=>$this->adminMenuChild,
-                            'config'=>$this->config
-                        )
-                    );
+                        echo $this->getAdminStart();
                 }
             }else {
                 return $this->twig->render("admin/login.html.twig", 
@@ -123,14 +120,8 @@ class adminController
                         $this->adminMenu = menu::getAdminMenuItems($this->loggedUser['gid']);
                         $this->adminMenuChild = menu::getAdminChildMenuItems($this->loggedUser['gid']);
                         
-                        return $this->twig->render("admin/start.html.twig", 
-                            array(
-                                'login'=>$login,
-                                'menu'=>$this->adminMenu,
-                                'menuChild'=>$this->adminMenuChild,
-                                'config'=>$this->config
-                            )
-                        );
+                        echo $this->getAdminStart($login);
+                        
                     } else {
                         
                         $info = 'login-error';
@@ -170,6 +161,22 @@ class adminController
            }
         }
     }
+    
+    public function getAdminStart($login = NULL)
+    {
+        $news = News::getNews();
+        
+        return $this->twig->render("admin/start.html.twig", 
+                 array(
+                'login'=>$login,
+                'menu'=>$this->adminMenu,
+                'menuChild'=>$this->adminMenuChild,
+                'config'=>$this->config,
+                'news'=>$news
+            )
+            );
+    }
+    
     
    public function getAdminArticles()
    {   
@@ -396,6 +403,11 @@ class adminController
                     if(!empty($_POST['konsultantFirstName'])&&!empty($_POST['konsultantLastName'])&&!empty($_POST['konsultantId'])){
                         (user::updateKonsultant($_POST['konsultantFirstName'], $_POST['konsultantLastName'], $_POST['konsultantId']))?$info='konsultant-edit-success':$info='konsultant-edit-fail';
                     }
+                    switch($_GET['act']){
+                        case 'changePassword':
+                            (user::updateKonsultantPassword($_GET['konsultantId'],$_POST['password']))?$info="konsultant-changePassword-success":$info="konsultant-changePassword-fail";
+                        break;
+                    }
                     
                     $konsultant = user::getKonsultantById($_GET['konsultantId']);
                     
@@ -427,6 +439,45 @@ class adminController
                     );
                 break;
                 
+                case 'hide':
+                    if(!empty($_GET['konsultantId'])){
+                        (user::updateKonsultantVisible($_GET['konsultantId'],0))?$info='konsultant-edit-success':$info='konsultant-visible-fail';
+                    }else {
+                        $info='konsultant-visible-fail';
+                    }
+                    
+                    $konsultanci = user::getKonsultanci();
+                    
+                    return $this->twig->render("admin/konsultanci.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'konsultanci'=>$konsultanci,
+                            'config'=>$this->config
+                        )
+                    );
+                break;
+                case 'show':
+                    if(!empty($_GET['konsultantId'])){
+                        (user::updateKonsultantVisible($_GET['konsultantId'],1))?$info='konsultant-visible-success':$info='konsultant-visible-fail';
+                    }else {
+                        $info='konsultant-visible-fail';
+                    }
+                    
+                    $konsultanci = user::getKonsultanciAll();
+                    
+                    return $this->twig->render("admin/konsultanci-all.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'konsultanci'=>$konsultanci,
+                            'config'=>$this->config
+                        )
+                    );
+                break;
+                
                 default :
                     $konsultanci = user::getKonsultanci();
                     return $this->twig->render("admin/konsultanci.html.twig", 
@@ -441,17 +492,47 @@ class adminController
             }
            
        }else {
-           $konsultanci = user::getKonsultanci();
-           
-            return $this->twig->render("admin/konsultanci.html.twig", 
-                array(
-                    'menu'=>$this->adminMenu,
-                    'menuChild'=>$this->adminMenuChild,
-                    'info'=>$info,
-                    'konsultanci'=>$konsultanci,
-                    'config'=>$this->config
-                )
-            );
+           if(isset($_GET['view'])){
+               switch($_GET['view']){
+                   case 'all':
+                        $konsultanci = user::getKonsultanciAll();
+                        
+                        return $this->twig->render("admin/konsultanci-all.html.twig", 
+                            array(
+                                'menu'=>$this->adminMenu,
+                                'menuChild'=>$this->adminMenuChild,
+                                'info'=>$info,
+                                'konsultanci'=>$konsultanci,
+                                'config'=>$this->config
+                            )
+                        );
+                   break;
+                   default:
+                       $konsultanci = user::getKonsultanci();
+                    
+                        return $this->twig->render("admin/konsultanci.html.twig", 
+                            array(
+                                'menu'=>$this->adminMenu,
+                                'menuChild'=>$this->adminMenuChild,
+                                'info'=>$info,
+                                'konsultanci'=>$konsultanci,
+                                'config'=>$this->config
+                            )
+                        );
+               }
+           }else {
+               $konsultanci = user::getKonsultanci();
+               
+                return $this->twig->render("admin/konsultanci.html.twig", 
+                    array(
+                        'menu'=>$this->adminMenu,
+                        'menuChild'=>$this->adminMenuChild,
+                        'info'=>$info,
+                        'konsultanci'=>$konsultanci,
+                        'config'=>$this->config
+                    )
+                );
+            }
         }
    }
    
@@ -461,7 +542,7 @@ class adminController
             switch($_GET['perf']){
                 case 'add':
                     if($_POST['adding']=='adding'){
-                        (login::addNewJoomlaUser($_POST['adminName'],$_POST['adminUsername'],$_POST['adminEmail'],$_POST['adminPassword'],$usertype="Administrator",$block=0, $sendEmail=1, $gid=24, $activation="", $params = ""))?$info = 'admin-add-success':$info = 'admin-add-fail';
+                        (login::addNewJoomlaUser($_POST['adminName'],$_POST['adminUsername'],$_POST['adminEmail'],$_POST['password'],$usertype="Administrator",$block=0, $sendEmail=1, $gid=24, $activation="", $params = ""))?$info = 'admin-add-success':$info = 'admin-add-fail';
                     }
                     return $this->twig->render("admin/admins-add.html.twig", 
                         array(
@@ -473,7 +554,7 @@ class adminController
                     );
                 break;
                 case 'delete':
-                    if($this->loggedUser['gid']==25){
+                    if($this->loggedUser['gid']>=25){
                         $del = user::deleteAdmin($_GET['adminId']);
                         ($del == true)?$info='admin-delete-success':$info='admin-delete-fail';
                     }else {
@@ -510,7 +591,7 @@ class adminController
                     );
                 break;
                 case 'unpublish':
-                    if($this->loggedUser['gid']==25){
+                    if($this->loggedUser['gid']>=25){
                         if(!empty($_GET['unpublish'])&&!empty($_GET['adminId'])){
                             (user::updateAdminBlock($_GET['adminId'],$_GET['unpublish']))?$info='admin-edit-success':$info='admin-edit-fail';
                         }
@@ -568,11 +649,16 @@ class adminController
         (!empty($_GET['activeYear']))?$year=$_GET['activeYear']:$year = date('Y',$time);
         
         $dS = date('d-m-Y H:i:s',mktime(0, 0, 0, $month, $day, $year));
-        $dE = date('t-m-Y H:i:s',mktime(0, 0, 0, $month, $day, $year));
+        $dE = date('t-m-Y H:i:s',mktime(23, 59, 59, $month, $day, $year));
+        
         $dateStart = strtotime($dS);
         $dateEnd = strtotime($dE);
+        $date = date('Y-m-d H:i:s', $dateStart);
+        
         $dLS = date('d-m-Y H:i:s',mktime(0, 0, 0, $month-1, $day, $year));
-        $dLE = date('t-m-Y H:i:s',mktime(0, 0, 0, $month-1, $day, $year));
+        
+        $dLE = date('t-m-Y H:i:s',mktime(23, 59, 59, $month-1, $day, $year));
+        
         $dateLastMonthStart = strtotime($dLS);
         $dateLastMonthEnd = strtotime($dLE);
         $dates = ['dateStart'=>$dS,'dateStart'=>$dS,'dateLastMonthStart'=>$dLS,'dateLastMonthEnd'=>$dLE];
@@ -585,13 +671,9 @@ class adminController
             
             $ordersThisMonthSumTotal = array_sum(array_column($ordersThisMonth, 'order_total')); 
             $ordersThisMonthSumAdministrationFee = array_sum(array_column($ordersThisMonth, 'administrationFee')); 
-            $ordersLastMonthSumSubtotal = array_sum(array_column($ordersLastMonth, 'order_subtotal')); 
-            $ordersLastMonthSumTotal = array_sum(array_column($ordersLastMonth, 'order_total')); 
-            $ordersLastMonthSumAdministrationFee = array_sum(array_column($ordersLastMonth, 'administrationFee')); 
             $ordersReceivedSumThisMonth = shop::getSumOrdersByKonsultantId($_GET['konsultantId'], $dateStart, $dateEnd, $status='Z');
             
             $ordersSendBack = shop::getSumOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd, $status='R');
-            $ordersReceivedSumLastMonth = shop::getSumOrdersByKonsultantId($_GET['konsultantId'], $dateLastMonthStart, $dateLastMonthEnd, $status='Z');
             $receivedSumWithoutAdministrationFee = round($ordersReceivedSumThisMonth['sum'] - $ordersThisMonthSumAdministrationFee);
             $premia = shop::getPremia($receivedSumWithoutAdministrationFee);
             $premiaBrak = shop::getPremiaBrak($receivedSumWithoutAdministrationFee);
@@ -603,13 +685,8 @@ class adminController
             'ordersThisMonth'=>$ordersThisMonth,
             'ordersThisMonthSumTotal'=>$ordersThisMonthSumTotal,
             'ordersThisMonthSumSubtotal'=>$ordersThisMonthSumSubtotal,
-            'ordersLastMonth'=>$ordersLastMonth,
-            'ordersLastMonthSumSubtotal'=>$ordersLastMonthSumSubtotal,
-            'ordersLastMonthSumTotal'=>$ordersLastMonthTubtotal,
             'ordersReceivedSumThisMonth'=>$ordersReceivedSumThisMonth['sum'],
-            'ordersReceivedSumLastMonth'=>$ordersReceivedSumLastMonth['sum'],
             'ordersThisMonthSumAdministrationFee'=>$ordersThisMonthSumAdministrationFee,
-            'ordersLastMonthSumAdministrationFee'=>$ordersLastMonthSumAdministrationFee,
             'ordersSendBack'=>$ordersSendBack,
             'premia'=>$premia,
             'ranking'=>$ranking,
@@ -642,10 +719,11 @@ class adminController
                 }
             }
             
+            $konsultanci = user::getKonsultanciForRaports($date);
             
-            $konsultanci = user::getKonsultanci();
             $usersSum = [];
             foreach($konsultanci as $konsultant){
+                
                 $ordersThisMonth = shop::getOrdersByKonsultantId($konsultant['konsultantId'], $dateStart, $dateEnd);
                 $received = [];
                 $anulated = [];
@@ -655,7 +733,8 @@ class adminController
                 $paid = [];
                 $debt = [];
                 $paidAfter = [];
-                $paidDividedOrder = [];
+                $dividedOrder = 0;
+                $paidDividedOrder = 0;
                 
                 foreach($ordersThisMonth as $order){
                     if($order['order_status_code']=='!'){
@@ -670,15 +749,18 @@ class adminController
                         $warehouse[] = $order;
                     }elseif($order['order_status_code']=='Z'){
                         $paid[] = $order;
+                        $paidDividedOrder += $order['sumDi'];
                     }elseif($order['order_status_code']=='W'){
                         $debt[] = $order;
                     }elseif($order['order_status_code']=='$'){
                         $paidAfter[] = $order;
                     }
+                    if(isset($order['sumDi'])){
+                        $dividedOrder += $order['sumDi'];
+                    }
                 }
-                
                 $countOrders = count($ordersThisMonth);
-                
+                $dividedOrdersSumAdd = shop::getDividedOrdersSumByKonsultant($konsultant['konsultantId'], $dateStart, $dateEnd);
                 $ordersThisMonthSumSubtotal = array_sum(array_column($ordersThisMonth, 'order_subtotal')); 
                 $ordersThisMonthSumTotal = array_sum(array_column($ordersThisMonth, 'order_total')); 
                 $ordersSendBack =  array_sum(array_column($sentBack, 'order_subtotal'));
@@ -686,7 +768,7 @@ class adminController
                 $ordersPayedSumThisMonth = array_sum(array_column($paid, 'order_subtotal'));
                 
                 $ordersThisMonthSumAdministrationFee = array_sum(array_column($ordersThisMonth, 'administrationFee')); 
-                $ordersPayedSumThisMonthAdministrationFee = $ordersPayedSumThisMonth - $ordersThisMonthSumAdministrationFee;
+                $ordersPayedSumThisMonthAdministrationFee = $ordersPayedSumThisMonth - $ordersThisMonthSumAdministrationFee - $paidDividedOrder + $dividedOrdersSumAdd;
                 $premia = shop::getPremia($ordersPayedSumThisMonthAdministrationFee);
                 $ranking =  array_sum(array_column($paid, 'ranking'));
                 $cash = (int)$premia+(int)$ranking;
@@ -706,7 +788,10 @@ class adminController
                 'ranking'=>$ranking, 
                 'addon'=>$addon, 
                 'countOrders'=>$countOrders, 
-                'administrationFeeSum'=>array_sum(array_column($ordersThisMonth, 'administrationFee'))
+                'administrationFeeSum'=>array_sum(array_column($ordersThisMonth, 'administrationFee')),
+                'dividedOrder'=>$dividedOrder,
+                'paidDividedOrder'=>$paidDividedOrder,
+                'dividedOrdersSumAdd'=>$dividedOrdersSumAdd
                 ];
             }
                 
@@ -1041,7 +1126,7 @@ class adminController
                         break;
                         case 'addAgrementsHistory':
                             $date = $_POST['year'].'-'.$_POST['month'].'-'.$_POST['day'];
-                            if(shop::addAgrementsHistory($_GET['orderId'],$_POST['fvNumber'],$date, $_POST['subtotal'], $_POST['payed'])){
+                            if(shop::addAgrementsHistory($_GET['orderId'],$_POST['fvNumber'],$date, $_POST['subtotal'], $_POST['payed'], $_POST['all'])){
                                 $info = 'addAgrementsHistory-success';
                             } else {
                                 $info = 'addAgrementsHistory-fail';
@@ -1052,6 +1137,13 @@ class adminController
                                 $info = 'updateAgrementsHistoryStatus-success';
                             } else {
                                 $info = 'updateAgrementsHistoryStatus-fail';
+                            }
+                        break;
+                        case 'updatePayedDate':
+                            if(shop::updatePayedDate($_GET['orderId'],$_POST['month'],$_POST['year'],1)){
+                                $info = 'updatePayedDate-success';
+                            } else {
+                                $info = 'updatePayedDate-fail';
                             }
                         break;
                     }
@@ -1118,6 +1210,8 @@ class adminController
                 $orderSendAddress = shop::getOrderUserInfo($_GET['orderId']);
                 $payments = shop::getPaymentsMethod();
                 $konsultanci = user::getKonsultanci();
+                $dividedOrders = shop::getDividedOrders($_GET['orderId']);
+                $dividedSum = shop::getSumDividedOrders($_GET['orderId']);
                 
                 return $this->twig->render("admin/shop-orderDetail.html.twig", 
                             array(
@@ -1141,7 +1235,9 @@ class adminController
                                 'ups'=>$ups,
                                 'warning'=>$warning,
                                 'upsAllActivity'=>$upsAllActivity,
-                                'return'=>$return
+                                'return'=>$return,
+                                'dividedOrders'=>$dividedOrders,
+                                'dividedSum'=>$dividedSum
                             )
                         );
             break;
@@ -1222,7 +1318,7 @@ class adminController
                                     switch($_GET['perf']){
                                         case 'updateUserInfo':
                                             if(shop::updateUserAddressInfo($_GET['userId'],$_POST['company'],$_POST['firstName'] ,$_POST['lastName'],
-                                            $_POST['email'],$_POST['phone1'],$_POST['phone2'],$_POST['address'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_POST['extraField2'])){
+                                            $_POST['email'],$_POST['phone1'],$_POST['phone2'],$_POST['address1'],$_POST['city'],$_POST['zip'],$_POST['extraField1'],$_POST['extraField2'])){
                                                 $info = 'updateUserInfo-success';
                                             } else {
                                                 $info = 'updateUserInfo-fail';
@@ -1642,10 +1738,8 @@ class adminController
         }
    }
    
-   
    public function getAdminTests()
    {
-       
             return $this->twig->render("admin/tests.html.twig", 
                 array(
                     'menu'=>$this->adminMenu,
@@ -1660,23 +1754,57 @@ class adminController
    }
    
    public function getAdminAgrements()
-   {
-       $agrements = shop::getAgrementsHistoryOrder();
-       $agrementsOrder = shop::getAgrementsOrders();
-       
-            return $this->twig->render("admin/agrements.html.twig", 
-                array(
-                    'menu'=>$this->adminMenu,
-                    'menuChild'=>$this->adminMenuChild,
-                    'info'=>$info,
-                    'config'=>$this->config,
-                    'userMenu'=>$this->menu,
-                    'userMenuChild'=>$this->menuChild,
-                    'agrements'=>$agrements,
-                    'agrementsOrder'=>$agrementsOrder
-                )
-            );
-        
+   {    
+        if(isset($_GET['act'])){
+            switch($_GET['act']){
+                case 'faktury':
+                    $agrements = shop::getAgrementsHistoryOrder();
+                    
+                    return $this->twig->render("admin/agrements-faktury.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'config'=>$this->config,
+                            'userMenu'=>$this->menu,
+                            'userMenuChild'=>$this->menuChild,
+                            'agrements'=>$agrements
+                            )
+                    );
+                break;
+                default:
+                    $agrements = shop::getAgrementsHistoryOrder();
+                    $agrementsOrder = shop::getAgrementsOrders();
+                   
+                    return $this->twig->render("admin/agrements.html.twig", 
+                        array(
+                            'menu'=>$this->adminMenu,
+                            'menuChild'=>$this->adminMenuChild,
+                            'info'=>$info,
+                            'config'=>$this->config,
+                            'userMenu'=>$this->menu,
+                            'userMenuChild'=>$this->menuChild,
+                            'agrements'=>$agrements,
+                            'agrementsOrder'=>$agrementsOrder
+                            )
+                    );
+            }
+        }else {
+           $agrements = shop::getAgrementsHistoryOrder();
+           $agrementsOrder = shop::getAgrementsOrders();
+                return $this->twig->render("admin/agrements.html.twig", 
+                    array(
+                        'menu'=>$this->adminMenu,
+                        'menuChild'=>$this->adminMenuChild,
+                        'info'=>$info,
+                        'config'=>$this->config,
+                        'userMenu'=>$this->menu,
+                        'userMenuChild'=>$this->menuChild,
+                        'agrements'=>$agrements,
+                        'agrementsOrder'=>$agrementsOrder
+                    )
+                );
+        }
    }
    
    

@@ -15,6 +15,7 @@ return array(
     'Menu\\' => array($controllerClass.'/menu'),
     'Articles\\' => array($controllerClass.'/articles'),
     'User\\' => array($controllerClass.'/user'),
+    'News\\' => array($controllerClass.'/news'),
     'Validate\\' => array($controllerClass.'/validate'),
     'Translate\\' => array($controllerClass.'/translate'),
      'WyszukiwarkaRegon\\Tests\\' => array($vendorDir . '/freshmindpl/wyszukiwarkaregon/src/tests'),

@@ -14,6 +14,7 @@
     <link href="web/css/bootstrap.min.css" rel="stylesheet">
     <link href="web/css/custom.css" rel="stylesheet">
     <link href="web/css/admin.css" rel="stylesheet">
+    <script src="web/js/push.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Pavanam" rel="stylesheet">
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -25,6 +26,49 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 {% block head %}
 {% endblock %}
+    <script>
+        $(document).ready(function(){
+                setInterval(function () {
+                    $.ajax({
+                        type:"GET",
+                        url:"index.php",
+                        contentType:"application/json; charset=utf-8",
+                        data: "api=api&action=newEvents",
+                        success: function(json){
+                                var event = json.split(';');
+                                if(event[2].length>2){
+                                    Push.create(event[2], {
+                                        body: event[1],
+                                        icon: '../../web/logo.png',
+                                        timeout: 8000,
+                                        onClick: function () {
+                                            window.focus();
+                                            this.close();
+                                        }
+                                    });
+                                
+                                    $.ajax({
+                                        type:"GET",
+                                        url:"index.php",
+                                        contentType:"application/json; charset=utf-8",
+                                        data: "api=api&action=newEventsVisited&eventId="+event[0],
+                                        success: function(json2){
+                                        },
+                                        error: function(blad){
+                                            alert('notification delete error');
+                                            console.log(blad);
+                                        }
+                                    }) 
+                                }
+                           
+                        },
+                        error: function(blad){
+                        }
+                    });
+                },15000);
+            
+        })
+    </script>
   </head>
   <body>
 
@@ -96,7 +140,7 @@
             {% block footerText %}
                 {{ config.pageSite }}
             {% endblock %}
-        </a></p></div>
+        </a><br/>{{ config.footerText }}</p></div>
     {% endblock %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="web/js/bootstrap.min.js"></script>

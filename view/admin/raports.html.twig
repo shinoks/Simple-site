@@ -64,7 +64,8 @@
                 <td><strong>Netto</strong></td>
                 <td><strong>Zwroty</strong></td>
                 <td><strong>Netto odebrane</strong></td>
-                <td><strong>Zapłacone - koszty </strong></td>
+                <td><strong>Dzielone zamówienia</strong></td>
+                <td><strong>Zapłacone - koszty -/+ dzielone </strong></td>
                 <td><strong>Ranking</strong></td>
                 <td><strong>Premia</strong></td>
                 <td><strong>Dodatek</strong></td>
@@ -98,6 +99,7 @@
                     <td><span class="font11">{{ userSum.ordersThisMonthSumSubtotal|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ordersSendBack|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ordersReceivedSumThisMonth|round(2,'common') }}</td>
+                    <td><span class="font11">-{{ userSum.paidDividedOrder|round(2,'common') }}/+{{ userSum.dividedOrdersSumAdd|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ordersPayedSumThisMonthAdministrationFee|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.ranking|round(2,'common') }}</td>
                     <td><span class="font11">{{ userSum.premia|round(2,'common') }}</td>

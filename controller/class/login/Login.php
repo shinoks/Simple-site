@@ -150,31 +150,44 @@ class Login {
         return $stmt->fetch();
     }
     
-    public function addNewJoomlaUser($name,$username,$email,$password,$usertype="Registered",$block=0, $sendEmail=1, $gid=18, $activation="", $params = "")
-    {
-        $salt = login::genRandomSalt();
-        $pass = login::getHashedPasswordJoomla($password,$salt);
-        
-        $stmt = $this->dbGf->prepare("INSERT INTO `jos_users`
-        (`name`, `username`, `email`, `password`, `usertype`, `block`, `sendEmail`, 
-        `gid`, `registerDate`, `activation`, `params`) 
-        VALUES 
-        (:name,:username,:email,:password,:usertype,:block,:sendEmail,
-        :gid,:registerDate,:activation,:params)");
-        $stmt->bindParam(':name',$name);
-        $stmt->bindParam(':username',$username);
-        $stmt->bindParam(':email',$email);
-        $stmt->bindParam(':password',$pass);
-        $stmt->bindParam(':usertype',$usertype);
-        $stmt->bindParam(':block',$block);
-        $stmt->bindParam(':sendEmail',$sendEmail);
-        $stmt->bindParam(':gid',$gid);
-        $stmt->bindParam(':registerDate',date("Y-m-d H:i:s", time()));
-        $stmt->bindParam(':activation',$activation);
-        $stmt->bindParam(':params',$params);
+    public function getUsersByUsername($username)
+    { 
+        $stmt = $this->dbGf->prepare("SELECT password,gid,usertype,block FROM jos_users WHERE username = :username");
+        $stmt->bindParam(":username",$username);
         $stmt->execute();
         
-        return $this->dbGf->lastInsertId();
+        return $stmt->fetchAll();
+    }
+    
+    public function addNewJoomlaUser($name,$username,$email,$password,$usertype="Registered",$block=0, $sendEmail=1, $gid=18, $activation="", $params = "")
+    {
+        $usCount = count(login::getUsersByUsername($username));
+        if($usCount>0){
+            return false;
+        } else {
+            $salt = login::genRandomSalt();
+            $pass = login::getHashedPasswordJoomla($password,$salt);
+            $stmt = $this->dbGf->prepare("INSERT INTO `jos_users`
+            (`name`, `username`, `email`, `password`, `usertype`, `block`, `sendEmail`, 
+            `gid`, `registerDate`, `activation`, `params`) 
+            VALUES 
+            (:name,:username,:email,:password,:usertype,:block,:sendEmail,
+            :gid,:registerDate,:activation,:params)");
+            $stmt->bindParam(':name',$name);
+            $stmt->bindParam(':username',$username);
+            $stmt->bindParam(':email',$email);
+            $stmt->bindParam(':password',$pass);
+            $stmt->bindParam(':usertype',$usertype);
+            $stmt->bindParam(':block',$block);
+            $stmt->bindParam(':sendEmail',$sendEmail);
+            $stmt->bindParam(':gid',$gid);
+            $stmt->bindParam(':registerDate',date("Y-m-d H:i:s", time()));
+            $stmt->bindParam(':activation',$activation);
+            $stmt->bindParam(':params',$params);
+            $stmt->execute();
+            
+            return $this->dbGf->lastInsertId();
+        }
     }
     
     private function getHashedPasswordJoomla($cryptedPass,$salt)

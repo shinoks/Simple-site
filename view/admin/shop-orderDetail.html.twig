@@ -46,7 +46,13 @@
     {% endif %}
 {% endblock %}
 {% block head %}
-    
+    <script>
+        $(document).ready(function(){
+            $('#monthChangeBut').click(function(){
+                $('.monthChange').toggle();
+            });
+        })
+    </script>
 {% endblock %}
 {% block body %}
     
@@ -68,7 +74,38 @@
                     <div class="pull-left col-md-6">
                     Zamówienie nr. {{ order.order_id }}<br/>
                     Data zamówienia: {{ order.cdate|date("d-m-Y H:i:s") }}<br/>
-                    Data modyfikacji: {{ order.mdate|date("d-m-Y H:i:s") }}<br/>
+                    Data miesiąca do premii: {{ order.mdate|date("m-Y") }}  <a id="monthChangeBut" href="#">Zmień </a>
+                    <div class="monthChange" style="display:none">
+                    <form action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updatePayedDate" class="form-inline" method="POST">
+                        <select class="form-control" name="month">
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                            <option>5</option>
+                            <option>6</option>
+                            <option>7</option>
+                            <option>8</option>
+                            <option>9</option>
+                            <option>10</option>
+                            <option>11</option>
+                            <option>12</option>
+                        </select>
+                        <select class="form-control" name="year">
+                            <option>2017</option>
+                            <option>2018</option>
+                            <option>2019</option>
+                            <option>2020</option>
+                            <option>2021</option>
+                            <option>2022</option>
+                            <option>2023</option>
+                            <option>2024</option>
+                            <option>2025</option>
+                        </select>
+                        <input type="submit" class="btn btn-default" value="Zapisz"/>
+                    </form>
+                    </div>
+                    <br/>
                     Drukuj zamówienie <a target="_blank" href="index.php?site=admin&action=shop&act=orderPdf&orderId={{ order.order_id }}"><img src="web/images/print.png"/></a><br/>
                     Stan zamówienia: {{ order.order_status_name }}<br/>
                     Stan zamówienia UPS: 
@@ -145,14 +182,18 @@
                             </div>
                             <div role="tabpanel" class="tab-pane fade" id="historiaFaktur">
                                 <form class="form-inline" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=addAgrementsHistory" method="POST">
-                                    <input class="form-control" type="text" name="fvNumber" placeholder="nr faktury" />
+                                    <input class="form-control" style="width:120px"type="text" name="fvNumber" placeholder="nr faktury" />
                                     <input class="form-control" style="width:70px" type="text" name="day" placeholder="dzień fv" />
                                     <input class="form-control" style="width:70px" type="text" name="month" placeholder="miesiąc fv" />
                                     <input class="form-control" style="width:70px" type="text" name="year" placeholder="rok fv" />
-                                    <input class="form-control" type="text" name="subtotal" placeholder="kwota netto faktury" />
+                                    <input class="form-control" style="width:80px" type="text" name="subtotal" placeholder="kwota netto" />
                                     <select class="form-control" name="payed">
                                         <option value="0">Nie</option>
                                         <option value="1">Tak</option>
+                                    </select>
+                                    <select class="form-control" name="all">
+                                        <option value="0">Raty</option>
+                                        <option value="1">Całość</option>
                                     </select>
                                     <input type="submit" class="btn btn-success" value="Dodaj"/>
                                 </form>
@@ -163,6 +204,7 @@
                                         <td>Data wystawienia</td>
                                         <td>Kwota netto</td>
                                         <td>Zapłacone/a</td>
+                                        <td>Całość/a</td>
                                     </tr>
                                         {% for orderAgrementHistory in orderAgrementsHistory %}
                                         <tr class="{% if orderAgrementHistory.agPayed == 1 %}success{% elseif orderAgrementHistory.agPayed == 0 %}danger{%endif%}">
@@ -171,6 +213,7 @@
                                             <td>{{ orderAgrementHistory.agDate|date("d-m-Y") }} </td>
                                             <td>{{ orderAgrementHistory.agSubtotal }} </td>
                                             <td>{% if orderAgrementHistory.agPayed == 1 %}<a class="btn btn-default" href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateAgrementsHistoryStatus&agId={{ orderAgrementHistory.agId }}&stat=0">Tak</a>{% else %}<a class="btn btn-default" href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateAgrementsHistoryStatus&agId={{ orderAgrementHistory.agId }}&stat=1">Nie</a>{% endif %}</td>
+                                            <td>{% if orderAgrementHistory.agAll == 1 %}Tak{% else %}Nie{% endif %}</td>
                                             </tr>
                                         {% endfor %}
                                 </table>
@@ -294,32 +337,34 @@
                                             <td>{{ userSendTo.extra_field_1 }}</td>
                                         </tr>
                                         
-                            <tr>
-                                <td>Zmień na gotowy adres wysyłki: </td>
-                                <td>
-                                    <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateOrderSendTo" method="POST">
-                                        <select name="userInfoId"class="form-control">
-                                            {% for userAddres in userAddresses %}
-                                                {% if userAddres.user_info_id == order.user_info_id %}
-                                                    <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
-                                                {% else %}
-                                                    <option value="{{ userAddres.user_info_id }}"> {{ userAddres.address_type_name }}</option>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </select>
-                                        <input type="submit" class="btn btn-default" value="Zmień">
-                                    </form>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Zmień dane wysyłki:</td>
-                                <td>
-                                    <td><a href="index.php?site=admin&action=shop&act=orderSendEdit&orderId={{ order.order_id }}" class="btn btn-default">Zmień</a></td>
-                                </td>
-                            </tr>
-                             </table>
-                             {% endif %}
-                        {% endfor %}
+                                        <tr>
+                                            <td>Zmień na gotowy adres wysyłki: </td>
+                                            <td>
+                                                <form class="form-horizontal" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=updateOrderSendTo" method="POST">
+                                                    <select name="userInfoId"class="form-control">
+                                                        {% for userAddres in userAddresses %}
+                                                            {% if userAddres.user_info_id == order.user_info_id %}
+                                                                <option selected value="{{ userAddres.user_info_id }}">{{ userAddres.address_type_name }}</option>
+                                                            {% else %}
+                                                                <option value="{{ userAddres.user_info_id }}"> {{ userAddres.address_type_name }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="submit" class="btn btn-default" value="Zmień">
+                                                </form>
+                                            </td>
+                                        </tr>
+                                         {% if userSendTo.address_type=='ST'%}
+                                            <tr>
+                                                <td>Zmień dane wysyłki:</td>
+                                                <td>
+                                                    <td><a href="index.php?site=admin&action=shop&act=orderSendEdit&orderId={{ order.order_id }}" class="btn btn-default">Zmień</a></td>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                        </table>
+                                    {% endif %}
+                                {% endfor %}
                     </div>
                 </div>
             </div>
@@ -491,6 +536,31 @@
                     <input type="text" name="littleNote" class="form-control" value="{{ order.littleNote }}"/>
                     <input type="hidden" value="{{order.order_id}}" name="orderId">
                     <input type="submit" class="btn btn-default" value="Zapisz"/>
+                </form>
+            </div>
+            <div class="well">
+                <strong>Zamówienia podzielone:</strong><br/>
+                <table class="table table-bordered">
+                {% for dividedOrder in dividedOrders %}
+                    <tr>
+                        <td>{{dividedOrder.orderIdDi}}</td>
+                        <td>{{dividedOrder.sumDi}} zł</td>
+                        <td>{{dividedOrder.konsultantFirstName}} {{dividedOrder.konsultantLastName}}</td>
+                        <td><a href="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=divideOrderDelete&konsultantId={{dividedOrder.konsultantIdDi}}" class="btn btn-danger">Usuń</a></td>
+                    </tr>
+                {% endfor %}
+                </table>
+                <form class="form-inline" action="index.php?site=admin&action=shop&act=orderDetail&orderId={{ order.order_id }}&perf=divideOrder" method="POST">
+                    <select class="form-control" name="konsultantId">
+                        {% for konsultant in konsultanci %}
+                            {% if konsultant.konsultantId == order.extra_field_2 or konsultant.block == 1%}
+                            {% else %}
+                                <option value="{{konsultant.konsultantId}}">{{ konsultant.konsultantFirstName }} {{ konsultant.konsultantLastName }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <input type="text" style="width:300px;" name="sum" class="form-control" placeholder="Kwotę przeniesiona innemu konsultantowi"/>
+                    <input type="submit" value="Dodaj" class="btn btn-default"/>
                 </form>
             </div>
         </div>

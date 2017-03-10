@@ -6,6 +6,10 @@
             <div class="alert alert-success text-center" role="alert">Konsultant został zmieniony</div>
         {% elseif info == 'konsultant-edit-fail'%}
             <div class="alert alert-danger text-center" role="alert">Konsultant nie został zmieniony</div>
+        {% elseif info == 'konsultant-changePassword-fail'%}
+            <div class="alert alert-danger text-center" role="alert">Hasło konsultanta nie zostało zmienione</div>
+        {% elseif info == 'konsultant-changePassword-success'%}
+            <div class="alert alert-success text-center" role="alert">Hasło konsultanta zostało zmienione</div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -24,8 +28,16 @@
                     <input type="hidden" name="adding" value="adding">
                     <input type="hidden" name="konsultantId" value="{{konsultant.konsultantId}}"/>
                     <input type="submit" value="Zmień dane konsultanta" class="btn btn-class">
+                </form>                
+                <br/>
+                <br/>
+                <h3>Zmień Hasło:</h3>
+                <form action="index.php?site=admin&action=konsultanci&konsultantId={{konsultant.konsultantId}}&perf=edit&act=changePassword" method="POST">
+                    <label>Hasło</label><br/>
+                    <input type="password" name="password" placeholder="Wpisz nowe hasło" class="form-control">
+                    <input type="hidden" name="konsultantId" value="{{konsultant.konsultantId}}"/>
+                    <input type="submit" value="Zmień hasło" class="btn btn-class">
                 </form>
-            </table>
         </div>
     </div>
     

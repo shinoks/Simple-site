@@ -71,7 +71,24 @@ class User {
     
     public function getKonsultanci()
     {
-        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate, block FROM konsultanci");
+        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate, block, visible FROM konsultanci WHERE visible = 1");
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getKonsultanciForRaports($date)
+    {
+        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate, block, visible FROM konsultanci WHERE visibleDate > :date OR visible = 1");
+        $stmt->bindParam(':date', $date);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
+    }
+    
+    public function getKonsultanciAll()
+    {
+        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate, block, visible, visibleDate FROM konsultanci");
         $stmt->execute();
         
         return $stmt->fetchAll();
@@ -79,7 +96,7 @@ class User {
     
     public function getKonsultantById($konsultantId)
     {
-        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate FROM konsultanci WHERE konsultantId = :konsultantId");
+        $stmt = $this->dbGf->prepare("SELECT konsultantId, konsultantFirstName, konsultantLastName, konsultantLoginDate, visible FROM konsultanci WHERE konsultantId = :konsultantId");
         $stmt->bindParam(":konsultantId",$konsultantId);
         $stmt->execute();
         
@@ -101,8 +118,9 @@ class User {
         $ile = $stmt->rowCount();
         
         return $ile;
-
     }
+    
+    
     
     public function addKonsultant($firstName, $lastName, $password)
     {
@@ -117,12 +135,34 @@ class User {
         return $stmt->execute();
     }
     
+    public function updateKonsultantPassword($konsultantId, $password)
+    {
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        
+        $stmt = $this->dbGf->prepare(" UPDATE konsultanci SET konsultantPassword = :password WHERE konsultantId = :konsultantId ");
+        $stmt->bindParam(':password',$passwordHash);
+        $stmt->bindParam(':konsultantId',$konsultantId);
+        
+        return $stmt->execute();
+    }
+    
+    public function updateKonsultantVisible($konsultantId, $visible)
+    {
+        $date = date('Y-m-d H:i:s');
+        $stmt = $this->dbGf->prepare("UPDATE konsultanci SET visible = :visible, visibleDate = :date WHERE konsultantId = :konsultantId");
+        $stmt->bindParam(":konsultantId",$konsultantId);
+        $stmt->bindParam(":visible",$visible);
+        $stmt->bindParam(":date",$date);
+        
+        return $stmt->execute();
+    }
+    
     public function updateKonsultant($firstName, $lastName, $konsultantId)
     {
         $stmt = $this->dbGf->prepare("UPDATE konsultanci SET konsultantFirstName = :konsultantFirstName, konsultantLastName = :konsultantLastName WHERE konsultantId = :konsultantId");
-        $stmt->bindParam("konsultantFirstName",$firstName);
-        $stmt->bindParam("konsultantLastName",$lastName);
-        $stmt->bindParam("konsultantId",$konsultantId);
+        $stmt->bindParam(":konsultantFirstName",$firstName);
+        $stmt->bindParam(":konsultantLastName",$lastName);
+        $stmt->bindParam(":konsultantId",$konsultantId);
         
         return $stmt->execute();
     }

@@ -15,6 +15,17 @@
         {% endif %}
     {% endif %}
 {% endblock %}
+{% block head %}
+    <script type = "text/javascript" language = "javascript">
+        $(document).ready(function(){
+            $('.moreInfo.btn.btn-default').click(function() {
+                var cid = $( this ).attr('id');
+                $( '.agrementsHistory-'+cid ).fadeToggle();
+            });
+        })
+    </script>
+
+    {% endblock %}
 
 {% block body %}
 {% set url = "index.php?site=admin&action=raports" %}
@@ -22,50 +33,58 @@
     <div class="row">
         <div class="col-md-12 bg-white">
             <div class="row">
-                <div class="pull-left">
-                Wybierz zakres raportu:<br/>
-
-                    <form class='form-inline' action='index.php' method='GET'/>
-                        <input type='hidden' value='admin' name='site'/>
-                        <input type='hidden' value='raports' name='action'/>
-                        <div class="form-group">
-                        <select class='form-control' name='activeYear'>
-                            {% for i in 2016..2036 %}
-                                {% if activeYear == i %}
-                                    <option  value='{{i}}' selected>{{i}}</option>
-                                {% else %}
-                                    <option value='{{i}}' >{{i}}</option>
+                <div class="col-md-2">
+                    {% include 'admin/agrements-menu.html.twig' %}
+                </div>
+                <div class="col-md-10">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <td><strong>Rozwiń</strong></td>
+                                <td><strong>Nr zamówienia</strong></td>
+                                <td><strong>Nazwa</strong></td>
+                                <td><strong>Status</strong></td>
+                                <td><strong>Kwota netto</strong></td>
+                                <td><strong>Nr faktury</strong></td>
+                                <td><strong>Zapłacone</strong></td>
+                                <td><strong>Data faktury</strong></td>
+                            </tr>
+                        </thead>
+                        {% for agrementOrder in agrementsOrder %}
+                            <tr>
+                                <td><button id="{{agrementOrder.order_id}}" class="moreInfo btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></td>
+                                <td>{{agrementOrder.order_id}}</td>
+                                <td>{{agrementOrder.company}}</td>
+                                <td>{{agrementOrder.order_status_name}}</td>
+                                <td>{{agrementOrder.order_subtotal|round(2,'common')}}</td>
+                                <td></td>
+                                <td></td>
+                                <td>{{ agrementOrder.cdate|date('d-m-Y H:i:s') }}</td>
+                            </tr>
+                            {% for agrement in agrements %}
+                                {% if agrement.order_id == agrementOrder.order_id %}
+                                <tr class="agrementsHistory-{{agrement.order_id}}" style="display:none">
+                                    <td colspan="8">
+                                        <table class="table table-bordered">
+                                            <tr id="agrementsHistory-{{agrement.order_id}}" class="{%if agrement.agPayed== 1%}success{%else%}danger{%endif%}">
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>{{ agrement.agSubtotal }} zł</td>
+                                                <td>{{ agrement.agFvNumber }}</td>
+                                                <td>{%if agrement.agPayed== 1%}Tak{%else%}Nie{%endif%} - {%if agrement.agAll== 1%}Całość{%else%}Raty{%endif%}</td>
+                                                <td>{{ agrement.agDate|date('d-m-Y') }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
                                 {% endif %}
                             {% endfor %}
-                        </select>
-                        </div>
-                        <div class="form-group">
-                        <select class='form-control' name='activeMonth'>
-                            {% for i in 1..12 %}
-                                {% if activeMonth == i %}
-                                    <option value='{{i}}' selected>{{i}}</option>
-                                {% else %}
-                                    <option value='{{i}}' >{{i}}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                        </div>
-                        <input type='submit' class='btn btn-primary' value='Pokaż zakres'/>
-                    </form><br/>
+                        {% endfor %}
+                    </table>
                 </div>
             </div>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <td>Nr zamówienia</td>
-                        <td>Status</td>
-                        <td>Kwota netto</td>
-                        <td>Nr faktury</td>
-                        <td>Zapłacone</td>
-                        <td>Data faktury</td>
-                    </tr>
-                </thead>
-            </table>
         </div>
     </div>
     

@@ -62,6 +62,7 @@
                             <h3>Wykaz zamówień z {{dates.dateStart|date('d-m-Y')}} do {{dates.dateEnd|date('d-m-Y')}}:</h3>
                             
                             <span>Suma netto zamówień zapłaconych - koszty administracyjne: {{ordersInfo.ordersReceivedSumThisMonth|round(2,'common') - ordersInfo.ordersThisMonthSumAdministrationFee|round(2,'common')}} zł<br/></span>
+                            <span>Dzielone zamówienia: +{{ordersInfo.dividedOrdersSumAdd }}/-{{ordersInfo.dividedOrdersSumRemove }}</span><br/>
                             <span>Premia naliczona: {{ordersInfo.premia}} zł<br/></span>
                             <span>do następnego progu brakuje: {{ordersInfo.premiaBrak }} zł<br/></span>
                             <span>Ranking:  {{ordersInfo.ranking }} zł<br/></span>

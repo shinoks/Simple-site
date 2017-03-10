@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Platforma wewnętrzna grupaformat.pl</title>
+    <title>Platforma wewnętrzna grupaformat.pl - AnuuVendor</title>
 
     <!-- Bootstrap -->
     <link href="web/css/bootstrap.min.css" rel="stylesheet">
@@ -64,6 +64,16 @@
     {% include "shop-info.html.twig" %}
     
     {% block body%}
+    {% endblock %}
+    
+        {% block footer %}
+        <div class="footer"><p class="text-center"><a href="http://{% block footerAddress %}
+                     {{config.pageSite }}
+            {% endblock %}">
+            {% block footerText %}
+                {{ config.pageSite }}
+            {% endblock %}
+        </a><br/>{{ config.footerText }}</p></div>
     {% endblock %}
            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="web/js/bootstrap.min.js"></script>
